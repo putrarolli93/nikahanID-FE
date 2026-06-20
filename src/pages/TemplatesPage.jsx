@@ -1,14 +1,43 @@
 // pages/TemplatesPage.jsx
-import { useState } from "react";
-import { TEMPLATES, CATEGORIES } from "../data/templates";
+import { useState, useEffect } from "react";
+import { CATEGORIES } from "../data/templates";
+import { useNavigate } from "react-router-dom";
 
-export default function TemplatesPage({ setPage }) {
+const CAT_LABELS = {
+  wedding: "Pernikahan",
+  aqiqah: "Aqiqah",
+  birthday: "Ulang Tahun",
+  tasyakuran: "Tasyakuran",
+};
+
+export default function TemplatesPage() {
+  const navigate = useNavigate();
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Semua");
 
-  const filtered = activeCategory === "Semua"
-    ? TEMPLATES
-    : TEMPLATES.filter(t => t.category === activeCategory);
+  useEffect(() => {
+    fetch("http://localhost:5000/api/templates")
+      .then((res) => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+      })
+      .then((json) => {
+        if (json.success) {
+          setTemplates(json.data);
+        } else {
+          setError(true);
+        }
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, []);
 
+  const filtered = activeCategory === "Semua"
+    ? templates
+    : templates.filter(t => (CAT_LABELS[t.category] ?? t.category) === activeCategory);
+  
   return (
     <div className="page-enter">
       <div className="templates-hero">
@@ -36,32 +65,48 @@ export default function TemplatesPage({ setPage }) {
       </div>
 
       <div className="templates-grid">
-        {filtered.map(t => (
-          <div className="tmpl-card" key={t.id}>
-            <div className={`preview-thumb ${t.theme}`} style={{height:160,fontSize:"3rem"}}>
-              {t.emoji}
-              <span className={t.pro ? "tmpl-badge-pro" : "tmpl-badge-free"}>{t.pro ? "PRO" : "GRATIS"}</span>
-            </div>
-            <div className="tmpl-info">
-              <div className="tmpl-name">{t.name}</div>
-              <div className="tmpl-meta">
-                <span>{t.category}</span>
-                <span className="tmpl-dot"/>
-                <span>{t.pro ? "Premium" : "Gratis"}</span>
+        {loading ? (
+          <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "3rem", color: "var(--muted)" }}>Memuat template...</div>
+        ) : error ? (
+          <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "3rem", color: "var(--brand)" }}>Gagal memuat template. Coba refresh halaman.</div>
+        ) : (
+          filtered.map(t => (
+            <div className="tmpl-card" key={t.id}>
+              <div 
+                className="preview-thumb" 
+                style={{
+                  height: 160,
+                  backgroundImage: `url(http://localhost:5000${t.thumbnail_url})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  position: "relative"
+                }}
+              >
+                <span className={t.price_type === "Premium" ? "tmpl-badge-pro" : "tmpl-badge-free"}>
+                  {t.price_type === "Premium" ? "PRO" : "GRATIS"}
+                </span>
               </div>
-              <button className="btn-tmpl" onClick={() => setPage("register")}>
-                {t.pro ? "Pakai Template" : "Pakai Gratis"}
-              </button>
+              <div className="tmpl-info">
+                <div className="tmpl-name">{t.name}</div>
+                <div className="tmpl-meta">
+                  <span>{CAT_LABELS[t.category] ?? t.category}</span>
+                  <span className="tmpl-dot"/>
+                  <span>{t.price_type}</span>
+                </div>
+                <button className="btn-tmpl" onClick={() => navigate(`/template/${t.slug}`)}>
+                  Lihat Detail
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* CTA */}
       <div className="cta-bottom" style={{marginTop:0}}>
         <h2>Belum ketemu yang pas?</h2>
         <p>Template baru ditambahkan setiap minggu. Daftar sekarang dan dapatkan notifikasi template terbaru!</p>
-        <button className="btn-cta-white" onClick={() => setPage("register")}>Daftar Gratis</button>
+        <button className="btn-cta-white" onClick={() => navigate("/register")}>Daftar Gratis</button>
       </div>
     </div>
   );

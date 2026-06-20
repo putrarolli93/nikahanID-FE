@@ -2,12 +2,12 @@
 import Header from './Header';
 import Footer from './Footer';
 
-export default function Layout({ children, currentPage, setPage, hideFooter = false }) {
+export default function Layout({ children, hideHeader, hideFooter }) {
   return (
     <>
-      <Header currentPage={currentPage} setPage={setPage} />
+      {!hideHeader && <Header />}
       <main>{children}</main>
-      {!hideFooter && <Footer setPage={setPage} />}
+      {!hideFooter && <Footer />}
     </>
   );
 }
