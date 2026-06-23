@@ -189,7 +189,7 @@ export default function TemplateDetailPage() {
           <div className="detail-cta">
             <button
               className="btn-primary detail-btn-main"
-              onClick={() => navigate(`/customize/${template.slug}`)}
+              onClick={() => navigate(`/create/${template.slug}`)}
             >
               Pilih Template
             </button>

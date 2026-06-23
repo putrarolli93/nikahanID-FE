@@ -10,6 +10,7 @@ import RegisterPage from "./pages/RegisterPage"; // Assuming you have these page
 import LoginPage from "./pages/LoginPage";       // Assuming you have these pages
 import AmoreInvitationPage from "./pages/AmoreInvitationPage"; // Import the new page
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
+import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
 
 import "./styles/global.css";
 import "./styles/components.css";
@@ -40,6 +41,7 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="/templates" element={<TemplatesPage />} />
         <Route path="/templates/:templateSlug" element={<TemplateDetailPage />} />
+        <Route path="/create/:templateSlug" element={<EventSchedulePage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} /> {/* New route for Amore invitations */}
