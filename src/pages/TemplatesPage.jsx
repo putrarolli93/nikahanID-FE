@@ -93,7 +93,7 @@ export default function TemplatesPage() {
                   <span className="tmpl-dot"/>
                   <span>{t.price_type}</span>
                 </div>
-                <button className="btn-tmpl" onClick={() => navigate(`/template/${t.slug}`)}>
+                <button className="btn-tmpl" onClick={() => navigate(`/templates/${t.slug}`)}>
                   Lihat Detail
                 </button>
               </div>

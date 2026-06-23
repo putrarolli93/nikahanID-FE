@@ -9,11 +9,9 @@ const CAT_LABELS = {
   tasyakuran: "Tasyakuran",
 };
 
-const FEATURES_BY_CAT = {
-  wedding:    ["Halaman cover mempelai", "Info akad & resepsi", "Galeri foto", "Countdown hari H", "RSVP & buku tamu", "Amplop digital"],
-  aqiqah:     ["Halaman cover bayi", "Info acara aqiqah", "Galeri foto", "Countdown hari H", "RSVP & buku tamu", "Amplop digital"],
-  birthday:   ["Halaman cover ulang tahun", "Info acara", "Galeri foto", "Countdown hari H", "RSVP & buku tamu", "Amplop digital"],
-  tasyakuran: ["Halaman cover tasyakuran", "Info acara syukuran", "Galeri foto", "Countdown hari H", "RSVP & buku tamu", "Amplop digital"],
+const formatRupiah = (amount) => {
+  if (!amount) return "Gratis";
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
 };
 
 const API_BASE = "http://localhost:5000";
@@ -73,9 +71,14 @@ export default function TemplateDetailPage() {
     return <div className="loading-container"><div className="spinner"></div></div>;
   }
 
-  const features   = FEATURES_BY_CAT[template.category] ?? FEATURES_BY_CAT.wedding;
-  const previewUrl = `${API_BASE}${template.preview_url}`;
-  const thumbUrl   = `${API_BASE}${template.thumbnail_url}`;
+  const features        = Array.isArray(template.features) && template.features.length > 0
+                            ? template.features
+                            : [];
+  const previewUrl      = `${API_BASE}${template.preview_url}`;
+  const previewUrlMobile = template.preview_url_mobile
+                            ? `${API_BASE}${template.preview_url_mobile}`
+                            : previewUrl;
+  const thumbUrl        = `${API_BASE}${template.thumbnail_url}`;
 
   return (
     <div className="detail-page page-enter">
@@ -113,11 +116,11 @@ export default function TemplateDetailPage() {
               <div className="detail-frame-fallback">Preview belum tersedia</div>
             ) : ( 
               <img
-                src={previewUrl}
+                src={activeTab === "mobile" ? previewUrlMobile : previewUrl}
                 alt={`Preview template ${template.name}`}
                 className="detail-preview-img"
                 onError={() => setImgError(true)}
-                onLoad={() => setImgError(false)} // Reset error if image loads successfully later
+                onLoad={() => setImgError(false)}
               />
             )}
           </div>
@@ -144,9 +147,8 @@ export default function TemplateDetailPage() {
           <h1 className="detail-title">{template.name}</h1>
 
           <p className="detail-desc">
-            Template <strong>{template.name}</strong> hadir dengan desain yang elegan dan modern,
-            cocok untuk acara {CAT_LABELS[template.category]?.toLowerCase()} kamu.
-            Semua elemen bisa dikustomisasi sesuai selera.
+            {template.description ||
+              `Template ${template.name} hadir dengan desain yang elegan dan modern, cocok untuk acara ${CAT_LABELS[template.category]?.toLowerCase()} kamu. Semua elemen bisa dikustomisasi sesuai selera.`}
           </p>
 
           {/* Features */}
@@ -168,7 +170,7 @@ export default function TemplateDetailPage() {
             {template.is_premium ? (
               <>
                 <p className="detail-price-val">
-                  <span className="detail-price-num">Rp 75.000</span>
+                  <span className="detail-price-num">{formatRupiah(template.price)}</span>
                   <span className="detail-price-note"> / Paket Standar</span>
                 </p>
                 <p className="detail-price-info">
@@ -187,12 +189,15 @@ export default function TemplateDetailPage() {
           <div className="detail-cta">
             <button
               className="btn-primary detail-btn-main"
+              onClick={() => navigate(`/customize/${template.slug}`)}
+            >
+              Pilih Template
+            </button>
+            <button 
+              className="btn-outline detail-btn-sec" 
               onClick={() => navigate(`/template/${template.slug}`)}
             >
-              Gunakan Template Ini →
-            </button>
-            <button className="btn-outline detail-btn-sec" onClick={() => navigate("/templates")}>
-              ← Lihat Template Lain
+              Preview Template
             </button>
           </div>
 

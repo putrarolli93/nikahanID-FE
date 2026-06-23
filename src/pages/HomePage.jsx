@@ -174,10 +174,10 @@ export default function HomePage() {
               <div
                 className="preview-card"
                 key={p.id}
-                  onClick={() => {
-                    // Arahkan ke halaman customize dengan slug
-                    navigate(`/template/${p.slug}`);
-  }}
+                onClick={() => {
+                  // Arahkan ke halaman detail template dengan slug
+                  navigate(`/templates/${p.slug}`);
+                }}
               >
                 <div
                   className="preview-thumb"
