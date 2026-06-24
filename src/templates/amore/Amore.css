@@ -1005,3 +1005,133 @@
   cursor: pointer;
   line-height: 1;
 }
+
+/* ═══════════════════════════════════════
+   TIMELINE (CERITA CINTA)
+   ═══════════════════════════════════════ */
+.amore__timeline {
+  position: relative;
+  margin: 30px 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Garis tengah */
+.amore__timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  width: 2px;
+  background: rgba(181, 101, 42, 0.2);
+}
+
+.amore__timeline-item {
+  position: relative;
+  margin-bottom: 30px;
+  padding-left: 50px;
+}
+
+.amore__timeline-badge {
+  position: absolute;
+  top: 6px;
+  left: 15px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #b5652a;
+  border: 3px solid #1c1208;
+  z-index: 10;
+  box-shadow: 0 0 0 3px rgba(181, 101, 42, 0.15);
+}
+
+.amore__timeline-content {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(181, 101, 42, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.amore__timeline-content:hover {
+  background: rgba(181, 101, 42, 0.05);
+  border-color: rgba(181, 101, 42, 0.3);
+  transform: translateY(-2px);
+}
+
+.amore__timeline-date {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b5652a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.amore__timeline-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f0e6d6;
+  margin: 0 0 10px 0;
+}
+
+.amore__timeline-photo {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border: 1px solid rgba(181, 101, 42, 0.15);
+}
+
+.amore__timeline-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.amore__timeline-desc {
+  font-size: 12px;
+  color: rgba(232, 221, 208, 0.55);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Desktop layout (Garis di tengah, selang-seling kiri dan kanan) */
+@media (min-width: 768px) {
+  .amore__timeline::before {
+    left: 50%;
+    margin-left: -1px;
+  }
+  
+  .amore__timeline-item {
+    width: 50%;
+    padding-left: 0;
+    margin-bottom: 50px;
+  }
+  
+  .amore__timeline-item--left {
+    left: 0;
+    padding-right: 35px;
+    text-align: right;
+  }
+  
+  .amore__timeline-item--right {
+    left: 50%;
+    padding-left: 35px;
+  }
+  
+  .amore__timeline-badge {
+    left: 50%;
+    margin-left: -6px;
+    top: 20px;
+  }
+  
+  .amore__timeline-item--left .amore__timeline-badge {
+    left: auto;
+    right: -6px;
+  }
+}

@@ -33,6 +33,20 @@
 }
 .btn-solid:hover { background: #9e5222; }
 
+.user-greeting {
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+}
+.mobile-user-greeting {
+  font-size: 15px;
+  color: var(--dark);
+  font-family: 'Nunito', sans-serif;
+  margin-bottom: 0.75rem;
+  text-align: center;
+  display: block;
+}
+
 /* ── FOOTER ── */
 .footer {
   background: var(--dark); padding: 2.5rem 2rem;

@@ -1,10 +1,11 @@
-// pages/EventSchedulePage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function EventSchedulePage() {
   const { templateSlug } = useParams();
   const navigate = useNavigate();
+  const { user, token } = useAuth();
 
   const [form, setForm] = useState({
     groomName: "",
@@ -17,18 +18,32 @@ export default function EventSchedulePage() {
   });
 
   const [errors, setErrors] = useState({});
+  const [apiLoading, setApiLoading] = useState(false);
+
+  // Load pending data if exists
+  useEffect(() => {
+    const pendingData = sessionStorage.getItem("pending_wedding_create");
+    if (pendingData) {
+      try {
+        const parsed = JSON.parse(pendingData);
+        if (parsed.templateSlug === templateSlug && parsed.form) {
+          setForm(parsed.form);
+        }
+      } catch (err) {
+        console.error("Error parsing pending data", err);
+      }
+    }
+  }, [templateSlug]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
-      // Reset resepsi fields when unchecked
       ...(name === "hasResepsi" && !checked
         ? { resepsiDate: "", resepsiTime: "" }
         : {}),
     }));
-    // Clear error on change
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
@@ -45,22 +60,58 @@ export default function EventSchedulePage() {
     return newErrors;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    // Save to sessionStorage dan lanjut ke step berikutnya (customize)
-    sessionStorage.setItem(`event_${templateSlug}`, JSON.stringify(form));
-    navigate(`/customize/${templateSlug}`);
+
+    // Save pending form state
+    sessionStorage.setItem("pending_wedding_create", JSON.stringify({ templateSlug, form }));
+
+    if (!user) {
+      // User is not logged in, redirect to login page first
+      navigate("/login?redirect=create-draft");
+      return;
+    }
+
+    // Create Draft invitation
+    setApiLoading(true);
+    try {
+      const response = await fetch("http://localhost:5000/api/invitations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          templateSlug,
+          ...form
+        })
+      });
+
+      const result = await response.json();
+      setApiLoading(false);
+
+      if (response.ok && result.success) {
+        // Clear pending session data on success
+        sessionStorage.removeItem("pending_wedding_create");
+        navigate(`/create-wizard/${result.data.slug}`);
+      } else {
+        alert(result.message || "Gagal membuat draf undangan");
+      }
+    } catch (error) {
+      console.error("Error creating draft", error);
+      setApiLoading(false);
+      alert("Koneksi internet bermasalah. Gagal membuat draf.");
+    }
   };
 
   const handleBack = () => {
     navigate(`/templates/${templateSlug}`);
   };
 
-  // Format label tanggal yang cantik
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
@@ -74,7 +125,6 @@ export default function EventSchedulePage() {
 
   return (
     <div className="event-schedule-page page-enter">
-
       {/* ── PROGRESS STEPS ── */}
       <div className="es-progress-wrap">
         <div className="es-progress">
@@ -90,7 +140,7 @@ export default function EventSchedulePage() {
           <div className="es-step-line" />
           <div className="es-step">
             <div className="es-step-circle">3</div>
-            <span>Kustomisasi</span>
+            <span>Pengisian Detail</span>
           </div>
         </div>
       </div>
@@ -98,7 +148,6 @@ export default function EventSchedulePage() {
       {/* ── CONTENT ── */}
       <div className="es-content">
         <div className="es-card">
-
           {/* Header */}
           <div className="es-header">
             <div className="es-header-icon">💍</div>
@@ -127,6 +176,7 @@ export default function EventSchedulePage() {
                   placeholder="Nama lengkap / panggilan"
                   value={form.groomName}
                   onChange={handleChange}
+                  disabled={apiLoading}
                 />
                 {errors.groomName && (
                   <span className="es-error">{errors.groomName}</span>
@@ -149,6 +199,7 @@ export default function EventSchedulePage() {
                   placeholder="Nama lengkap / panggilan"
                   value={form.brideName}
                   onChange={handleChange}
+                  disabled={apiLoading}
                 />
                 {errors.brideName && (
                   <span className="es-error">{errors.brideName}</span>
@@ -179,6 +230,7 @@ export default function EventSchedulePage() {
                   className={`es-input${errors.akadDate ? " es-input-error" : ""}`}
                   value={form.akadDate}
                   onChange={handleChange}
+                  disabled={apiLoading}
                 />
                 {form.akadDate && (
                   <span className="es-date-preview">{formatDate(form.akadDate)}</span>
@@ -199,6 +251,7 @@ export default function EventSchedulePage() {
                   className={`es-input${errors.akadTime ? " es-input-error" : ""}`}
                   value={form.akadTime}
                   onChange={handleChange}
+                  disabled={apiLoading}
                 />
                 {errors.akadTime && (
                   <span className="es-error">{errors.akadTime}</span>
@@ -224,6 +277,7 @@ export default function EventSchedulePage() {
                   className="es-toggle-input"
                   checked={form.hasResepsi}
                   onChange={handleChange}
+                  disabled={apiLoading}
                 />
                 <span className="es-toggle-track">
                   <span className="es-toggle-thumb" />
@@ -248,6 +302,7 @@ export default function EventSchedulePage() {
                       className={`es-input${errors.resepsiDate ? " es-input-error" : ""}`}
                       value={form.resepsiDate}
                       onChange={handleChange}
+                      disabled={apiLoading}
                     />
                     {form.resepsiDate && (
                       <span className="es-date-preview">{formatDate(form.resepsiDate)}</span>
@@ -268,6 +323,7 @@ export default function EventSchedulePage() {
                       className={`es-input${errors.resepsiTime ? " es-input-error" : ""}`}
                       value={form.resepsiTime}
                       onChange={handleChange}
+                      disabled={apiLoading}
                     />
                     {errors.resepsiTime && (
                       <span className="es-error">{errors.resepsiTime}</span>
@@ -280,14 +336,13 @@ export default function EventSchedulePage() {
 
           {/* ── ACTIONS ── */}
           <div className="es-actions">
-            <button className="es-btn-back" onClick={handleBack}>
+            <button className="es-btn-back" onClick={handleBack} disabled={apiLoading}>
               ← Kembali
             </button>
-            <button className="es-btn-next" onClick={handleNext}>
-              Lanjutkan →
+            <button className="es-btn-next" onClick={handleNext} disabled={apiLoading}>
+              {apiLoading ? "Memproses..." : "Lanjutkan →"}
             </button>
           </div>
-
         </div>
       </div>
     </div>

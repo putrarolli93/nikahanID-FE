@@ -155,6 +155,48 @@
 .auth-divider::after { right: 0; }
 .auth-link { color: var(--brand); font-weight: 700; cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; font-size: 13px; }
 
+/* ── PREMIUM AUTH FEEDBACK ── */
+.auth-input-error {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08) !important;
+}
+.auth-error-msg {
+  font-size: 11.5px;
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+}
+.auth-alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  animation: fadeSlide 0.2s ease;
+}
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.btn-submit-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── PAGE TRANSITIONS ── */
 .page-enter { animation: fadeSlide .3s ease; }
 @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -742,4 +784,55 @@
   .es-and-sep { padding-top: 0; }
   .es-datetime-row { grid-template-columns: 1fr; }
   .es-progress-wrap { padding: 1rem; }
+}
+
+/* ── PREVIEW OVERLAY MODAL ── */
+.preview-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease;
+}
+.preview-modal-header {
+  background: #fff;
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.preview-modal-header h3 {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  color: var(--dark);
+  font-size: 1.25rem;
+}
+.preview-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+}
+.preview-close-btn {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: background 0.2s;
+}
+.preview-close-btn:hover {
+  background: #9e5222;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

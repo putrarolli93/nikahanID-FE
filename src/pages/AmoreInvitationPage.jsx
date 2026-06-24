@@ -11,7 +11,7 @@ export default function AmoreInvitationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchInvitation = () => {
     fetch(`${API_BASE}/api/invitations/${slug}`)
       .then((res) => {
         if (!res.ok) throw new Error("Undangan tidak ditemukan");
@@ -26,6 +26,10 @@ export default function AmoreInvitationPage() {
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchInvitation();
   }, [slug]);
 
   if (loading) return <div className="loading-container"><div className="spinner"></div></div>;
@@ -62,59 +66,85 @@ export default function AmoreInvitationPage() {
     };
   };
 
+  const getEventIsoString = (schedule) => {
+    if (!schedule.event_date) return null;
+    const datePart = schedule.event_date.split("T")[0];
+    const timePart = schedule.start_time ? schedule.start_time : "08:00:00";
+    return `${datePart}T${timePart}`;
+  };
+
+  const akadTarget = getEventIsoString(scheduleAkad) || "2025-06-14T08:00:00";
+  const resepsiTarget = getEventIsoString(scheduleResepsi) || "2025-06-14T11:00:00";
+
   const mappedData = {
     cover: {
       pic_amore_slide_1: getFullUrl(sliderMoment?.photo_url),
-      groomName: groom.nickname || groom.full_name,
-      brideName: bride.nickname || bride.full_name,
-      verse: quote.content || "Dan di antara tanda-tanda kekuasaan-Nya...",
-      verseSource: quote.source,
+      groomName: groom.nickname || groom.full_name || "Mempelai Pria",
+      brideName: bride.nickname || bride.full_name || "Mempelai Wanita",
+      verse: quote.content || "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri.",
+      verseSource: quote.source || "QS. Ar-Rum: 21",
     },
     groom: {
       photoUrl: getFullUrl(groom.photo_url),
-      name: groom.full_name,
-      fatherName: `Bpk. ${groom.father_name}`,
-      motherName: `Ibu ${groom.mother_name}`,
+      name: groom.full_name || "Mempelai Pria",
+      fatherName: groom.father_name ? `Bpk. ${groom.father_name}` : "Bpk. Nama Ayah",
+      motherName: groom.mother_name ? `Ibu ${groom.mother_name}` : "Ibu Nama Ibu",
     },
     bride: {
       photoUrl: getFullUrl(bride.photo_url),
-      name: bride.full_name,
-      fatherName: `Bpk. ${bride.father_name}`,
-      motherName: `Ibu ${bride.mother_name}`,
+      name: bride.full_name || "Mempelai Wanita",
+      fatherName: bride.father_name ? `Bpk. ${bride.father_name}` : "Bpk. Nama Ayah",
+      motherName: bride.mother_name ? `Ibu ${bride.mother_name}` : "Ibu Nama Ibu",
     },
     akad: {
       ...formatDate(scheduleAkad.event_date),
-      time: `${scheduleAkad.start_time?.substring(0, 5)} WIB`,
-      until: scheduleAkad.end_time ? `s/d ${scheduleAkad.end_time.substring(0, 5)} WIB` : 's/d selesai'
+      time: scheduleAkad.start_time ? `${scheduleAkad.start_time.substring(0, 5)} WIB` : '08:00 WIB',
+      until: scheduleAkad.end_time ? `s/d ${scheduleAkad.end_time.substring(0, 5)} WIB` : 's/d selesai',
+      address: scheduleAkad.event_address || null,
+      mapsUrl: scheduleAkad.google_map_link || null,
+      isoDate: akadTarget
     },
     resepsi: {
       ...formatDate(scheduleResepsi.event_date),
-      time: `${scheduleResepsi.start_time?.substring(0, 5)} WIB`,
-      until: scheduleResepsi.end_time ? `s/d ${scheduleResepsi.end_time.substring(0, 5)} WIB` : 's/d selesai'
+      time: scheduleResepsi.start_time ? `${scheduleResepsi.start_time.substring(0, 5)} WIB` : '11:00 WIB',
+      until: scheduleResepsi.end_time ? `s/d ${scheduleResepsi.end_time.substring(0, 5)} WIB` : 's/d selesai',
+      address: scheduleResepsi.event_address || null,
+      mapsUrl: scheduleResepsi.google_map_link || null,
+      isoDate: resepsiTarget
     },
-    eventTarget: scheduleAkad.event_date,
+    eventTarget: scheduleAkad.event_date || "2025-06-14T08:00:00",
     venue: {
-      name: scheduleAkad.event_address,
-      address: scheduleAkad.event_address,
-      mapsUrl: scheduleAkad.google_map_link,
+      name: scheduleAkad.event_address || "Grand Ballroom Mulia Hotel",
+      address: scheduleAkad.event_address || "Jl. HR. Rasuna Said Setiabudi, Jakarta",
+      mapsUrl: scheduleAkad.google_map_link || "https://maps.google.com",
     },
     gallery: galleryMoments.map(m => getFullUrl(m.photo_url)).filter(url => url !== null),
-    banks: (invitation.gifts[0]?.bank_accounts || []).map(b => ({
-      bankName: b.bank_name,
-      logoText: b.bank_name.includes('BRI') ? 'BRI' : 
-                b.bank_name.includes('BCA') ? 'BCA' : 
-                b.bank_name.includes('BNI') ? 'BNI' : 'BANK',
+    banks: (invitation.gifts?.[0]?.bank_accounts || []).map(b => ({
+      bankName: b.bank_name || "Bank",
+      logoText: (b.bank_name || '').includes('BRI') ? 'BRI' : 
+                (b.bank_name || '').includes('BCA') ? 'BCA' : 
+                (b.bank_name || '').includes('BNI') ? 'BNI' : 'BANK',
       logoColor: '#fff',
       bgColor: '#b5652a',
-      accountNumber: b.account_number,
-      accountHolder: b.account_holder
+      accountNumber: b.account_number || "",
+      accountHolder: b.account_holder || ""
     })),
     rsvpDeadline: invitation.expires_at ? new Date(invitation.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Segera',
-    comments: (invitation.comments || []).map(c => ({
-      id: c.id,
-      name: c.guest_name,
-      message: c.message,
-      time: new Date(c.comment_date).toLocaleDateString('id-ID')
+    comments: (invitation.comments || [])
+      .filter(c => c.message && c.message.trim() !== "")
+      .map(c => ({
+        id: c.id,
+        name: c.guest_name,
+        message: c.message,
+        time: new Date(c.comment_date).toLocaleDateString('id-ID')
+      })),
+    footerQuote: (invitation.blessings || []).find(b => b.type === "footer_quote")?.content || null,
+    loveStories: (invitation.love_stories || []).map(s => ({
+      id: s.id,
+      title: s.title,
+      date: s.story_date,
+      description: s.description,
+      photoUrl: getFullUrl(s.photo_url)
     }))
   };
 
@@ -133,7 +163,11 @@ export default function AmoreInvitationPage() {
       >
         ← Kembali
       </button>
-      <AmoreTemplate data={mappedData} />
+      <AmoreTemplate 
+        data={mappedData} 
+        weddingId={invitation.id} 
+        onRsvpSubmitted={fetchInvitation} 
+      />
     </div>
   );
 }

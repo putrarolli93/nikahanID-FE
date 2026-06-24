@@ -1,16 +1,22 @@
 // components/Header.jsx
 import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-export default function Header({ currentPage, setPage }) {
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const burgerRef = useRef(null);
   
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+  
   const links = [
-    { label: "Template", page: "templates" },
-    { label: "Fitur", page: "home" },
-    { label: "Harga", page: "home" },
-    { label: "Blog", page: "home" },
+    { label: "Template", path: "/templates" },
+    { label: "Fitur", path: "/", sectionClass: ".features" },
+    { label: "Harga", path: "/", sectionClass: ".pricing" },
+    { label: "Testimoni", path: "/", sectionClass: ".testi" },
   ];
 
   const toggleMenu = (e) => {
@@ -22,9 +28,25 @@ export default function Header({ currentPage, setPage }) {
     setIsMenuOpen(false);
   };
 
-  const handleNavigation = (page) => {
-    setPage(page);
-    closeMenu(); // Tutup menu setelah navigasi
+  const handleNavigation = (path, sectionClass) => {
+    closeMenu();
+    if (location.pathname === "/" && sectionClass) {
+      const element = document.querySelector(sectionClass);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(path);
+      if (sectionClass) {
+        // Wait for page transition/rendering to complete before scrolling
+        setTimeout(() => {
+          const element = document.querySelector(sectionClass);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 150);
+      }
+    }
   };
 
   // Close menu when clicking outside
@@ -55,7 +77,7 @@ export default function Header({ currentPage, setPage }) {
   return (
     <>
       <nav className="nav">
-        <div className="nav-logo" onClick={() => handleNavigation("home")}>
+        <div className="nav-logo" onClick={() => handleNavigation("/")}>
           <div className="nav-logo-icon">i</div>
           <span className="nav-logo-text">datangya.id</span>
         </div>
@@ -65,14 +87,24 @@ export default function Header({ currentPage, setPage }) {
           {links.map(l => (
             <button
               key={l.label}
-              className={`nav-link${currentPage === l.page && l.page !== "home" ? " active" : ""}`}
-              onClick={() => handleNavigation(l.page)}
+              className={`nav-link${location.pathname === l.path && !l.sectionClass ? " active" : ""}`}
+              onClick={() => handleNavigation(l.path, l.sectionClass)}
             >
               {l.label}
             </button>
           ))}
-          <button className="btn-ghost" onClick={() => handleNavigation("login")}>Masuk</button>
-          <button className="btn-solid" onClick={() => handleNavigation("register")}>Daftar Gratis</button>
+
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span className="user-greeting">Halo, <strong>{user.name}</strong></span>
+              <button className="btn-ghost" onClick={() => { logout(); navigate("/"); }}>Keluar</button>
+            </div>
+          ) : (
+            <>
+              <button className="btn-ghost" onClick={() => navigate("/login")}>Masuk</button>
+              <button className="btn-solid" onClick={() => navigate("/register")}>Daftar Gratis</button>
+            </>
+          )}
         </div>
 
         {/* Burger Menu Button - Mobile */}
@@ -105,20 +137,30 @@ export default function Header({ currentPage, setPage }) {
             {links.map(l => (
               <button
                 key={l.label}
-                className={`mobile-nav-link${currentPage === l.page && l.page !== "home" ? " active" : ""}`}
-                onClick={() => handleNavigation(l.page)}
+                className={`mobile-nav-link${location.pathname === l.path && !l.sectionClass ? " active" : ""}`}
+                onClick={() => handleNavigation(l.path, l.sectionClass)}
               >
                 {l.label}
               </button>
             ))}
-            <div className="mobile-nav-buttons">
-              <button className="mobile-btn-ghost" onClick={() => handleNavigation("login")}>
-                Masuk
-              </button>
-              <button className="mobile-btn-solid" onClick={() => handleNavigation("register")}>
-                Daftar Gratis
-              </button>
-            </div>
+            
+            {user ? (
+              <div className="mobile-nav-buttons">
+                <span className="mobile-user-greeting">Halo, <strong>{user.name}</strong></span>
+                <button className="mobile-btn-ghost" onClick={() => { logout(); closeMenu(); navigate("/"); }}>
+                  Keluar
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-nav-buttons">
+                <button className="mobile-btn-ghost" onClick={() => { closeMenu(); navigate("/login"); }}>
+                  Masuk
+                </button>
+                <button className="mobile-btn-solid" onClick={() => { closeMenu(); navigate("/register"); }}>
+                  Daftar Gratis
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

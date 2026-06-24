@@ -11,7 +11,9 @@ import LoginPage from "./pages/LoginPage";       // Assuming you have these page
 import AmoreInvitationPage from "./pages/AmoreInvitationPage"; // Import the new page
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
+import CreateWizardPage from "./pages/CreateWizardPage"; // Multi-step creation wizard
 
+import { AuthProvider } from "./context/AuthContext";
 import "./styles/global.css";
 import "./styles/components.css";
 import "./styles/pages.css";
@@ -42,6 +44,7 @@ function AppContent() {
         <Route path="/templates" element={<TemplatesPage />} />
         <Route path="/templates/:templateSlug" element={<TemplateDetailPage />} />
         <Route path="/create/:templateSlug" element={<EventSchedulePage />} />
+        <Route path="/create-wizard/:slug" element={<CreateWizardPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} /> {/* New route for Amore invitations */}
@@ -56,7 +59,9 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }

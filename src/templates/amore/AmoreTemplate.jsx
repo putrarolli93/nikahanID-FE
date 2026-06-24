@@ -89,18 +89,19 @@ function SectionLabel({ children }) {
   return <div className="amore__section-label">{children}</div>;
 }
 
-function Countdown({ targetISO }) {
-  const [time, setTime] = useState({ h: '--', j: '--', m: '--', d: '--' });
+function MiniCountdown({ targetISO }) {
+  const [time, setTime] = useState({ d: '--', h: '--', m: '--', s: '--' });
 
   useEffect(() => {
+    if (!targetISO) return;
     const tick = () => {
       const diff = new Date(targetISO) - new Date();
-      if (diff <= 0) { setTime({ h: 0, j: 0, m: 0, d: 0 }); return; }
+      if (diff <= 0) { setTime({ d: 0, h: 0, m: 0, s: 0 }); return; }
       setTime({
-        h: Math.floor(diff / 86400000),
-        j: Math.floor((diff % 86400000) / 3600000),
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
         m: Math.floor((diff % 3600000) / 60000),
-        d: Math.floor((diff % 60000) / 1000),
+        s: Math.floor((diff % 60000) / 1000),
       });
     };
     tick();
@@ -108,19 +109,22 @@ function Countdown({ targetISO }) {
     return () => clearInterval(id);
   }, [targetISO]);
 
-  const boxes = [
-    { num: time.h, label: 'Hari' },
-    { num: time.j, label: 'Jam' },
-    { num: time.m, label: 'Menit' },
-    { num: time.d, label: 'Detik' },
+  const items = [
+    { num: time.d, label: 'hari' },
+    { num: time.h, label: 'jam' },
+    { num: time.m, label: 'menit' },
+    { num: time.s, label: 'detik' }
   ];
 
   return (
-    <div className="amore__countdown">
-      {boxes.map(({ num, label }) => (
-        <div className="amore__count-box" key={label}>
-          <div className="amore__count-num">{num}</div>
-          <div className="amore__count-label">{label}</div>
+    <div style={{ display: 'flex', gap: '6px', marginTop: '14px', justifyContent: 'center' }}>
+      {items.map(({ num, label }, i) => (
+        <div key={i} style={{ 
+          background: 'rgba(181,101,42,0.08)', border: '1px solid rgba(181,101,42,0.15)',
+          borderRadius: '6px', padding: '4px 6px', minWidth: '34px', textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e4a35a', lineHeight: 1 }}>{num}</div>
+          <div style={{ fontSize: '7px', color: 'rgba(232,221,208,0.3)', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.05em' }}>{label}</div>
         </div>
       ))}
     </div>
@@ -169,13 +173,56 @@ function PersonCard({ data, role }) {
 }
 
 function EventCard({ label, event }) {
+  const targetTime = event.isoDate || (label === 'Akad Nikah' ? '2025-06-14T08:00:00' : '2025-06-14T11:00:00');
+  
   return (
-    <div className="amore__event-card">
-      <div className="amore__event-type">{label}</div>
-      <div className="amore__event-date">{event.date}</div>
-      <div className="amore__event-month">{event.month} {event.year}</div>
-      <div className="amore__event-time">{event.time}</div>
-      <div className="amore__event-until">{event.until}</div>
+    <div className="amore__event-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%' }}>
+        <div className="amore__event-type">{label}</div>
+        <div className="amore__event-date">{event.date}</div>
+        <div className="amore__event-month">{event.month} {event.year}</div>
+        <div className="amore__event-time">{event.time}</div>
+        <div className="amore__event-until">{event.until}</div>
+        
+        {/* Mini Countdown inside the Card */}
+        <MiniCountdown targetISO={targetTime} />
+      </div>
+      
+      <div style={{ width: '100%' }}>
+        {event.address && (
+          <div className="amore__event-address" style={{ marginTop: '14px', fontSize: '11px', color: 'rgba(232,221,208,0.45)', lineHeight: '1.6', wordBreak: 'break-word', maxWidth: '100%' }}>
+            {event.address}
+          </div>
+        )}
+        
+        {event.mapsUrl && (
+          <a 
+            href={event.mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: '6px', 
+              marginTop: '14px', fontSize: '10px', color: '#b5652a', 
+              textDecoration: 'none', fontWeight: 700, border: '1px solid rgba(181,101,42,0.3)',
+              padding: '6px 12px', borderRadius: '20px', background: 'rgba(181,101,42,0.05)',
+              transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(181,101,42,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(181,101,42,0.6)';
+              e.currentTarget.style.color = '#e4a35a';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(181,101,42,0.05)';
+              e.currentTarget.style.borderColor = 'rgba(181,101,42,0.3)';
+              e.currentTarget.style.color = '#b5652a';
+            }}
+          >
+            <i className="ti ti-map-pin" style={{ fontSize: '11px' }}></i>
+            Buka Peta Lokasi
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -206,117 +253,176 @@ function GalleryGrid({ items, onItemClick }) {
   );
 }
 
-function GuestBook({ initialEntries }) {
+function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) {
   const [entries, setEntries] = useState(initialEntries);
-  const [input, setInput] = useState('');
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [attendance, setAttendance] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const listRef = useRef(null);
 
-  const handleSend = () => {
-    const trimmed = input.trim();
-    if (!trimmed) return;
-    const newEntry = {
-      id: Date.now(),
-      name: trimmed.split(' ').slice(0, 4).join(' '),
-      message: 'Semoga menjadi keluarga yang bahagia dan penuh berkah selalu!',
-      time: 'Baru saja',
-    };
-    setEntries(prev => [...prev, newEntry]);
-    setInput('');
-    setTimeout(() => {
-      listRef.current?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 100);
-  };
+  useEffect(() => {
+    setEntries(initialEntries);
+  }, [initialEntries]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSend();
+  const handleSend = async (e) => {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedMessage = message.trim();
+    if (!trimmedName) {
+      alert("Nama wajib diisi");
+      return;
+    }
+    if (!attendance) {
+      alert("Konfirmasi kehadiran wajib dipilih");
+      return;
+    }
+
+    if (!weddingId) {
+      // Mock for static template preview
+      const newEntry = {
+        id: Date.now(),
+        name: trimmedName,
+        message: trimmedMessage || "Mengonfirmasi kehadiran.",
+        time: 'Baru saja',
+      };
+      setEntries(prev => [...prev, newEntry]);
+      setName('');
+      setMessage('');
+      setAttendance('');
+      setSubmitted(true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      let willAttendVal = 1;
+      if (attendance === 'tidak') willAttendVal = 0;
+      else if (attendance === 'mungkin') willAttendVal = null;
+
+      const response = await fetch(`http://localhost:5000/api/invitations/${weddingId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          guest_name: trimmedName,
+          message: trimmedMessage || null,
+          will_attend: willAttendVal,
+          jumlah_tamu: 1
+        })
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setName('');
+        setMessage('');
+        setAttendance('');
+        setSubmitted(true);
+        if (onCommentSubmitted) {
+          onCommentSubmitted();
+        }
+      } else {
+        alert(result.message || "Gagal mengirim ucapan & konfirmasi");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Gagal terhubung dengan server");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="amore__guestbook">
-      <SectionLabel>Ucapan & Doa</SectionLabel>
-      <div className="amore__gb-entries" ref={listRef}>
-        {entries.map((e) => (
-          <div className="amore__gb-entry" key={e.id}>
-            <div className="amore__gb-name">{e.name}</div>
-            <div className="amore__gb-message">"{e.message}"</div>
-            <div className="amore__gb-time">{e.time}</div>
-          </div>
-        ))}
-      </div>
-      <div className="amore__gb-input-row">
-        <input
-          className="amore__gb-input"
-          type="text"
-          placeholder="Nama & ucapan..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button className="amore__gb-send" onClick={handleSend}>Kirim</button>
-      </div>
-    </div>
-  );
-}
+    <div className="amore__guestbook" style={{ padding: '24px 28px' }}>
+      <SectionLabel>Konfirmasi Kehadiran & Doa Restu</SectionLabel>
+      
+      {deadline && (
+        <div className="amore__rsvp-intro" style={{ marginBottom: '20px', textAlign: 'center', fontSize: '13px', color: 'rgba(232,221,208,0.45)' }}>
+          Mohon konfirmasi kehadiran Anda paling lambat {deadline} agar kami
+          dapat mempersiapkan dengan sebaik-baiknya.
+        </div>
+      )}
 
-function RsvpForm({ deadline }) {
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({ name: '', kehadiran: '', jumlah: '', pesan: '' });
+      {submitted ? (
+        <div className="amore__rsvp-success" style={{ marginBottom: '24px' }}>
+          Terima kasih! Konfirmasi kehadiran dan ucapan doa Anda telah terkirim. 🎉
+          <button 
+            onClick={() => setSubmitted(false)}
+            style={{ 
+              display: 'block', margin: '10px auto 0', background: 'none', border: 'none', 
+              color: '#b5652a', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' 
+            }}
+          >
+            Kirim ucapan baru
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSend} className="amore__rsvp-form" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <input
+            className="amore__input"
+            type="text"
+            placeholder="Nama Lengkap"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+            required
+          />
+          <select 
+            className="amore__select" 
+            value={attendance} 
+            onChange={(e) => setAttendance(e.target.value)} 
+            disabled={loading}
+            required
+          >
+            <option value="" disabled>Konfirmasi Kehadiran</option>
+            <option value="ya">Ya, Saya Akan Hadir</option>
+            <option value="tidak">Tidak, Saya Tidak Bisa Hadir</option>
+            <option value="mungkin">Mungkin / Belum Pasti</option>
+          </select>
+          <textarea
+            className="amore__textarea"
+            rows={3}
+            placeholder="Tulis ucapan doa restu Anda..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={loading}
+          />
+          <button className="amore__rsvp-btn" type="submit" disabled={loading}>
+            {loading ? "Mengirim..." : "Kirim Konfirmasi & Ucapan"}
+          </button>
+        </form>
+      )}
 
-  const handleChange = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+      <h3 style={{ 
+        fontSize: '12px', textTransform: 'uppercase', color: '#b5652a', 
+        letterSpacing: '0.15em', marginBottom: '16px', borderBottom: '1px solid rgba(181,101,42,0.15)', 
+        paddingBottom: '8px', fontWeight: 'bold' 
+      }}>
+        Ucapan & Doa Restu ({entries.length})
+      </h3>
 
-  const handleSubmit = () => {
-    if (!form.name || !form.kehadiran) return;
-    // TODO: kirim ke API / database
-    setSubmitted(true);
-  };
-
-  if (submitted) {
-    return (
-      <div className="amore__rsvp-success">
-        Terima kasih, <strong>{form.name}</strong>!<br />
-        Konfirmasi kehadiran Anda sudah kami terima. 🎉
-      </div>
-    );
-  }
-
-  return (
-    <div className="amore__rsvp-form">
-      <input
-        className="amore__input"
-        type="text"
-        placeholder="Nama lengkap"
-        value={form.name}
-        onChange={handleChange('name')}
-      />
-      <select className="amore__select" value={form.kehadiran} onChange={handleChange('kehadiran')}>
-        <option value="" disabled>Konfirmasi kehadiran</option>
-        <option value="hadir">Hadir</option>
-        <option value="tidak">Tidak hadir</option>
-        <option value="ragu">Belum pasti</option>
-      </select>
-      <select className="amore__select" value={form.jumlah} onChange={handleChange('jumlah')}>
-        <option value="" disabled>Jumlah tamu</option>
-        <option value="1">1 orang</option>
-        <option value="2">2 orang</option>
-        <option value="3">3 orang</option>
-        <option value="4+">4+ orang</option>
-      </select>
-      <textarea
-        className="amore__textarea"
-        rows={2}
-        placeholder="Pesan untuk mempelai (opsional)"
-        value={form.pesan}
-        onChange={handleChange('pesan')}
-      />
-      <button className="amore__rsvp-btn" onClick={handleSubmit}>
-        Kirim Konfirmasi
-      </button>
+      {entries.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(232,221,208,0.3)', fontSize: '13px', fontStyle: 'italic' }}>
+          Belum ada ucapan. Jadilah yang pertama memberikan doa restu!
+        </div>
+      ) : (
+        <div className="amore__gb-entries" ref={listRef}>
+          {entries.map((e) => (
+            <div className="amore__gb-entry" key={e.id}>
+              <div className="amore__gb-name">{e.name}</div>
+              <div className="amore__gb-message">"{e.message}"</div>
+              <div className="amore__gb-time">{e.time}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
-export default function AmoreTemplate({ data: dataProp }) {
+export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitted }) {
   const [lightboxImg, setLightboxImg] = useState(null);
   // Lakukan deep merge manual agar properti di dalam objek cover, groom, dll 
   // tetap memiliki nilai default jika tidak dikirim oleh API/Props
@@ -390,32 +496,43 @@ export default function AmoreTemplate({ data: dataProp }) {
           <EventCard label="Akad Nikah" event={data.akad} />
           <EventCard label="Resepsi"    event={data.resepsi} />
         </div>
-        <Countdown targetISO={data.eventTarget} />
       </div>
 
       <Divider />
 
-      {/* ── LOKASI ── */}
-      <div className="amore__section">
-        <SectionLabel>Lokasi</SectionLabel>
-        <a
-          className="amore__map-placeholder"
-          href={data.venue.mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <i className="ti ti-map-pin amore__map-icon" aria-hidden="true" />
-          <div className="amore__map-name">{data.venue.name}</div>
-          <div className="amore__map-sub">Klik untuk buka Google Maps</div>
-        </a>
-        <div className="amore__address">
-          {data.venue.address.split('\n').map((line, i) => (
-            <span key={i}>{line}{i < data.venue.address.split('\n').length - 1 && <br />}</span>
-          ))}
-        </div>
-      </div>
-
-      <Divider />
+      {/* ── CERITA CINTA (LOVE STORIES) ── */}
+      {data.loveStories && data.loveStories.length > 0 && (
+        <>
+          <div className="amore__section">
+            <SectionLabel>Cerita Cinta Kami</SectionLabel>
+            <div className="amore__timeline">
+              {data.loveStories.map((story, i) => (
+                <div 
+                  key={story.id || i} 
+                  className={`amore__timeline-item ${i % 2 === 0 ? 'amore__timeline-item--left' : 'amore__timeline-item--right'}`}
+                >
+                  <div className="amore__timeline-badge"></div>
+                  <div className="amore__timeline-content">
+                    <span className="amore__timeline-date">{story.date}</span>
+                    <h3 className="amore__timeline-title">{story.title}</h3>
+                    {story.photoUrl && (
+                      <div className="amore__timeline-photo">
+                        <img 
+                          src={story.photoUrl} 
+                          alt={story.title} 
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                      </div>
+                    )}
+                    <p className="amore__timeline-desc">{story.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <Divider />
+        </>
+      )}
 
       {/* ── GALERI ── */}
       <div className="amore__section">
@@ -450,28 +567,29 @@ export default function AmoreTemplate({ data: dataProp }) {
 
       <Divider />
 
-      {/* ── RSVP ── */}
-      <div className="amore__rsvp">
-        <SectionLabel>Konfirmasi Kehadiran</SectionLabel>
-        <div className="amore__rsvp-intro">
-          Mohon konfirmasi kehadiran Anda paling lambat {data.rsvpDeadline} agar kami
-          dapat mempersiapkan dengan sebaik-baiknya.
-        </div>
-        <RsvpForm deadline={data.rsvpDeadline} />
-      </div>
-
-      <Divider />
-
-      {/* ── GUESTBOOK ── */}
-      <GuestBook initialEntries={data.comments.length > 0 ? data.comments : INITIAL_ENTRIES} />
+      {/* ── GUESTBOOK & RSVP ── */}
+      <GuestBook 
+        initialEntries={data.comments || []} 
+        weddingId={weddingId}
+        onCommentSubmitted={onRsvpSubmitted}
+        deadline={data.rsvpDeadline}
+      />
 
       {/* ── FOOTER ── */}
       <div className="amore__footer">
         <div className="amore__footer-quote">
-          "Cinta bukan tentang berapa lama kamu menunggu,<br />
-          tapi tentang siapa yang membuatmu bahagia."
+          {data.footerQuote ? (
+            data.footerQuote.split('\n').map((line, i) => (
+              <span key={i}>{line}{i < data.footerQuote.split('\n').length - 1 && <br />}</span>
+            ))
+          ) : (
+            <>
+              "Cinta bukan tentang berapa lama kamu menunggu,<br />
+              tapi tentang siapa yang membuatmu bahagia."
+            </>
+          )}
         </div>
-        <div className="amore__footer-brand">Made with invitee.site</div>
+        <div className="amore__footer-brand">Made with datangya.id</div>
       </div>
 
       {/* ── LIGHTBOX MODAL ── */}
