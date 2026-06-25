@@ -172,8 +172,20 @@ export default function HomePage() {
                 </div>
                 <div className="preview-info">
                   <div className="preview-name">{p.name}</div>
-                  <div className="preview-tag">
-                    {CAT_LABELS[p.category] ?? p.category} · {p.price_type}
+                  <div className="preview-tag" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{CAT_LABELS[p.category] ?? p.category}</span>
+                    <span style={{ 
+                      padding: '2px 8px', 
+                      borderRadius: '4px', 
+                      fontSize: '11px', 
+                      fontWeight: '800', 
+                      textTransform: 'uppercase',
+                      color: '#fff',
+                      background: ['free', 'gratis'].includes(p.price_type.toLowerCase()) ? '#3b82f6' : p.price_type.toLowerCase() === 'premium' ? '#eab308' : '#3b82f6',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      {p.price_type}
+                    </span>
                   </div>
                 </div>
               </div>

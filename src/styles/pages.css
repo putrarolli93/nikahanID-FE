@@ -406,12 +406,12 @@
   z-index: 5;
 }
 .tmpl-badge-pro {
-  background: var(--brand);
+  background: #eab308;
   color: #fff;
 }
 .tmpl-badge-free {
-  background: #e2e8f0;
-  color: #475569;
+  background: #3b82f6;
+  color: #fff;
 }
 
 .tmpl-info {

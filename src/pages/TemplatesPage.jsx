@@ -88,8 +88,14 @@ export default function TemplatesPage() {
                 <div className="tmpl-name">{t.name}</div>
                 <div className="tmpl-meta">
                   <span>{CAT_LABELS[t.category] ?? t.category}</span>
-                  <span className="tmpl-dot"/>
-                  <span>{t.price_type}</span>
+                  {t.is_premium === 1 && t.price && (
+                    <>
+                      <span className="tmpl-dot"/>
+                      <span style={{color: 'var(--brand)', fontWeight: '800'}}>
+                        Rp {new Intl.NumberFormat('id-ID').format(t.price)}
+                      </span>
+                    </>
+                  )}
                 </div>
                 <button className="btn-tmpl" onClick={(e) => {
                   e.stopPropagation();
