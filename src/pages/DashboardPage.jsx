@@ -116,8 +116,8 @@ export default function DashboardPage() {
     }
 
     const balance = parseFloat(resellerData?.profile?.commission_balance) || 0;
-    if (balance < 20000) {
-      alert("Minimal penarikan adalah Rp 20.000 (Mode Testing)");
+    if (balance < 100000) {
+      alert("Minimal penarikan adalah Rp 100.000");
       return;
     }
     
@@ -353,23 +353,23 @@ export default function DashboardPage() {
                 <div style={{ textAlign: 'right' }}>
                   <button 
                     onClick={handleWithdraw}
-                    disabled={Number(resellerData?.profile?.commission_balance) < 20000}
+                    disabled={Number(resellerData?.profile?.commission_balance) < 100000}
                     style={{ 
                       padding: '1rem 2rem', 
-                      background: Number(resellerData?.profile?.commission_balance) >= 20000 ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0', 
-                      color: Number(resellerData?.profile?.commission_balance) >= 20000 ? '#fff' : '#94a3b8', 
+                      background: Number(resellerData?.profile?.commission_balance) >= 100000 ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : '#e2e8f0', 
+                      color: Number(resellerData?.profile?.commission_balance) >= 100000 ? '#fff' : '#94a3b8', 
                       border: 'none', 
                       borderRadius: '12px', 
                       fontWeight: 'bold', 
-                      cursor: Number(resellerData?.profile?.commission_balance) >= 20000 ? 'pointer' : 'not-allowed',
-                      boxShadow: Number(resellerData?.profile?.commission_balance) >= 20000 ? '0 4px 15px rgba(34, 197, 94, 0.3)' : 'none',
+                      cursor: Number(resellerData?.profile?.commission_balance) >= 100000 ? 'pointer' : 'not-allowed',
+                      boxShadow: Number(resellerData?.profile?.commission_balance) >= 100000 ? '0 4px 15px rgba(34, 197, 94, 0.3)' : 'none',
                       transition: 'all 0.2s'
                     }}
                   >
                     Tarik Saldo
                   </button>
-                  {Number(resellerData?.profile?.commission_balance) < 20000 && (
-                    <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.75rem', margin: '0.75rem 0 0 0' }}>*Minimal ditarik Rp 20.000</p>
+                  {Number(resellerData?.profile?.commission_balance) < 100000 && (
+                    <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.75rem', margin: '0.75rem 0 0 0' }}>*Minimal ditarik Rp 100.000</p>
                   )}
                 </div>
               </div>
