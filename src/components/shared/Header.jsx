@@ -78,8 +78,8 @@ export default function Header() {
     <>
       <nav className="nav">
         <div className="nav-logo" onClick={() => handleNavigation("/")}>
-          <div className="nav-logo-icon">i</div>
-          <span className="nav-logo-text">datangya.id</span>
+          <div className="nav-logo-icon">D</div>
+          <span className="nav-logo-text">Datangya.site</span>
         </div>
         
         {/* Desktop Navigation */}

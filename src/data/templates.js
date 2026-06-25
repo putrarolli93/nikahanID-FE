@@ -8,7 +8,7 @@ export const TEMPLATES = [
   { id: 6, name: "Luxe", slug: "luxe", category: "Tasyakuran", emoji: "✨", theme: "t6", pro: true },
   { id: 7, name: "Rustic", slug: "rustic", category: "Pernikahan", emoji: "🌾", theme: "t1", pro: false },
   { id: 8, name: "Midnight", slug: "midnight", category: "Ulang Tahun", emoji: "🎂", theme: "t2", pro: true },
-  { id: 9, name: "Garden", slug: "garden", category: "Aqiqah", emoji: "🌺", theme: "t3", pro: false },
+  { id: 9, name: "Garden", slug: "garden", category: "Pernikahan", emoji: "🌸", theme: "t3", pro: false },
   { id: 10, name: "Kasih", slug: "kasih", category: "Pernikahan", emoji: "❤️", theme: "t5", pro: true },
   { id: 11, name: "Pastel", slug: "pastel", category: "Ulang Tahun", emoji: "🎀", theme: "t4", pro: false },
   { id: 12, name: "Barokah", slug: "barokah", category: "Tasyakuran", emoji: "🤲", theme: "t6", pro: false },

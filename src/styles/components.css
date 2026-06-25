@@ -9,9 +9,11 @@
 }
 .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .nav-logo-icon {
-  width: 34px; height: 34px; background: var(--brand); border-radius: 9px;
+  width: 36px; height: 36px; background: var(--brand); border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 17px; font-weight: 800; font-family: 'Playfair Display', serif;
+  color: #fff; font-size: 20px; font-weight: 900; font-family: 'Nunito', sans-serif; /* changed font to match image better */
+  overflow: hidden;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.15), 2px 2px 0 rgba(0,0,0,0.15), 3px 3px 0 rgba(0,0,0,0.15), 4px 4px 0 rgba(0,0,0,0.15), 5px 5px 0 rgba(0,0,0,0.15), 6px 6px 0 rgba(0,0,0,0.15), 7px 7px 0 rgba(0,0,0,0.15), 8px 8px 0 rgba(0,0,0,0.15), 9px 9px 0 rgba(0,0,0,0.15), 10px 10px 0 rgba(0,0,0,0.15), 11px 11px 0 rgba(0,0,0,0.15), 12px 12px 0 rgba(0,0,0,0.15), 13px 13px 0 rgba(0,0,0,0.15), 14px 14px 0 rgba(0,0,0,0.15), 15px 15px 0 rgba(0,0,0,0.15), 16px 16px 0 rgba(0,0,0,0.15), 17px 17px 0 rgba(0,0,0,0.15), 18px 18px 0 rgba(0,0,0,0.15), 19px 19px 0 rgba(0,0,0,0.15), 20px 20px 0 rgba(0,0,0,0.15), 21px 21px 0 rgba(0,0,0,0.15), 22px 22px 0 rgba(0,0,0,0.15), 23px 23px 0 rgba(0,0,0,0.15), 24px 24px 0 rgba(0,0,0,0.15), 25px 25px 0 rgba(0,0,0,0.15), 26px 26px 0 rgba(0,0,0,0.15), 27px 27px 0 rgba(0,0,0,0.15), 28px 28px 0 rgba(0,0,0,0.15), 29px 29px 0 rgba(0,0,0,0.15), 30px 30px 0 rgba(0,0,0,0.15), 31px 31px 0 rgba(0,0,0,0.15), 32px 32px 0 rgba(0,0,0,0.15), 33px 33px 0 rgba(0,0,0,0.15), 34px 34px 0 rgba(0,0,0,0.15), 35px 35px 0 rgba(0,0,0,0.15);
 }
 .nav-logo-text { font-weight: 800; font-size: 15px; color: var(--dark); letter-spacing: -0.3px; }
 .nav-links { display: flex; gap: 1.5rem; align-items: center; }
@@ -55,9 +57,11 @@
 }
 .footer-logo { display: flex; align-items: center; gap: 8px; }
 .footer-logo-icon {
-  width: 28px; height: 28px; background: var(--brand); border-radius: 7px;
+  width: 30px; height: 30px; background: var(--brand); border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 14px; font-weight: 800; font-family: 'Playfair Display', serif;
+  color: #fff; font-size: 16px; font-weight: 900; font-family: 'Nunito', sans-serif;
+  overflow: hidden;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.15), 2px 2px 0 rgba(0,0,0,0.15), 3px 3px 0 rgba(0,0,0,0.15), 4px 4px 0 rgba(0,0,0,0.15), 5px 5px 0 rgba(0,0,0,0.15), 6px 6px 0 rgba(0,0,0,0.15), 7px 7px 0 rgba(0,0,0,0.15), 8px 8px 0 rgba(0,0,0,0.15), 9px 9px 0 rgba(0,0,0,0.15), 10px 10px 0 rgba(0,0,0,0.15), 11px 11px 0 rgba(0,0,0,0.15), 12px 12px 0 rgba(0,0,0,0.15), 13px 13px 0 rgba(0,0,0,0.15), 14px 14px 0 rgba(0,0,0,0.15), 15px 15px 0 rgba(0,0,0,0.15), 16px 16px 0 rgba(0,0,0,0.15), 17px 17px 0 rgba(0,0,0,0.15), 18px 18px 0 rgba(0,0,0,0.15), 19px 19px 0 rgba(0,0,0,0.15), 20px 20px 0 rgba(0,0,0,0.15), 21px 21px 0 rgba(0,0,0,0.15), 22px 22px 0 rgba(0,0,0,0.15), 23px 23px 0 rgba(0,0,0,0.15), 24px 24px 0 rgba(0,0,0,0.15), 25px 25px 0 rgba(0,0,0,0.15), 26px 26px 0 rgba(0,0,0,0.15), 27px 27px 0 rgba(0,0,0,0.15), 28px 28px 0 rgba(0,0,0,0.15), 29px 29px 0 rgba(0,0,0,0.15), 30px 30px 0 rgba(0,0,0,0.15);
 }
 .footer-logo-text { font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.55); }
 .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }

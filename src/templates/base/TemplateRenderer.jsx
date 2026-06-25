@@ -4,7 +4,8 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 // Lazy load templates
 const templateComponents = {
   amore: lazy(() => import('../amore/AmoreTemplate')),
-//   oceanic: lazy(() => import('../oceanic/OceanicTemplate')),
+  garden: lazy(() => import('../garden/GardenTemplate')),
+  oceanic: lazy(() => import('../oceanic/OceanicTemplate')),
 //   sage: lazy(() => import('../sage/SageTemplate')),
 //   bloom: lazy(() => import('../bloom/BloomTemplate')),
 //   madinah: lazy(() => import('../madinah/MadinahTemplate')),

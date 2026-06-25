@@ -1,11 +1,11 @@
-// src/pages/AmoreInvitationPage.jsx
+// src/pages/OceanicInvitationPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import AmoreTemplate from "../templates/amore/AmoreTemplate";
+import OceanicTemplate from "../templates/oceanic/OceanicTemplate";
 
 const API_BASE = "http://localhost:5000";
 
-export default function AmoreInvitationPage() {
+export default function OceanicInvitationPage() {
   const { slug } = useParams();
   const [invitation, setInvitation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,8 +35,8 @@ export default function AmoreInvitationPage() {
   if (loading) return <div className="loading-container"><div className="spinner"></div></div>;
   if (error) return <div className="error-container"><p>{error}</p></div>;
   if (!invitation) return null;
-  if (invitation.template_slug !== "amore") {
-    return <div className="error-container" style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',background:'#fcfbf9',color:'#333'}}><p>Akses ditolak: Undangan ini menggunakan template {invitation.template_name}, bukan Amore.</p></div>;
+  if (invitation.template_slug !== "oceanic") {
+    return <div className="error-container" style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',background:'#091322',color:'#fff'}}><p>Akses ditolak: Undangan ini menggunakan template {invitation.template_name}, bukan Oceanic.</p></div>;
   }
 
   // Helper untuk memastikan URL foto valid
@@ -84,7 +84,7 @@ export default function AmoreInvitationPage() {
       pic_amore_slide_1: getFullUrl(sliderMoment?.photo_url),
       groomName: groom.nickname || groom.full_name || "Mempelai Pria",
       brideName: bride.nickname || bride.full_name || "Mempelai Wanita",
-      verse: quote.content || "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri.",
+      verse: quote.content || "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri.",
       verseSource: quote.source || "QS. Ar-Rum: 21",
     },
     groom: {
@@ -110,15 +110,15 @@ export default function AmoreInvitationPage() {
     resepsi: {
       ...formatDate(scheduleResepsi.event_date),
       time: scheduleResepsi.start_time ? `${scheduleResepsi.start_time.substring(0, 5)} WIB` : '11:00 WIB',
-      until: scheduleResepsi.end_time ? `s/d ${scheduleResepsi.end_time.substring(0, 5)} WIB` : 's/d selesai',
+      until: scheduleResepsi.end_time ? `s/d ${scheduleResepsi.end_time.substring(0, 5)} WIB` : 's/d 15:00 WIB',
       address: scheduleResepsi.event_address || null,
       mapsUrl: scheduleResepsi.google_map_link || null,
       isoDate: resepsiTarget
     },
     eventTarget: scheduleAkad.event_date || "2025-06-14T08:00:00",
     venue: {
-      name: scheduleAkad.event_address || "Grand Ballroom Mulia Hotel",
-      address: scheduleAkad.event_address || "Jl. HR. Rasuna Said Setiabudi, Jakarta",
+      name: scheduleAkad.event_address || "Ocean View Chapel",
+      address: scheduleAkad.event_address || "Tebing Pecatu, Kuta Selatan, Bali",
       mapsUrl: scheduleAkad.google_map_link || "https://maps.google.com",
     },
     gallery: galleryMoments.map(m => getFullUrl(m.photo_url)).filter(url => url !== null),
@@ -128,7 +128,7 @@ export default function AmoreInvitationPage() {
                 (b.bank_name || '').includes('BCA') ? 'BCA' : 
                 (b.bank_name || '').includes('BNI') ? 'BNI' : 'BANK',
       logoColor: '#fff',
-      bgColor: '#b5652a',
+      bgColor: '#1d2a44',
       accountNumber: b.account_number || "",
       accountHolder: b.account_holder || ""
     })),
@@ -159,11 +159,9 @@ export default function AmoreInvitationPage() {
     }))
   };
 
-  console.log("Mapped Data to Template:", mappedData); // Debugging link foto
-
   return (
-    <div style={{ background: '#1c1208', minHeight: '100vh' }}>
-      <AmoreTemplate 
+    <div style={{ background: '#091322', minHeight: '100vh' }}>
+      <OceanicTemplate 
         data={mappedData} 
         weddingId={invitation.id} 
         onRsvpSubmitted={fetchInvitation} 

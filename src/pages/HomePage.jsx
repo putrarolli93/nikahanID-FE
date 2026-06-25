@@ -46,8 +46,8 @@ export default function HomePage() {
 
   const steps = [
     { n: "1", title: "Daftar Akun",    desc: "Buat akun gratis dalam hitungan detik, tanpa kartu kredit." },
-    { n: "2", title: "Isi Data Acara", desc: "Masukkan info acara, foto, dan detail pasangan kamu." },
-    { n: "3", title: "Pilih Template", desc: "Pilih dari 100+ template cantik dan sesuaikan warna & font." },
+    { n: "2", title: "Pilih Template", desc: "Pilih dari 100+ template cantik dan sesuaikan warna & font." },
+    { n: "3", title: "Isi Data Acara", desc: "Masukkan info acara, foto, dan detail pasangan kamu." },
     { n: "4", title: "Bagikan!",       desc: "Aktifkan undangan dan bagikan link ke seluruh tamu undangan." },
   ];
 
@@ -179,14 +179,14 @@ export default function HomePage() {
                   navigate(`/templates/${p.slug}`);
                 }}
               >
-                <div
-                  className="preview-thumb"
-                  style={{
-                    backgroundImage: `url(http://localhost:5000${p.thumbnail_url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
+                <div className="phone-mockup-wrapper">
+                  <div
+                    className="phone-mockup"
+                    style={{
+                      backgroundImage: `url(http://localhost:5000${p.preview_url_mobile || p.preview_url})`,
+                    }}
+                  />
+                </div>
                 <div className="preview-info">
                   <div className="preview-name">{p.name}</div>
                   <div className="preview-tag">
@@ -212,7 +212,7 @@ export default function HomePage() {
         <div className="section-center">
           <div className="tag">Fitur Lengkap</div>
           <h2>Semua yang kamu butuhkan ada di sini</h2>
-          <p>Dari undangan sederhana sampai yang penuh fitur — invitee.site siap bantu kamu.</p>
+          <p>Dari undangan sederhana sampai yang penuh fitur — Datangya.site siap bantu kamu.</p>
         </div>
         <div className="features-grid">
           {features.map((f) => (
@@ -308,7 +308,7 @@ export default function HomePage() {
       {/* ── CTA BOTTOM ── */}
       <div className="cta-bottom">
         <h2>Siap buat undangan yang memukau?</h2>
-        <p>Bergabung dengan 50.000+ pengguna yang sudah mempercayai invitee.site</p>
+        <p>Bergabung dengan 50.000+ pengguna yang sudah mempercayai Datangya.site</p>
         <button className="btn-cta-white" onClick={() => navigate("/register")}>
           Mulai Gratis Sekarang
         </button>

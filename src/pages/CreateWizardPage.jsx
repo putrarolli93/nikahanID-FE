@@ -27,6 +27,26 @@ export default function CreateWizardPage() {
   const [brideFile, setBrideFile] = useState(null);
   const [bridePreview, setBridePreview] = useState(null);
 
+  const [defaultAvatars, setDefaultAvatars] = useState([]);
+  const [groomPhotoType, setGroomPhotoType] = useState("upload");
+  const [bridePhotoType, setBridePhotoType] = useState("upload");
+  const [showExampleModal, setShowExampleModal] = useState(false);
+
+  useEffect(() => {
+    const fetchAvatars = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/invitations/default-avatars");
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setDefaultAvatars(json.data);
+        }
+      } catch (err) {
+        console.error("Error fetching avatars:", err);
+      }
+    };
+    fetchAvatars();
+  }, []);
+
   // Step 2: Event Details State
   const [akad, setAkad] = useState({
     event_address: "", google_map_link: "", event_date: "", start_time: ""
@@ -52,9 +72,28 @@ export default function CreateWizardPage() {
   const [blessing, setBlessing] = useState({ type: "prayer", content: "" });
   const [footerQuote, setFooterQuote] = useState({ type: "footer_quote", content: "" });
   const [music, setMusic] = useState({ title: "", artist: "", url: "", autoplay: true });
-  const [gift, setGift] = useState({ title: "Titip Hadiah", message: "" });
+  const [defaultMusicList, setDefaultMusicList] = useState([]);
+  const [defaultBlessingsList, setDefaultBlessingsList] = useState([]);
+  const [defaultQuotesList, setDefaultQuotesList] = useState([]);
+  const [defaultCoverQuotesList, setDefaultCoverQuotesList] = useState([]);
+  const [blessingDropdownOpen, setBlessingDropdownOpen] = useState(false);
+  const [quoteDropdownOpen, setQuoteDropdownOpen] = useState(false);
+  const [musicDropdownOpen, setMusicDropdownOpen] = useState(false);
+  const [coverQuoteDropdownOpen, setCoverQuoteDropdownOpen] = useState(false);
+  const [gift, setGift] = useState({ title: "Titip Hadiah", message: "", shipping_address: "" });
   const [bankAccounts, setBankAccounts] = useState([]);
   const [newBank, setNewBank] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "" });
+
+  // Load semua default list sekaligus
+  useEffect(() => {
+    const BASE = 'http://localhost:5000/api/invitations';
+    const load = (path, setter) =>
+      fetch(`${BASE}/${path}`).then(r => r.json()).then(res => { if (res.success) setter(res.data); }).catch(() => {});
+    load('default-music', setDefaultMusicList);
+    load('default-blessings', setDefaultBlessingsList);
+    load('default-quotes', setDefaultQuotesList);
+    load('default-cover-quotes', setDefaultCoverQuotesList);
+  }, []);
 
   // Load draft invitation data from backend
   useEffect(() => {
@@ -80,7 +119,12 @@ export default function CreateWizardPage() {
               instagram_username: groomData.instagram_username || "",
               photo_url: groomData.photo_url || ""
             });
-            if (groomData.photo_url) setGroomPreview(`http://localhost:5000${groomData.photo_url}`);
+            if (groomData.photo_url) {
+              setGroomPreview(`http://localhost:5000${groomData.photo_url}`);
+              if (groomData.photo_url.startsWith("/uploads/default_avatars/")) {
+                setGroomPhotoType("avatar");
+              }
+            }
           }
 
           const brideData = inv.bride_groom?.find(p => p.type === "bride");
@@ -94,7 +138,12 @@ export default function CreateWizardPage() {
               instagram_username: brideData.instagram_username || "",
               photo_url: brideData.photo_url || ""
             });
-            if (brideData.photo_url) setBridePreview(`http://localhost:5000${brideData.photo_url}`);
+            if (brideData.photo_url) {
+              setBridePreview(`http://localhost:5000${brideData.photo_url}`);
+              if (brideData.photo_url.startsWith("/uploads/default_avatars/")) {
+                setBridePhotoType("avatar");
+              }
+            }
           }
 
           // Populate step 2
@@ -135,7 +184,11 @@ export default function CreateWizardPage() {
           }
           if (inv.music) setMusic(inv.music);
           if (inv.gifts && inv.gifts.length > 0) {
-            setGift({ title: inv.gifts[0].title || "Titip Hadiah", message: inv.gifts[0].message || "" });
+            setGift({
+              title: inv.gifts[0].title || "Titip Hadiah",
+              message: inv.gifts[0].message || "",
+              shipping_address: inv.gifts[0].shipping_address || ""
+            });
             if (inv.gifts[0].bank_accounts) setBankAccounts(inv.gifts[0].bank_accounts);
           }
 
@@ -191,7 +244,11 @@ export default function CreateWizardPage() {
       groomForm.append("mother_name", groom.mother_name);
       groomForm.append("address", groom.address);
       groomForm.append("instagram_username", groom.instagram_username);
-      if (groomFile) groomForm.append("photo", groomFile);
+      if (groomPhotoType === "upload" && groomFile) {
+        groomForm.append("photo", groomFile);
+      } else if (groomPhotoType === "avatar" && groom.photo_url) {
+        groomForm.append("photo_url", groom.photo_url);
+      }
 
       await fetch(`http://localhost:5000/api/invitations/${weddingId}/bride-groom/groom`, {
         method: "PUT",
@@ -207,7 +264,11 @@ export default function CreateWizardPage() {
       brideForm.append("mother_name", bride.mother_name);
       brideForm.append("address", bride.address);
       brideForm.append("instagram_username", bride.instagram_username);
-      if (brideFile) brideForm.append("photo", brideFile);
+      if (bridePhotoType === "upload" && brideFile) {
+        brideForm.append("photo", brideFile);
+      } else if (bridePhotoType === "avatar" && bride.photo_url) {
+        brideForm.append("photo_url", bride.photo_url);
+      }
 
       await fetch(`http://localhost:5000/api/invitations/${weddingId}/bride-groom/bride`, {
         method: "PUT",
@@ -405,6 +466,7 @@ export default function CreateWizardPage() {
         body: JSON.stringify({
           title: gift.title,
           message: gift.message,
+          shipping_address: gift.shipping_address,
           bank_accounts: bankAccounts
         })
       });
@@ -458,8 +520,8 @@ export default function CreateWizardPage() {
             const isUnlocked = s.num <= maxUnlockedStep;
             return (
               <React.Fragment key={s.num}>
-                <div 
-                  className={`es-step ${activeStep === s.num ? "active" : activeStep > s.num ? "done" : ""}`} 
+                <div
+                  className={`es-step ${activeStep === s.num ? "active" : activeStep > s.num ? "done" : ""}`}
                   onClick={() => {
                     if (isUnlocked) {
                       setActiveStep(s.num);
@@ -467,8 +529,8 @@ export default function CreateWizardPage() {
                     } else {
                       alert(`Silakan lengkapi langkah sebelumnya terlebih dahulu.`);
                     }
-                  }} 
-                  style={{ 
+                  }}
+                  style={{
                     cursor: isUnlocked ? "pointer" : "not-allowed",
                     opacity: isUnlocked ? 1 : 0.5
                   }}
@@ -488,11 +550,11 @@ export default function CreateWizardPage() {
       {/* ── CENTERED WIZARD CONTAINER ── */}
       <div className="es-content" style={{ paddingTop: "1rem" }}>
         <div className="es-card" style={{ maxWidth: "760px" }}>
-          
+
           {/* Top-Level Preview Button (New Tab) */}
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1.5rem", borderBottom: "1px solid var(--border)", paddingBottom: "1rem" }}>
             <button
-              onClick={() => window.open(`/template/amore/${slug}`, '_blank')}
+              onClick={() => window.open(`/template/${invitationData?.template_slug || 'amore'}/${slug}`, '_blank')}
               className="btn-outline"
               style={{
                 display: "inline-flex",
@@ -502,10 +564,26 @@ export default function CreateWizardPage() {
                 color: "var(--brand)",
                 fontWeight: 700,
                 fontSize: "13px",
-                padding: "8px 16px"
+                padding: "8px 18px",
+                borderRadius: "20px",
+                background: "rgba(181, 101, 42, 0.04)",
+                transition: "all 0.2s ease"
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = "var(--brand)";
+                e.currentTarget.style.color = "#fff";
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(181, 101, 42, 0.2)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = "rgba(181, 101, 42, 0.04)";
+                e.currentTarget.style.color = "var(--brand)";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
-              👁 Lihat Pratinjau Undangan (Tab Baru)
+              <i className="ti ti-search" style={{ fontSize: "16px" }}></i>
+              Lihat Pratinjau Undangan
             </button>
           </div>
 
@@ -513,7 +591,7 @@ export default function CreateWizardPage() {
           {activeStep === 1 && (
             <form onSubmit={handleSaveStep1} className="form-section">
               <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Groom (Mempelai Pria)</h2>
-              
+
               <div className="form-group">
                 <label className="es-label">Nama Lengkap</label>
                 <input type="text" className="es-input" placeholder="Nama lengkap pria" value={groom.full_name} onChange={(e) => setGroom(prev => ({ ...prev, full_name: e.target.value }))} required />
@@ -536,12 +614,96 @@ export default function CreateWizardPage() {
               </div>
               <div className="form-group">
                 <label className="es-label">Foto Mempelai Pria</label>
-                <input type="file" className="es-input" onChange={(e) => {
-                  const file = e.target.files[0];
-                  setGroomFile(file);
-                  if (file) setGroomPreview(URL.createObjectURL(file));
-                }} />
-                {groomPreview && <img src={groomPreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%", marginTop: "10px" }} />}
+                <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setGroomPhotoType("upload")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid " + (groomPhotoType === "upload" ? "var(--brand)" : "var(--border)"),
+                      background: groomPhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                      color: groomPhotoType === "upload" ? "#fff" : "var(--text)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    Unggah Foto Sendiri
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGroomPhotoType("avatar")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid " + (groomPhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
+                      background: groomPhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                      color: groomPhotoType === "avatar" ? "#fff" : "var(--text)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
+                    Pilih Avatar
+                  </button>
+                </div>
+
+                {groomPhotoType === "upload" ? (
+                  <input type="file" className="es-input" onChange={(e) => {
+                    const file = e.target.files[0];
+                    setGroomFile(file);
+                    if (file) setGroomPreview(URL.createObjectURL(file));
+                  }} />
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: "10px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
+                    {defaultAvatars.filter(av => av.gender === "groom").map(av => (
+                      <div
+                        key={av.id}
+                        onClick={() => {
+                          setGroomFile(null);
+                          setGroom(prev => ({ ...prev, photo_url: av.photo_url }));
+                          setGroomPreview(`http://localhost:5000${av.photo_url}`);
+                        }}
+                        style={{
+                          cursor: "pointer",
+                          textAlign: "center",
+                          padding: "6px",
+                          borderRadius: "var(--radius-sm)",
+                          border: groom.photo_url === av.photo_url ? "2px solid var(--brand)" : "2px solid transparent",
+                          background: groom.photo_url === av.photo_url ? "rgba(181,101,42,0.15)" : "transparent",
+                          transition: "all 0.2s"
+                        }}
+                      >
+                        <img
+                          src={`http://localhost:5000${av.photo_url}`}
+                          alt={av.name}
+                          style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {groomPreview && (
+                  <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <img src={groomPreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%" }} />
+                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>Pratinjau Foto Mempelai Pria</span>
+                  </div>
+                )}
               </div>
 
               <div className="es-divider" />
@@ -569,12 +731,96 @@ export default function CreateWizardPage() {
               </div>
               <div className="form-group">
                 <label className="es-label">Foto Mempelai Wanita</label>
-                <input type="file" className="es-input" onChange={(e) => {
-                  const file = e.target.files[0];
-                  setBrideFile(file);
-                  if (file) setBridePreview(URL.createObjectURL(file));
-                }} />
-                {bridePreview && <img src={bridePreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%", marginTop: "10px" }} />}
+                <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setBridePhotoType("upload")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid " + (bridePhotoType === "upload" ? "var(--brand)" : "var(--border)"),
+                      background: bridePhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                      color: bridePhotoType === "upload" ? "#fff" : "var(--text)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    Unggah Foto Sendiri
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBridePhotoType("avatar")}
+                    style={{
+                      flex: 1,
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid " + (bridePhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
+                      background: bridePhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                      color: bridePhotoType === "avatar" ? "#fff" : "var(--text)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
+                    Pilih Avatar
+                  </button>
+                </div>
+
+                {bridePhotoType === "upload" ? (
+                  <input type="file" className="es-input" onChange={(e) => {
+                    const file = e.target.files[0];
+                    setBrideFile(file);
+                    if (file) setBridePreview(URL.createObjectURL(file));
+                  }} />
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: "10px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
+                    {defaultAvatars.filter(av => av.gender === "bride").map(av => (
+                      <div
+                        key={av.id}
+                        onClick={() => {
+                          setBrideFile(null);
+                          setBride(prev => ({ ...prev, photo_url: av.photo_url }));
+                          setBridePreview(`http://localhost:5000${av.photo_url}`);
+                        }}
+                        style={{
+                          cursor: "pointer",
+                          textAlign: "center",
+                          padding: "6px",
+                          borderRadius: "var(--radius-sm)",
+                          border: bride.photo_url === av.photo_url ? "2px solid var(--brand)" : "2px solid transparent",
+                          background: bride.photo_url === av.photo_url ? "rgba(181,101,42,0.15)" : "transparent",
+                          transition: "all 0.2s"
+                        }}
+                      >
+                        <img
+                          src={`http://localhost:5000${av.photo_url}`}
+                          alt={av.name}
+                          style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {bridePreview && (
+                  <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <img src={bridePreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%" }} />
+                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>Pratinjau Foto Mempelai Wanita</span>
+                  </div>
+                )}
               </div>
 
               <div className="es-actions">
@@ -651,8 +897,40 @@ export default function CreateWizardPage() {
           {/* STEP 3: LOVE STORY */}
           {activeStep === 3 && (
             <div className="form-section">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>💞 Perjalanan Cinta (Opsional)</h2>
-              
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
+                <h2 className="es-title" style={{ fontSize: "1.5rem", margin: 0 }}>💞 Perjalanan Cinta (Opsional)</h2>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={() => setShowExampleModal(true)}
+                  style={{
+                    fontSize: "12px",
+                    padding: "6px 14px",
+                    borderRadius: "20px",
+                    borderColor: "var(--brand)",
+                    color: "var(--brand)",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "rgba(181, 101, 42, 0.02)",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = "var(--brand)";
+                    e.currentTarget.style.color = "#fff";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = "rgba(181, 101, 42, 0.02)";
+                    e.currentTarget.style.color = "var(--brand)";
+                  }}
+                >
+                  <i className="ti ti-info-circle" style={{ fontSize: "14px" }}></i>
+                  Lihat Contoh
+                </button>
+              </div>
+
               {/* Existing Stories List */}
               {stories.length > 0 && (
                 <div className="stories-list" style={{ marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -733,8 +1011,64 @@ export default function CreateWizardPage() {
           {/* STEP 5: OTHER SETTINGS */}
           {activeStep === 5 && (
             <form onSubmit={handleSaveStep5} className="form-section">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>💬 Kutipan Sampul / Cover Quote</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>💬 Kutipan Sampul / Cover Quote</h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
               <div className="form-group">
+                {defaultCoverQuotesList.length > 0 && (
+                  <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setCoverQuoteDropdownOpen(o => !o); setBlessingDropdownOpen(false); setQuoteDropdownOpen(false); setMusicDropdownOpen(false); }}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
+                        color: quote.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
+                      }}
+                    >
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                        {quote.content
+                          ? `✓ ${quote.content.slice(0, 55)}${quote.content.length > 55 ? "..." : ""}`
+                          : "📋 Pilih dari template kutipan sampul..."}
+                      </span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: coverQuoteDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    {coverQuoteDropdownOpen && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+                        background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
+                        borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)",
+                        maxHeight: "280px", overflowY: "auto"
+                      }}>
+                        {defaultCoverQuotesList.map((q, idx) => {
+                          const isSelected = quote.content === q.content;
+                          return (
+                            <div key={q.id}
+                              onClick={() => { setQuote({ content: q.content, source: q.source || "" }); setCoverQuoteDropdownOpen(false); }}
+                              style={{
+                                padding: "12px 14px", cursor: "pointer",
+                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                borderBottom: idx < defaultCoverQuotesList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                transition: "background 0.1s"
+                              }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                            >
+                              <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)", lineHeight: 1.55 }}>
+                                "{q.content}"
+                              </div>
+                              {q.source && <div style={{ fontSize: "0.7rem", color: "var(--muted, #888)", marginTop: "3px" }}>— {q.source}</div>}
+                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", marginTop: "4px", fontWeight: 600 }}>✓ Terpilih</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <label className="es-label">Isi Kutipan Sampul</label>
                 <textarea className="es-input" rows={2} placeholder="Kutipan ayat atau kata mutiara..." value={quote.content} onChange={(e) => setQuote(prev => ({ ...prev, content: e.target.value }))} />
               </div>
@@ -745,42 +1079,281 @@ export default function CreateWizardPage() {
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>💬 Kutipan Bawah / Footer Quote</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>💬 Kutipan Bawah / Footer Quote</h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
               <div className="form-group">
-                <label className="es-label">Isi Kutipan Bawah</label>
-                <textarea className="es-input" rows={2} placeholder="Cinta bukan tentang berapa lama kamu menunggu, tapi tentang siapa yang membuatmu bahagia." value={footerQuote.content} onChange={(e) => setFooterQuote(prev => ({ ...prev, content: e.target.value }))} />
+                {defaultQuotesList.length > 0 && (
+                  <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setQuoteDropdownOpen(o => !o); setBlessingDropdownOpen(false); setMusicDropdownOpen(false); setCoverQuoteDropdownOpen(false); }}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
+                        color: footerQuote.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
+                      }}
+                    >
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                        {footerQuote.content
+                          ? `✓ ${footerQuote.content.slice(0, 55)}${footerQuote.content.length > 55 ? "..." : ""}`
+                          : "📋 Pilih dari template kutipan..."}
+                      </span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: quoteDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    {quoteDropdownOpen && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+                        background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
+                        borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)"
+                      }}>
+                        {defaultQuotesList.map((q, idx) => {
+                          const isSelected = footerQuote.content === q.content;
+                          return (
+                            <div key={q.id}
+                              onClick={() => { setFooterQuote(prev => ({ ...prev, content: q.content })); setQuoteDropdownOpen(false); }}
+                              style={{
+                                padding: "12px 14px", cursor: "pointer",
+                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                borderBottom: idx < defaultQuotesList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                transition: "background 0.1s"
+                              }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                            >
+                              <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)", lineHeight: 1.55 }}>
+                                "{q.content}"
+                              </div>
+                              {q.source && <div style={{ fontSize: "0.7rem", color: "var(--muted, #888)", marginTop: "3px" }}>— {q.source}</div>}
+                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", marginTop: "4px", fontWeight: 600 }}>✓ Terpilih</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <label className="es-label">Atau tulis sendiri</label>
+                <textarea className="es-input" rows={2} placeholder="Cinta bukan tentang berapa lama kamu menunggu..." value={footerQuote.content} onChange={(e) => setFooterQuote(prev => ({ ...prev, content: e.target.value }))} />
               </div>
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🙏 Ucapan & Doa pembuka</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>🙏 Ucapan & Doa Pembuka</h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
               <div className="form-group">
-                <label className="es-label">Pesan/Doa Pernikahan</label>
+                {defaultBlessingsList.length > 0 && (
+                  <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setBlessingDropdownOpen(o => !o); setQuoteDropdownOpen(false); setMusicDropdownOpen(false); setCoverQuoteDropdownOpen(false); }}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
+                        color: blessing.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
+                      }}
+                    >
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                        {blessing.content
+                          ? `✓ ${blessing.content.slice(0, 55)}${blessing.content.length > 55 ? "..." : ""}`
+                          : "📋 Pilih dari template ucapan & doa..."}
+                      </span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: blessingDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    {blessingDropdownOpen && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+                        background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
+                        borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)",
+                        maxHeight: "280px", overflowY: "auto"
+                      }}>
+                        {defaultBlessingsList.map((b, idx) => {
+                          const isSelected = blessing.content === b.content;
+                          return (
+                            <div key={b.id}
+                              onClick={() => { setBlessing(prev => ({ ...prev, content: b.content })); setBlessingDropdownOpen(false); }}
+                              style={{
+                                padding: "12px 14px", cursor: "pointer",
+                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                borderBottom: idx < defaultBlessingsList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                transition: "background 0.1s"
+                              }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                            >
+                              <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)", lineHeight: 1.55 }}>
+                                {b.content}
+                              </div>
+                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", marginTop: "4px", fontWeight: 600 }}>✓ Terpilih</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <label className="es-label">Atau tulis sendiri</label>
                 <textarea className="es-input" rows={3} placeholder="Pesan ucapan doa untuk tamu..." value={blessing.content} onChange={(e) => setBlessing(prev => ({ ...prev, content: e.target.value }))} />
               </div>
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎵 Musik Latar (URL MP3)</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎵 Musik Latar</h2>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "1rem" }}>
+                Pilih lagu latar untuk undangan kamu, atau lewati jika tidak ingin menggunakan musik.
+              </p>
+
               <div className="form-group">
-                <label className="es-label">Judul Lagu</label>
-                <input type="text" className="es-input" placeholder="e.g. Beautiful in White" value={music.title} onChange={(e) => setMusic(prev => ({ ...prev, title: e.target.value }))} />
+                {defaultMusicList.length > 0 && (
+                  <div style={{ position: "relative", marginBottom: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => { setMusicDropdownOpen(o => !o); setBlessingDropdownOpen(false); setQuoteDropdownOpen(false); setCoverQuoteDropdownOpen(false); }}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
+                        color: music.url ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
+                      }}
+                    >
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                        {music.url
+                          ? `✓ ${music.title}${music.artist ? ` - ${music.artist}` : ""}`
+                          : "🔇 Tanpa Musik"}
+                      </span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: musicDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                    {musicDropdownOpen && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+                        background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
+                        borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)",
+                        maxHeight: "280px", overflowY: "auto"
+                      }}>
+                        {/* Opsi Tanpa Musik */}
+                        <div
+                          onClick={() => { setMusic({ title: "", artist: "", url: "", autoplay: true }); setMusicDropdownOpen(false); }}
+                          style={{
+                            padding: "12px 14px", cursor: "pointer",
+                            background: !music.url ? "rgba(181,101,42,0.08)" : "transparent",
+                            borderBottom: "1px solid var(--border, #e5e4e7)",
+                            transition: "background 0.1s",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between"
+                          }}
+                          onMouseEnter={e => { if (music.url) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                          onMouseLeave={e => { if (music.url) e.currentTarget.style.background = "transparent"; }}
+                        >
+                          <div>
+                            <div style={{ fontSize: "0.82rem", fontWeight: 600, color: !music.url ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)" }}>
+                              🔇 Tanpa Musik
+                            </div>
+                            <div style={{ fontSize: "0.72rem", color: "var(--muted, #888)", marginTop: "2px" }}>
+                              Tidak menggunakan musik latar
+                            </div>
+                          </div>
+                          {!music.url && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", fontWeight: 600 }}>✓ Terpilih</div>}
+                        </div>
+
+                        {/* List Lagu */}
+                        {defaultMusicList.map((song, idx) => {
+                          const songUrl = `http://localhost:5000${song.url}`;
+                          const isSelected = music.url === songUrl;
+                          return (
+                            <div key={song.id}
+                              onClick={() => { setMusic({ title: song.title, artist: song.artist || "", url: songUrl, autoplay: true }); setMusicDropdownOpen(false); }}
+                              style={{
+                                padding: "12px 14px", cursor: "pointer",
+                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                borderBottom: idx < defaultMusicList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                transition: "background 0.1s",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between"
+                              }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                            >
+                              <div>
+                                <div style={{ fontSize: "0.82rem", fontWeight: 600, color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)" }}>
+                                  🎵 {song.title}
+                                </div>
+                                {song.artist && (
+                                  <div style={{ fontSize: "0.72rem", color: "var(--muted, #888)", marginTop: "2px" }}>
+                                    {song.artist}
+                                  </div>
+                                )}
+                              </div>
+                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", fontWeight: 600 }}>✓ Terpilih</div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Audio preview */}
+                {music.url && (
+                  <div style={{ marginTop: "14px", padding: "12px 14px", borderRadius: "10px", background: "rgba(201,169,110,0.08)", border: "1px solid rgba(201,169,110,0.2)" }}>
+                    <div style={{ fontSize: "0.75rem", color: "var(--primary, #c9a96e)", marginBottom: "8px", fontWeight: 600 }}>
+                      🎵 Preview: {music.title}
+                    </div>
+                    <audio key={music.url} controls src={music.url} style={{ width: "100%", borderRadius: "6px", height: "36px" }} />
+                  </div>
+                )}
               </div>
-              <div className="form-group">
-                <label className="es-label">Artis</label>
-                <input type="text" className="es-input" placeholder="e.g. Shane Filan" value={music.artist} onChange={(e) => setMusic(prev => ({ ...prev, artist: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Link File Audio (MP3 URL)</label>
-                <input type="url" className="es-input" placeholder="https://example.com/song.mp3" value={music.url} onChange={(e) => setMusic(prev => ({ ...prev, url: e.target.value }))} />
-              </div>
+
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎁 Hadiah Pernikahan & Rekening</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎁 Hadiah Pernikahan & Rekening (Opsional)</h2>
               <div className="form-group">
                 <label className="es-label">Pesan Hadiah / Gift Message</label>
+                <select
+                  className="es-input"
+                  style={{ marginBottom: "8px", background: "rgba(255,255,255,0.02)", color: "var(--text)" }}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setGift(prev => ({ ...prev, message: e.target.value }));
+                    }
+                  }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>-- Pilih Contoh Template Pesan (Opsional) --</option>
+                  <option value="Terima kasih telah menambah semangat kegembiraan pernikahan kami dengan kehadiran dan hadiah indah Anda.">
+                    "Terima kasih telah menambah semangat..."
+                  </option>
+                  <option value="Tanpa mengurangi rasa hormat, bagi rekan-rekan yang ingin memberikan kado/tanda kasih kepada kami, dapat mengirimkannya melalui detail di bawah ini:">
+                    "Tanpa mengurangi rasa hormat, bagi rekan-rekan..."
+                  </option>
+                  <option value="Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika Anda ingin mengirimkan kado/hadiah, silakan kirimkan melalui detail di bawah ini:">
+                    "Doa restu Anda merupakan hadiah terindah..."
+                  </option>
+                </select>
                 <textarea className="es-input" rows={2} placeholder="Pesan titip hadiah kado..." value={gift.message} onChange={(e) => setGift(prev => ({ ...prev, message: e.target.value }))} />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "1.5rem" }}>
+                <label className="es-label">Alamat Kirim Kado Fisik</label>
+                <textarea
+                  className="es-input"
+                  rows={2}
+                  placeholder="Tuliskan alamat lengkap pengiriman kado fisik jika tamu ingin mengirimkan paket kado..."
+                  value={gift.shipping_address || ""}
+                  onChange={(e) => setGift(prev => ({ ...prev, shipping_address: e.target.value }))}
+                />
               </div>
 
               {/* Bank Accounts List */}
@@ -857,6 +1430,190 @@ export default function CreateWizardPage() {
           )}
         </div>
       </div>
+
+      {/* ── SAMPLE TIMELINE MODAL ── */}
+      {showExampleModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.65)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 10000,
+          padding: "20px"
+        }} className="page-enter">
+          <div style={{
+            background: "#1c1208", // match Amore background theme
+            color: "#e8ddd0",
+            maxWidth: "600px",
+            width: "100%",
+            borderRadius: "var(--radius-md)",
+            border: "1px solid rgba(181, 101, 42, 0.3)",
+            display: "flex",
+            flexDirection: "column",
+            maxHeight: "90vh",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.6)"
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: "16px 20px",
+              borderBottom: "1px solid rgba(181, 101, 42, 0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}>
+              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, letterSpacing: "0.05em", color: "#e4a35a", fontFamily: "'Playfair Display', serif" }}>
+                Contoh Perjalanan Cinta (Timeline)
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowExampleModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#e8ddd0",
+                  cursor: "pointer",
+                  fontSize: "22px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "4px",
+                  opacity: 0.7,
+                  transition: "opacity 0.2s"
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = 1}
+                onMouseOut={(e) => e.currentTarget.style.opacity = 0.7}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Modal Content (Timeline scrollable) */}
+            <div style={{
+              padding: "20px",
+              overflowY: "auto",
+              flex: 1
+            }}>
+              <p style={{ fontSize: "13px", color: "rgba(232, 221, 208, 0.7)", marginBottom: "20px", lineHeight: 1.6 }}>
+                Berikut adalah contoh alur cerita yang runut dari Pertama Ketemu, Kenalan, Lamaran, hingga Pernikahan untuk mempercantik undangan Anda:
+              </p>
+
+              {/* Replica timeline of Amore style */}
+              <div style={{
+                position: "relative",
+                paddingLeft: "24px",
+                borderLeft: "2px solid rgba(181, 101, 42, 0.25)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "24px",
+                margin: "10px 0"
+              }}>
+                {[
+                  {
+                    date: "10 Januari 2020",
+                    title: "Pertama Ketemu",
+                    desc: "Secara tidak sengaja kami berpapasan di sebuah kedai kopi. Tatapan singkat yang menumbuhkan rasa penasaran untuk saling mengenal lebih dalam.",
+                    img: "/images/timeline_meet.png"
+                  },
+                  {
+                    date: "15 Februari 2020",
+                    title: "Kenalan Lebih Dekat",
+                    desc: "Setelah bertukar kontak, kami mulai rutin berkomunikasi. Menemukan banyak kecocokan, hobi yang sama, serta visi masa depan yang saling melengkapi.",
+                    img: "/images/timeline_know.png"
+                  },
+                  {
+                    date: "25 Desember 2024",
+                    title: "Momen Lamaran (Proposal)",
+                    desc: "Dengan restu tulus dari kedua keluarga besar, kami memantapkan hati untuk mengikat komitmen suci kami menuju jenjang pernikahan.",
+                    img: "/images/timeline_proposal.png"
+                  },
+                  {
+                    date: "20 Juni 2025",
+                    title: "Hari Pernikahan (Akad & Resepsi)",
+                    desc: "Hari bersejarah di mana kami mengucapkan janji suci di hadapan Allah SWT untuk saling menyayangi, membimbing, dan menjaga selamanya.",
+                    img: "/images/timeline_wedding.png"
+                  }
+                ].map((item, idx) => (
+                  <div key={idx} style={{ position: "relative" }}>
+                    {/* timeline node badge */}
+                    <div style={{
+                      position: "absolute",
+                      left: "-31px",
+                      top: "2px",
+                      width: "12px",
+                      height: "12px",
+                      borderRadius: "50%",
+                      background: "#b5652a",
+                      border: "2px solid #1c1208",
+                      boxShadow: "0 0 0 3px rgba(181, 101, 42, 0.25)"
+                    }} />
+
+                    {/* timeline node content */}
+                    <div>
+                      <span style={{ fontSize: "11px", color: "#e4a35a", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                        {item.date}
+                      </span>
+                      <h4 style={{ margin: "4px 0 8px", fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                        {item.title}
+                      </h4>
+                      {item.img && (
+                        <div style={{
+                          width: "100%",
+                          maxHeight: "150px",
+                          overflow: "hidden",
+                          borderRadius: "6px",
+                          border: "1px solid rgba(181, 101, 42, 0.2)",
+                          marginBottom: "8px",
+                          background: "#000"
+                        }}>
+                          <img
+                            src={item.img}
+                            alt={item.title}
+                            style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                          />
+                        </div>
+                      )}
+                      <p style={{ margin: 0, fontSize: "12.5px", color: "rgba(232, 221, 208, 0.8)", lineHeight: 1.6 }}>
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              padding: "12px 20px",
+              borderTop: "1px solid rgba(181, 101, 42, 0.15)",
+              display: "flex",
+              justifyContent: "flex-end"
+            }}>
+              <button
+                type="button"
+                className="btn-solid"
+                onClick={() => setShowExampleModal(false)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: "13px",
+                  borderRadius: "6px",
+                  background: "#b5652a",
+                  color: "#fff",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 700
+                }}
+              >
+                Tutup Contoh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

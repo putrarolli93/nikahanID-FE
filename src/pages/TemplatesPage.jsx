@@ -71,19 +71,17 @@ export default function TemplatesPage() {
           <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "3rem", color: "var(--brand)" }}>Gagal memuat template. Coba refresh halaman.</div>
         ) : (
           filtered.map(t => (
-            <div className="tmpl-card" key={t.id}>
-              <div 
-                className="preview-thumb" 
-                style={{
-                  height: 160,
-                  backgroundImage: `url(http://localhost:5000${t.thumbnail_url})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  position: "relative"
-                }}
-              >
-                <span className={t.price_type === "Premium" ? "tmpl-badge-pro" : "tmpl-badge-free"}>
-                  {t.price_type === "Premium" ? "PRO" : "GRATIS"}
+            <div className="tmpl-card" key={t.id} onClick={() => navigate(`/templates/${t.slug}`)}>
+              <div className="phone-mockup-wrapper" style={{ height: "260px" }}>
+                <div 
+                  className="phone-mockup"
+                  style={{ 
+                    width: "120px", height: "240px",
+                    backgroundImage: `url(http://localhost:5000${t.preview_url_mobile || t.preview_url || t.thumbnail_url})` 
+                  }} 
+                />
+                <span className={t.is_premium === 1 ? "tmpl-badge-pro" : "tmpl-badge-free"}>
+                  {t.is_premium === 1 ? "STANDAR" : "GRATIS"}
                 </span>
               </div>
               <div className="tmpl-info">
@@ -93,7 +91,10 @@ export default function TemplatesPage() {
                   <span className="tmpl-dot"/>
                   <span>{t.price_type}</span>
                 </div>
-                <button className="btn-tmpl" onClick={() => navigate(`/templates/${t.slug}`)}>
+                <button className="btn-tmpl" onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/templates/${t.slug}`);
+                }}>
                   Lihat Detail
                 </button>
               </div>

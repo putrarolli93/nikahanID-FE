@@ -9,6 +9,8 @@ import TemplatePreviewPage from "./pages/TemplatePreviewPage";
 import RegisterPage from "./pages/RegisterPage"; // Assuming you have these pages
 import LoginPage from "./pages/LoginPage";       // Assuming you have these pages
 import AmoreInvitationPage from "./pages/AmoreInvitationPage"; // Import the new page
+import GardenInvitationPage from "./pages/GardenInvitationPage";
+import OceanicInvitationPage from "./pages/OceanicInvitationPage";
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
 import CreateWizardPage from "./pages/CreateWizardPage"; // Multi-step creation wizard
@@ -48,6 +50,8 @@ function AppContent() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} /> {/* New route for Amore invitations */}
+        <Route path="/template/garden/:slug" element={<GardenInvitationPage />} /> {/* New route for Garden invitations */}
+        <Route path="/template/oceanic/:slug" element={<OceanicInvitationPage />} /> {/* New route for Oceanic invitations */}
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />
         <Route path="*" element={<HomePage />} /> {/* Fallback for unknown routes */}

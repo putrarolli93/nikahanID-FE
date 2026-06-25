@@ -137,7 +137,7 @@ export default function TemplateDetailPage() {
           <div className="detail-badges">
             <span className="tag">{CAT_LABELS[template.category]}</span>
             {template.is_premium ? (
-              <span className="badge-pro">PRO</span>
+              <span className="badge-pro">STANDAR</span>
             ) : (
               <span className="badge-free">GRATIS</span>
             )}
@@ -228,14 +228,14 @@ export default function TemplateDetailPage() {
                 className="preview-card"
                 onClick={() => navigate(`/templates/${t.slug}`)}
               >
-                <div
-                  className="preview-thumb"
-                  style={{
-                    backgroundImage: `url(${API_BASE}${t.thumbnail_url})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
+                <div className="phone-mockup-wrapper">
+                  <div
+                    className="phone-mockup"
+                    style={{
+                      backgroundImage: `url(${API_BASE}${t.preview_url_mobile || t.preview_url || t.thumbnail_url})`,
+                    }}
+                  />
+                </div>
                 <div className="preview-info">
                   <div className="preview-name">{t.name}</div>
                   <div className="preview-tag">

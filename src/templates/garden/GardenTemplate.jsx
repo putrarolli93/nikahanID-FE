@@ -1,9 +1,9 @@
-// src/templates/Amore/AmoreTemplate.jsx
+// src/templates/garden/GardenTemplate.jsx
 //
 // Props:
 //   data = {
 //     cover: {
-//       photoUrl: string | null,
+//       pic_amore_slide_1: string | null,
 //       groomName: string,
 //       brideName: string,
 //       verse: string,
@@ -11,39 +11,45 @@
 //     },
 //     groom: { photoUrl, name, fatherName, motherName },
 //     bride:  { photoUrl, name, fatherName, motherName },
-//     akad:   { date: number, month: string, year: number, time: string, until: string },
-//     resepsi:{ date: number, month: string, year: number, time: string, until: string },
-//     eventTarget: string,   // ISO date string untuk countdown, e.g. "2025-06-14T08:00:00"
+//     akad:   { date: number, month: string, year: number, time: string, until: string, address, mapsUrl },
+//     resepsi:{ date: number, month: string, year: number, time: string, until: string, address, mapsUrl },
+//     eventTarget: string,   // ISO date string
 //     venue: { name: string, address: string, mapsUrl: string },
-//     gallery: string[],     // array URL foto (max 5), atau emoji placeholder
+//     gallery: string[],
 //     banks: [{ bankName, logoText, logoColor, bgColor, accountNumber, accountHolder }],
-//     rsvpDeadline: string,  // e.g. "7 Juni 2025"
+//     giftMessage: string,
+//     shippingAddress: string,
+//     rsvpDeadline: string,
+//     comments: [{ id, name, message, time }],
+//     blessing: string,      // Ucapan & doa pembuka
+//     footerQuote: string,
+//     loveStories: [{ id, title, date, description, photoUrl }]
 //   }
 
 import { useState, useEffect, useRef } from 'react';
-import picAmoreSlide1 from './photos/pic_amore_slide_1.jpg';
-import groomPhoto from './photos/bride_1.jpg';
-import bridePhoto from './photos/bride_2.jpg';
-import gallery1 from './photos/gallery_1.jpg';
-import gallery2 from './photos/gallery_2.jpg';
-import gallery3 from './photos/gallery_3.jpg';
-import gallery4 from './photos/gallery_4.jpg';
-import './Amore.css';
+import picAmoreSlide1 from '../amore/photos/pic_amore_slide_1.jpg';
+import groomPhoto from '../amore/photos/bride_1.jpg';
+import bridePhoto from '../amore/photos/bride_2.jpg';
+import gallery1 from '../amore/photos/gallery_1.jpg';
+import gallery2 from '../amore/photos/gallery_2.jpg';
+import gallery3 from '../amore/photos/gallery_3.jpg';
+import gallery4 from '../amore/photos/gallery_4.jpg';
+import './Garden.css';
 
-// ─── Default data (bisa di-override lewat props) ────────────────────────────
+// ─── Default data ────────────────────────────────────────────────────────────
 const DEFAULT_DATA = {
   cover: {
     pic_amore_slide_1: picAmoreSlide1,
-    groomName: 'Rizky Aditya',
-    brideName: 'Salsabila Putri',
-    verse: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri.',
+    groomName: 'Aditya',
+    brideName: 'Salsabila',
+    verse: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya, dan dijadikan-Nya diantaramu rasa kasih dan sayang.',
     verseSource: 'QS. Ar-Rum: 21',
   },
   groom: {
     photoUrl: groomPhoto,
-    name: 'Rizky Aditya',
-    fatherName: 'Bpk. H. Ahmad Faruq',
-    motherName: 'Ibu Hj. Dewi Rahayu',
+    name: 'Aditya Pratama',
+    fatherName: 'Bpk. Ahmad Faruq',
+    motherName: 'Ibu Dewi Rahayu',
   },
   bride: {
     photoUrl: bridePhoto,
@@ -55,38 +61,93 @@ const DEFAULT_DATA = {
   resepsi: { date: 14, month: 'Juni', year: 2025, time: '11.00 WIB', until: 's/d 15.00 WIB' },
   eventTarget: '2025-06-14T08:00:00',
   venue: {
-    name: 'Grand Ballroom Mulia Hotel',
-    address: 'Jl. HR. Rasuna Said Kav. X-6 No.8,\nSetiabudi, Jakarta Selatan 12950',
+    name: 'Grand Ballroom Hotel',
+    address: 'Jl. Melati No. 12, Jakarta',
     mapsUrl: 'https://maps.google.com',
   },
   gallery: [gallery1, gallery2, gallery3, gallery4],
   banks: [
-    { bankName: 'Bank Central Asia', logoText: 'BCA', logoColor: '#fff', bgColor: '#005baa', accountNumber: '1234 5678 90', accountHolder: 'Rizky Aditya' },
-    { bankName: 'Bank Negara Indonesia', logoText: 'BNI', logoColor: '#fff', bgColor: '#f47920', accountNumber: '0987 6543 21', accountHolder: 'Salsabila Putri' },
+    { bankName: 'Bank Central Asia', logoText: 'BCA', logoColor: '#fff', bgColor: '#7fa08c', accountNumber: '1234567890', accountHolder: 'Aditya Pratama' },
   ],
   rsvpDeadline: '7 Juni 2025',
   comments: [],
 };
 
-const INITIAL_ENTRIES = [
-  { id: 1, name: 'Anindya R.',        message: 'Selamat menempuh hidup baru, semoga menjadi keluarga yang sakinah mawaddah warahmah. Aamiin!', time: '2 hari lalu' },
-  { id: 2, name: 'Fajar & Keluarga', message: 'Barakallahu lakuma wa baraka alaikuma. Semoga langgeng ya kak!', time: '5 jam lalu' },
-];
+// Inline SVG Floral Branch for corners with watercolor gradients
+function FloralCorner({ className }) {
+  return (
+    <svg className={`garden__floral-svg ${className}`} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#7fa08c" />
+          <stop offset="100%" stopColor="#5b7866" />
+        </linearGradient>
+        <linearGradient id="flowerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#d896a7" />
+          <stop offset="100%" stopColor="#b36f80" />
+        </linearGradient>
+      </defs>
+      <path d="M10 110 C 30 70, 70 30, 110 10" stroke="#7fa08c" strokeWidth="2.5" strokeLinecap="round"/>
+      <path d="M10 110 C 40 90, 80 80, 100 70" stroke="#7fa08c" strokeWidth="1.5" strokeLinecap="round"/>
+      
+      {/* Leaves */}
+      <path d="M35 85 Q 25 75, 30 65 Q 40 75, 35 85 Z" fill="url(#leafGrad)"/>
+      <path d="M55 65 Q 48 53, 55 45 Q 62 55, 55 65 Z" fill="url(#leafGrad)"/>
+      <path d="M80 40 Q 72 30, 78 20 Q 86 30, 80 40 Z" fill="url(#leafGrad)"/>
+      <path d="M50 90 Q 60 88, 65 78 Q 55 80, 50 90 Z" fill="url(#leafGrad)"/>
+      <path d="M80 75 Q 90 73, 93 63 Q 83 65, 80 75 Z" fill="url(#leafGrad)"/>
+      
+      {/* Flowers with detailed multi-colored petals */}
+      <circle cx="45" cy="55" r="4.5" fill="url(#flowerGrad)"/>
+      <circle cx="41" cy="51" r="3.5" fill="#fddce4"/>
+      <circle cx="49" cy="51" r="3.5" fill="#fddce4"/>
+      <circle cx="41" cy="59" r="3.5" fill="#fddce4"/>
+      <circle cx="49" cy="59" r="3.5" fill="#fddce4"/>
+      <circle cx="45" cy="55" r="2" fill="#fff"/>
 
-// ─── Sub-components ─────────────────────────────────────────────────────────
+      <circle cx="78" cy="30" r="4.5" fill="url(#flowerGrad)"/>
+      <circle cx="74" cy="26" r="3.5" fill="#fddce4"/>
+      <circle cx="82" cy="26" r="3.5" fill="#fddce4"/>
+      <circle cx="74" cy="34" r="3.5" fill="#fddce4"/>
+      <circle cx="82" cy="34" r="3.5" fill="#fddce4"/>
+      <circle cx="78" cy="30" r="2" fill="#fff"/>
+    </svg>
+  );
+}
+
+// Hook untuk generate kelopak bunga falling dan daun
+const usePetals = (count = 18) => {
+  const [petals, setPetals] = useState([]);
+  useEffect(() => {
+    const list = [];
+    for (let i = 0; i < count; i++) {
+      list.push({
+        id: i,
+        type: Math.random() > 0.45 ? 'leaf' : 'petal',
+        left: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 8}s`,
+        duration: `${12 + Math.random() * 8}s`,
+        scale: 0.35 + Math.random() * 0.65,
+        rotate: `${Math.random() * 360}deg`
+      });
+    }
+    setPetals(list);
+  }, [count]);
+  return petals;
+};
 
 function Divider() {
   return (
-    <div className="amore__divider">
-      <div className="amore__divider-line" />
-      <div className="amore__divider-dot" />
-      <div className="amore__divider-line" />
+    <div className="garden__divider">
+      <div className="garden__divider-line" />
+      <div className="garden__divider-dot" />
+      <div className="garden__divider-line" />
     </div>
   );
 }
 
 function SectionLabel({ children }) {
-  return <div className="amore__section-label">{children}</div>;
+  return <div className="garden__section-label">{children}</div>;
 }
 
 function MiniCountdown({ targetISO }) {
@@ -120,11 +181,11 @@ function MiniCountdown({ targetISO }) {
     <div style={{ display: 'flex', gap: '6px', marginTop: '14px', justifyContent: 'center' }}>
       {items.map(({ num, label }, i) => (
         <div key={i} style={{ 
-          background: 'rgba(181,101,42,0.08)', border: '1px solid rgba(181,101,42,0.15)',
+          background: 'rgba(127,160,140,0.08)', border: '1px solid rgba(127,160,140,0.15)',
           borderRadius: '6px', padding: '4px 6px', minWidth: '34px', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#e4a35a', lineHeight: 1 }}>{num}</div>
-          <div style={{ fontSize: '7px', color: 'rgba(232,221,208,0.3)', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.05em' }}>{label}</div>
+          <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#5b7866', lineHeight: 1 }}>{num}</div>
+          <div style={{ fontSize: '7px', color: 'rgba(45,56,48,0.4)', textTransform: 'uppercase', marginTop: '2px', letterSpacing: '0.05em' }}>{label}</div>
         </div>
       ))}
     </div>
@@ -143,7 +204,7 @@ function CopyButton({ text, keepSpaces = false }) {
 
   return (
     <button
-      className={`amore__copy-btn${copied ? ' amore__copy-btn--copied' : ''}`}
+      className={`garden__copy-btn${copied ? ' garden__copy-btn--copied' : ''}`}
       onClick={handleCopy}
     >
       {copied ? 'Tersalin!' : 'Salin'}
@@ -153,8 +214,8 @@ function CopyButton({ text, keepSpaces = false }) {
 
 function PersonCard({ data, role }) {
   return (
-    <div className="amore__person">
-      <div className="amore__person-photo">
+    <div className="garden__person">
+      <div className="garden__person-photo">
         <img 
           src={data.photoUrl || (role === 'groom' ? groomPhoto : bridePhoto)} 
           alt={data.name} 
@@ -163,8 +224,8 @@ function PersonCard({ data, role }) {
           }}
         />
       </div>
-      <div className="amore__person-name">{data.name}</div>
-      <div className="amore__person-parents">
+      <div className="garden__person-name">{data.name}</div>
+      <div className="garden__person-parents">
         {role === 'groom' ? 'Putra dari' : 'Putri dari'}<br />
         <span>{data.fatherName}</span><br />
         <span>{data.motherName}</span>
@@ -177,13 +238,13 @@ function EventCard({ label, event }) {
   const targetTime = event.isoDate || (label === 'Akad Nikah' ? '2025-06-14T08:00:00' : '2025-06-14T11:00:00');
   
   return (
-    <div className="amore__event-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', boxSizing: 'border-box' }}>
+    <div className="garden__event-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', height: '100%', boxSizing: 'border-box' }}>
       <div style={{ width: '100%' }}>
-        <div className="amore__event-type">{label}</div>
-        <div className="amore__event-date">{event.date}</div>
-        <div className="amore__event-month">{event.month} {event.year}</div>
-        <div className="amore__event-time">{event.time}</div>
-        <div className="amore__event-until">{event.until}</div>
+        <div className="garden__event-type">{label}</div>
+        <div className="garden__event-date">{event.date}</div>
+        <div className="garden__event-month">{event.month} {event.year}</div>
+        <div className="garden__event-time">{event.time}</div>
+        <div className="garden__event-until">{event.until}</div>
         
         {/* Mini Countdown inside the Card */}
         <MiniCountdown targetISO={targetTime} />
@@ -191,7 +252,7 @@ function EventCard({ label, event }) {
       
       <div style={{ width: '100%' }}>
         {event.address && (
-          <div className="amore__event-address" style={{ marginTop: '14px', fontSize: '11px', color: 'rgba(232,221,208,0.45)', lineHeight: '1.6', wordBreak: 'break-word', maxWidth: '100%' }}>
+          <div className="garden__event-address" style={{ marginTop: '14px', fontSize: '11px', color: 'rgba(45,56,48,0.7)', lineHeight: '1.6', wordBreak: 'break-word', maxWidth: '100%' }}>
             {event.address}
           </div>
         )}
@@ -203,20 +264,20 @@ function EventCard({ label, event }) {
             rel="noopener noreferrer"
             style={{ 
               display: 'inline-flex', alignItems: 'center', gap: '6px', 
-              marginTop: '14px', fontSize: '10px', color: '#b5652a', 
-              textDecoration: 'none', fontWeight: 700, border: '1px solid rgba(181,101,42,0.3)',
-              padding: '6px 12px', borderRadius: '20px', background: 'rgba(181,101,42,0.05)',
+              marginTop: '14px', fontSize: '10px', color: '#5b7866', 
+              textDecoration: 'none', fontWeight: 700, border: '1px solid rgba(127,160,140,0.3)',
+              padding: '6px 12px', borderRadius: '20px', background: 'rgba(127,160,140,0.05)',
               transition: 'all 0.2s', textTransform: 'uppercase', letterSpacing: '0.05em'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.background = 'rgba(181,101,42,0.15)';
-              e.currentTarget.style.borderColor = 'rgba(181,101,42,0.6)';
-              e.currentTarget.style.color = '#e4a35a';
+              e.currentTarget.style.background = 'rgba(127,160,140,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(127,160,140,0.6)';
+              e.currentTarget.style.color = '#3d5245';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.background = 'rgba(181,101,42,0.05)';
-              e.currentTarget.style.borderColor = 'rgba(181,101,42,0.3)';
-              e.currentTarget.style.color = '#b5652a';
+              e.currentTarget.style.background = 'rgba(127,160,140,0.05)';
+              e.currentTarget.style.borderColor = 'rgba(127,160,140,0.3)';
+              e.currentTarget.style.color = '#5b7866';
             }}
           >
             <i className="ti ti-map-pin" style={{ fontSize: '11px' }}></i>
@@ -229,15 +290,14 @@ function EventCard({ label, event }) {
 }
 
 function GalleryGrid({ items, onItemClick }) {
-  // item bisa URL string atau emoji string
   const isEmoji = (s) => /\p{Emoji}/u.test(s) && s.length <= 4;
 
   return (
-    <div className="amore__gallery">
+    <div className="garden__gallery">
       {items.slice(0, 5).map((item, i) => (
         <div
           key={i}
-          className={`amore__gallery-item${i === 0 ? ' amore__gallery-item--wide' : ''}`}
+          className={`garden__gallery-item${i === 0 ? ' garden__gallery-item--wide' : ''}`}
           onClick={() => !isEmoji(item) && onItemClick(item)}
         >
           {isEmoji(item)
@@ -254,7 +314,7 @@ function GalleryGrid({ items, onItemClick }) {
   );
 }
 
-function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) {
+function GuestBook({ initialEntries, weddingId, onCommentSubmitted }) {
   const [entries, setEntries] = useState(initialEntries);
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
@@ -281,7 +341,6 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) 
     }
 
     if (!weddingId) {
-      // Mock for static template preview
       const newEntry = {
         id: Date.now(),
         name: trimmedName,
@@ -335,26 +394,26 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) 
   };
 
   return (
-    <div className="amore__guestbook" style={{ padding: '24px 28px' }}>
+    <div className="garden__guestbook" style={{ padding: '24px 28px' }}>
       <SectionLabel>Konfirmasi Kehadiran & Doa Restu</SectionLabel>
       
       {submitted ? (
-        <div className="amore__rsvp-success" style={{ marginBottom: '24px' }}>
+        <div className="garden__rsvp-success" style={{ marginBottom: '24px' }}>
           Terima kasih! Konfirmasi kehadiran dan ucapan doa Anda telah terkirim. 🎉
           <button 
             onClick={() => setSubmitted(false)}
             style={{ 
               display: 'block', margin: '10px auto 0', background: 'none', border: 'none', 
-              color: '#b5652a', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' 
+              color: '#5b7866', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' 
             }}
           >
             Kirim ucapan baru
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSend} className="amore__rsvp-form" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <form onSubmit={handleSend} className="garden__rsvp-form" style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input
-            className="amore__input"
+            className="garden__input"
             type="text"
             placeholder="Nama Lengkap"
             value={name}
@@ -363,7 +422,7 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) 
             required
           />
           <select 
-            className="amore__select" 
+            className="garden__select" 
             value={attendance} 
             onChange={(e) => setAttendance(e.target.value)} 
             disabled={loading}
@@ -375,38 +434,38 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) 
             <option value="mungkin">Mungkin / Belum Pasti</option>
           </select>
           <textarea
-            className="amore__textarea"
+            className="garden__textarea"
             rows={3}
             placeholder="Tulis ucapan doa restu Anda..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             disabled={loading}
           />
-          <button className="amore__rsvp-btn" type="submit" disabled={loading}>
+          <button className="garden__rsvp-btn" type="submit" disabled={loading}>
             {loading ? "Mengirim..." : "Kirim Konfirmasi & Ucapan"}
           </button>
         </form>
       )}
 
       <h3 style={{ 
-        fontSize: '12px', textTransform: 'uppercase', color: '#b5652a', 
-        letterSpacing: '0.15em', marginBottom: '16px', borderBottom: '1px solid rgba(181,101,42,0.15)', 
+        fontSize: '12px', textTransform: 'uppercase', color: '#5b7866', 
+        letterSpacing: '0.15em', marginBottom: '16px', borderBottom: '1px solid rgba(127,160,140,0.15)', 
         paddingBottom: '8px', fontWeight: 'bold' 
       }}>
         Ucapan & Doa Restu ({entries.length})
       </h3>
 
       {entries.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(232,221,208,0.3)', fontSize: '13px', fontStyle: 'italic' }}>
+        <div style={{ textAlign: 'center', padding: '20px', color: 'rgba(45,56,48,0.3)', fontSize: '13px', fontStyle: 'italic' }}>
           Belum ada ucapan. Jadilah yang pertama memberikan doa restu!
         </div>
       ) : (
-        <div className="amore__gb-entries" ref={listRef}>
+        <div className="garden__gb-entries" ref={listRef}>
           {entries.map((e) => (
-            <div className="amore__gb-entry" key={e.id}>
-              <div className="amore__gb-name">{e.name}</div>
-              <div className="amore__gb-message">"{e.message}"</div>
-              <div className="amore__gb-time">{e.time}</div>
+            <div className="garden__gb-entry" key={e.id}>
+              <div className="garden__gb-name">{e.name}</div>
+              <div className="garden__gb-message">"{e.message}"</div>
+              <div className="garden__gb-time">{e.time}</div>
             </div>
           ))}
         </div>
@@ -416,14 +475,12 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted, deadline }) 
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
-export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitted }) {
+export default function GardenTemplate({ data: dataProp, weddingId, onRsvpSubmitted }) {
   const [lightboxImg, setLightboxImg] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [audio, setAudio] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Lakukan deep merge manual agar properti di dalam objek cover, groom, dll 
-  // tetap memiliki nilai default jika tidak dikirim oleh API/Props
   const data = {
     ...DEFAULT_DATA,
     ...dataProp,
@@ -433,7 +490,6 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
     venue: { ...DEFAULT_DATA.venue, ...dataProp?.venue },
   };
 
-  // Parse recipient name
   const queryParams = new URLSearchParams(window.location.search);
   const guestName = queryParams.get('to') || queryParams.get('guest') || '';
 
@@ -449,7 +505,6 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
     };
   }, [isOpen]);
 
-  // Clean up audio on unmount
   useEffect(() => {
     return () => {
       if (audio) {
@@ -484,13 +539,44 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
     }
   };
 
+  const petals = usePetals(20);
+
   return (
-    <div className={`amore ${isOpen ? 'amore--unlocked' : 'amore--locked'}`}>
+    <div className={`garden ${isOpen ? 'garden--unlocked' : 'garden--locked'}`}>
       
+      {/* Falling Flower Petals & Leaves Animation Background */}
+      <div className="garden__petals-container">
+        {petals.map(p => (
+          <div
+            key={p.id}
+            className={`garden__petal garden__petal--${p.type}`}
+            style={{
+              left: p.left,
+              animationDelay: p.delay,
+              animationDuration: p.duration,
+              transform: `scale(${p.scale}) rotate(${p.rotate})`
+            }}
+          />
+        ))}
+      </div>
+
       {/* ── COVER TERBUKA / OPENING SCREEN OVERLAY ── */}
-      <div className={`amore__opening-screen ${isOpen ? 'amore__opening-screen--hidden' : ''}`}>
-        <div className="amore__opening-content">
-          <div className="amore__opening-frame">
+      <div className={`garden__opening-screen ${isOpen ? 'garden__opening-screen--hidden' : ''}`}>
+        <div className="garden__corner-wrap garden__corner-wrap--tl">
+          <FloralCorner />
+        </div>
+        <div className="garden__corner-wrap garden__corner-wrap--tr">
+          <FloralCorner />
+        </div>
+        <div className="garden__corner-wrap garden__corner-wrap--bl">
+          <FloralCorner />
+        </div>
+        <div className="garden__corner-wrap garden__corner-wrap--br">
+          <FloralCorner />
+        </div>
+
+        <div className="garden__opening-content">
+          <div className="garden__opening-frame">
             <img 
               src={data.cover.pic_amore_slide_1 || picAmoreSlide1} 
               alt="Foto Mempelai"
@@ -498,25 +584,25 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
             />
           </div>
           
-          <h1 className="amore__opening-names">
+          <h1 className="garden__opening-names">
             {data.cover.groomName} <span className="amp">&amp;</span> {data.cover.brideName}
           </h1>
 
-          <div className="amore__opening-recipient">
+          <div className="garden__opening-recipient">
             <span className="label-to">Kepada Yth. Bapak/Ibu/Saudara/i</span>
             {guestName && <div className="guest-name">{guestName}</div>}
           </div>
 
-          <p className="amore__opening-intro">
-            Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk menghadiri acara pernikahan kami.
+          <p className="garden__opening-intro">
+            Dengan penuh rasa syukur dan kelimpahan kasih, kami mengundang Anda untuk menghadiri perayaan pernikahan kami.
           </p>
 
-          <button className="amore__open-btn" onClick={handleOpen}>
+          <button className="garden__open-btn" onClick={handleOpen}>
             <i className="ti ti-mail-open" style={{ marginRight: '8px' }}></i>
             Buka Undangan
           </button>
 
-          <span className="amore__opening-apology">
+          <span className="garden__opening-apology">
             *mohon maaf apabila ada kesalahan penulisan nama/gelar
           </span>
         </div>
@@ -525,7 +611,7 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       {/* ── FLOATING AUDIO BUTTON ── */}
       {audio && (
         <button 
-          className={`amore__audio-toggle ${isPlaying ? 'amore__audio-toggle--playing' : ''}`} 
+          className={`garden__audio-toggle ${isPlaying ? 'garden__audio-toggle--playing' : ''}`} 
           onClick={togglePlay}
           title={isPlaying ? "Mute Music" : "Play Music"}
         >
@@ -534,50 +620,45 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       )}
 
       {/* ── COVER ── */}
-    <div className="amore__cover">
-    {/* Kolom kiri: foto */}
-    <div className="amore__cover-art">
-        <div className="amore__ornament amore__ornament--top" />
-        <span className="amore__flourish amore__flourish--tl" aria-hidden>&amp;</span>
-        <span className="amore__flourish amore__flourish--br" aria-hidden>&amp;</span>
-        <div className="amore__photo-frame">
-          <img 
-            src={data.cover.pic_amore_slide_1 || picAmoreSlide1} 
-            alt="Foto mempelai" 
-            onError={(e) => {
-              e.target.src = picAmoreSlide1;
-            }}
-          />
+      <div className="garden__cover">
+        <div className="garden__corner-wrap garden__corner-wrap--tl" style={{ opacity: 0.7 }}><FloralCorner /></div>
+        <div className="garden__corner-wrap garden__corner-wrap--br" style={{ opacity: 0.7 }}><FloralCorner /></div>
+        
+        <div className="garden__cover-art">
+          <div className="garden__photo-frame">
+            <img 
+              src={data.cover.pic_amore_slide_1 || picAmoreSlide1} 
+              alt="Foto mempelai" 
+              onError={(e) => {
+                e.target.src = picAmoreSlide1;
+              }}
+            />
+          </div>
         </div>
-        <div className="amore__ornament amore__ornament--bottom" />
-    </div>
-    
-    {/* Kolom kanan: teks */}
-    <div className="amore__cover-text">
-        <div className="amore__invitation-label">Undangan Pernikahan</div>
-        <div className="amore__names">
-        {data.cover.groomName}
-        <span className="amore__names-amp">&amp;</span>
-        {data.cover.brideName}
+        
+        <div className="garden__cover-text">
+          <div className="garden__invitation-label">Undangan Pernikahan</div>
+          <div className="garden__names">
+            {data.cover.groomName}
+            <span className="garden__names-amp">&amp;</span>
+            {data.cover.brideName}
+          </div>
+          <div className="garden__verse">
+            "{data.cover.verse}"
+            <cite>— {data.cover.verseSource}</cite>
+          </div>
         </div>
-        <div className="amore__verse">
-        "{data.cover.verse}"
-        <cite>— {data.cover.verseSource}</cite>
-        </div>
-
-    </div>
-    </div>
- 
+      </div>
 
       <Divider />
 
       {/* ── MEMPELAI ── */}
-      <div className="amore__section">
+      <div className="garden__section">
         <SectionLabel>Mempelai</SectionLabel>
         {data.blessing && (
-          <p className="amore__couple-intro" style={{
+          <p className="garden__couple-intro" style={{
             fontSize: '13.5px',
-            color: 'rgba(232, 221, 208, 0.75)',
+            color: 'rgba(45, 56, 48, 0.75)',
             textAlign: 'center',
             margin: '0 auto 30px',
             maxWidth: '600px',
@@ -588,7 +669,7 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
             {data.blessing}
           </p>
         )}
-        <div className="amore__couple-grid">
+        <div className="garden__couple-grid">
           <PersonCard data={data.groom} role="groom" />
           <PersonCard data={data.bride} role="bride" />
         </div>
@@ -597,9 +678,9 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       <Divider />
 
       {/* ── WAKTU & TEMPAT ── */}
-      <div className="amore__section">
+      <div className="garden__section">
         <SectionLabel>Waktu &amp; Tempat</SectionLabel>
-        <div className="amore__events-grid">
+        <div className="garden__events-grid">
           <EventCard label="Akad Nikah" event={data.akad} />
           <EventCard label="Resepsi"    event={data.resepsi} />
         </div>
@@ -610,20 +691,20 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       {/* ── CERITA CINTA (LOVE STORIES) ── */}
       {data.loveStories && data.loveStories.length > 0 && (
         <>
-          <div className="amore__section">
+          <div className="garden__section">
             <SectionLabel>Cerita Cinta Kami</SectionLabel>
-            <div className="amore__timeline">
+            <div className="garden__timeline">
               {data.loveStories.map((story, i) => (
                 <div 
                   key={story.id || i} 
-                  className={`amore__timeline-item ${i % 2 === 0 ? 'amore__timeline-item--left' : 'amore__timeline-item--right'}`}
+                  className={`garden__timeline-item ${i % 2 === 0 ? 'garden__timeline-item--left' : 'garden__timeline-item--right'}`}
                 >
-                  <div className="amore__timeline-badge"></div>
-                  <div className="amore__timeline-content">
-                    <span className="amore__timeline-date">{story.date}</span>
-                    <h3 className="amore__timeline-title">{story.title}</h3>
+                  <div className="garden__timeline-badge"></div>
+                  <div className="garden__timeline-content">
+                    <span className="garden__timeline-date">{story.date}</span>
+                    <h3 className="garden__timeline-title">{story.title}</h3>
                     {story.photoUrl && (
-                      <div className="amore__timeline-photo">
+                      <div className="garden__timeline-photo">
                         <img 
                           src={story.photoUrl} 
                           alt={story.title} 
@@ -631,7 +712,7 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
                         />
                       </div>
                     )}
-                    <p className="amore__timeline-desc">{story.description}</p>
+                    <p className="garden__timeline-desc">{story.description}</p>
                   </div>
                 </div>
               ))}
@@ -642,7 +723,7 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       )}
 
       {/* ── GALERI ── */}
-      <div className="amore__section">
+      <div className="garden__section">
         <SectionLabel>Galeri Foto</SectionLabel>
         <GalleryGrid items={data.gallery} onItemClick={setLightboxImg} />
       </div>
@@ -650,11 +731,11 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       <Divider />
 
       {/* ── WEDDING GIFT ── */}
-      <div className="amore__section">
+      <div className="garden__section">
         <SectionLabel>Wedding Gift</SectionLabel>
 
         {data.giftMessage && (
-          <p className="amore__closing-text" style={{ fontSize: '13px', color: 'rgba(232, 221, 208, 0.75)', textAlign: 'center', margin: '0 auto 20px', maxWidth: '500px', lineHeight: 1.6 }}>
+          <p className="garden__closing-text" style={{ fontSize: '13px', color: 'rgba(45, 56, 48, 0.75)', textAlign: 'center', margin: '0 auto 20px', maxWidth: '500px', lineHeight: 1.6 }}>
             {data.giftMessage}
           </p>
         )}
@@ -678,33 +759,33 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
               width: "100%"
             }}>
               {data.banks && data.banks.map((bank, i) => (
-                <div className="amore__bank-card" key={i} style={{ flex: "1 1 340px", maxWidth: "400px" }}>
+                <div className="garden__bank-card" key={i} style={{ flex: "1 1 340px", maxWidth: "400px" }}>
                   <div
-                    className="amore__bank-logo"
+                    className="garden__bank-logo"
                     style={{ background: bank.bgColor, color: bank.logoColor }}
                   >
                     {bank.logoText}
                   </div>
-                  <div className="amore__bank-info">
-                    <div className="amore__bank-name">{bank.bankName}</div>
-                    <div className="amore__bank-number">{bank.accountNumber}</div>
-                    <div className="amore__bank-holder">a.n. {bank.accountHolder}</div>
+                  <div className="garden__bank-info">
+                    <div className="garden__bank-name">{bank.bankName}</div>
+                    <div className="garden__bank-number">{bank.accountNumber}</div>
+                    <div className="garden__bank-holder">a.n. {bank.accountHolder}</div>
                   </div>
                   <CopyButton text={bank.accountNumber} />
                 </div>
               ))}
 
               {data.shippingAddress && (
-                <div className="amore__bank-card" style={{ flex: "1 1 340px", maxWidth: "400px", flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
+                <div className="garden__bank-card" style={{ flex: "1 1 340px", maxWidth: "400px", flexDirection: 'column', alignItems: 'stretch', gap: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="amore__bank-logo" style={{ background: '#b5652a', color: '#fff', fontSize: '14px' }}>
+                    <div className="garden__bank-logo" style={{ background: '#7fa08c', color: '#fff', fontSize: '14px' }}>
                       📦
                     </div>
-                    <div className="amore__bank-info">
-                      <div className="amore__bank-name" style={{ margin: 0, fontWeight: 700, color: 'rgba(232,221,208,0.7)' }}>Alamat Pengiriman Kado</div>
+                    <div className="garden__bank-info">
+                      <div className="garden__bank-name" style={{ margin: 0, fontWeight: 700, color: 'rgba(45,56,48,0.7)' }}>Alamat Pengiriman Kado</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: '12.5px', color: '#f0e6d6', lineHeight: 1.5, background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(181,101,42,0.2)', textAlign: 'left' }}>
+                  <div style={{ fontSize: '12.5px', color: '#2d3830', lineHeight: 1.5, background: 'rgba(127,160,140,0.03)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(127,160,140,0.2)', textAlign: 'left' }}>
                     {data.shippingAddress}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'auto' }}>
@@ -724,21 +805,21 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
         initialEntries={data.comments || []} 
         weddingId={weddingId}
         onCommentSubmitted={onRsvpSubmitted}
-        deadline={data.rsvpDeadline}
       />
 
       <Divider />
 
       {/* ── CLOSING SECTION ── */}
-      <div className="amore__closing">
-        <p className="amore__closing-text">
+      <div className="garden__closing">
+        <div className="garden__corner-wrap garden__corner-wrap--tl" style={{ opacity: 0.15 }}><FloralCorner /></div>
+        <p className="garden__closing-text">
           Atas kehadiran dan do’a restu dari Bapak/Ibu/Saudara/i sekalian, kami mengucapkan Terima Kasih.
         </p>
-        <p className="amore__closing-salam">
+        <p className="garden__closing-salam">
           Wassalamu’alaikum Wr. Wb.
         </p>
         
-        <div className="amore__closing-photo">
+        <div className="garden__closing-photo">
           <img 
             src={data.cover.pic_amore_slide_1 || picAmoreSlide1} 
             alt="Foto Mempelai"
@@ -746,7 +827,7 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
           />
         </div>
 
-        <div className="amore__closing-signature">
+        <div className="garden__closing-signature">
           <span className="label-happy">Kami yang berbahagia</span>
           <h2 className="names-happy">
             {data.cover.groomName} &amp; {data.cover.brideName}
@@ -755,26 +836,26 @@ export default function AmoreTemplate({ data: dataProp, weddingId, onRsvpSubmitt
       </div>
 
       {/* ── FOOTER ── */}
-      <div className="amore__footer">
-        <div className="amore__footer-quote">
+      <div className="garden__footer">
+        <div className="garden__footer-quote">
           {data.footerQuote ? (
             data.footerQuote.split('\n').map((line, i) => (
               <span key={i}>{line}{i < data.footerQuote.split('\n').length - 1 && <br />}</span>
             ))
           ) : (
             <>
-              "Cinta bukan tentang berapa lama kamu menunggu,<br />
-              tapi tentang siapa yang membuatmu bahagia."
+              "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu isteri-isteri dari jenismu sendiri,<br />
+              supaya kamu cenderung dan merasa tenteram kepadanya."
             </>
           )}
         </div>
-        <div className="amore__footer-brand">Made with Datangya.site</div>
+        <div className="garden__footer-brand">Made with nikahanID</div>
       </div>
 
       {/* ── LIGHTBOX MODAL ── */}
       {lightboxImg && (
-        <div className="amore__lightbox" onClick={() => setLightboxImg(null)}>
-          <div className="amore__lightbox-close">&times;</div>
+        <div className="garden__lightbox" onClick={() => setLightboxImg(null)}>
+          <div className="garden__lightbox-close">&times;</div>
           <img 
             src={lightboxImg} 
             alt="Detail foto" 
