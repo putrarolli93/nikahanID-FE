@@ -63,11 +63,8 @@
   overflow: hidden;
   text-shadow: 1px 1px 0 rgba(0,0,0,0.15), 2px 2px 0 rgba(0,0,0,0.15), 3px 3px 0 rgba(0,0,0,0.15), 4px 4px 0 rgba(0,0,0,0.15), 5px 5px 0 rgba(0,0,0,0.15), 6px 6px 0 rgba(0,0,0,0.15), 7px 7px 0 rgba(0,0,0,0.15), 8px 8px 0 rgba(0,0,0,0.15), 9px 9px 0 rgba(0,0,0,0.15), 10px 10px 0 rgba(0,0,0,0.15), 11px 11px 0 rgba(0,0,0,0.15), 12px 12px 0 rgba(0,0,0,0.15), 13px 13px 0 rgba(0,0,0,0.15), 14px 14px 0 rgba(0,0,0,0.15), 15px 15px 0 rgba(0,0,0,0.15), 16px 16px 0 rgba(0,0,0,0.15), 17px 17px 0 rgba(0,0,0,0.15), 18px 18px 0 rgba(0,0,0,0.15), 19px 19px 0 rgba(0,0,0,0.15), 20px 20px 0 rgba(0,0,0,0.15), 21px 21px 0 rgba(0,0,0,0.15), 22px 22px 0 rgba(0,0,0,0.15), 23px 23px 0 rgba(0,0,0,0.15), 24px 24px 0 rgba(0,0,0,0.15), 25px 25px 0 rgba(0,0,0,0.15), 26px 26px 0 rgba(0,0,0,0.15), 27px 27px 0 rgba(0,0,0,0.15), 28px 28px 0 rgba(0,0,0,0.15), 29px 29px 0 rgba(0,0,0,0.15), 30px 30px 0 rgba(0,0,0,0.15);
 }
-.footer-logo-text { font-weight: 700; font-size: 13px; color: rgba(255,255,255,0.55); }
-.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
-.footer-links button { font-size: 12px; color: rgba(255,255,255,0.35); background: none; border: none; cursor: pointer; transition: color .2s; font-family: 'Nunito', sans-serif; }
-.footer-links button:hover { color: rgba(255,255,255,0.7); }
-.footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); }
+.footer-logo-text { font-weight: 700; font-size: 15px; color: #ffffff; }
+.footer-copy { font-size: 13px; font-weight: 500; color: rgba(255, 255, 255, 0.8); }
 
 /* ── MOBILE NAVIGATION ── */
 .nav-links-desktop {
