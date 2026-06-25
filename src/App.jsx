@@ -8,12 +8,16 @@ import CustomizePage from './pages/CustomizePage';
 import TemplatePreviewPage from "./pages/TemplatePreviewPage";
 import RegisterPage from "./pages/RegisterPage"; // Assuming you have these pages
 import LoginPage from "./pages/LoginPage";       // Assuming you have these pages
-import AmoreInvitationPage from "./pages/AmoreInvitationPage"; // Import the new page
+import AmoreInvitationPage from "./pages/AmoreInvitationPage";
 import GardenInvitationPage from "./pages/GardenInvitationPage";
 import OceanicInvitationPage from "./pages/OceanicInvitationPage";
+import SimpleFreeTemplate from './templates/simple-free/SimpleFreeTemplate';
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
 import CreateWizardPage from "./pages/CreateWizardPage"; // Multi-step creation wizard
+import DashboardPage from "./pages/DashboardPage";
+import ActivatePage from "./pages/ActivatePage";
+import SharePage from "./pages/SharePage";
 
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/global.css";
@@ -49,11 +53,16 @@ function AppContent() {
         <Route path="/create-wizard/:slug" element={<CreateWizardPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} /> {/* New route for Amore invitations */}
-        <Route path="/template/garden/:slug" element={<GardenInvitationPage />} /> {/* New route for Garden invitations */}
-        <Route path="/template/oceanic/:slug" element={<OceanicInvitationPage />} /> {/* New route for Oceanic invitations */}
+        <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} />
+        <Route path="/template/garden/:slug" element={<GardenInvitationPage />} />
+        <Route path="/template/oceanic/:slug" element={<OceanicInvitationPage />} />
+        <Route path="/template/simple-free/:slug" element={<SimpleFreeTemplate />} /> {/* New route for Oceanic invitations */}
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/create" element={<CreateWizardPage />} />
+        <Route path="/activate/:slug" element={<ActivatePage />} />
+        <Route path="/share/:slug" element={<SharePage />} />
         <Route path="*" element={<HomePage />} /> {/* Fallback for unknown routes */}
       </Routes>
     </Layout>

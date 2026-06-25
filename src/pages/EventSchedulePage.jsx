@@ -79,7 +79,7 @@ export default function EventSchedulePage() {
     // Create Draft invitation
     setApiLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/invitations", {
+      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,0 +1,61 @@
+.activate-container {
+  min-height: calc(100vh - 64px);
+  padding: 3rem 2rem;
+  background: var(--bg);
+}
+
+.activate-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  padding: 0;
+}
+
+.btn-back:hover {
+  color: var(--brand);
+}
+
+.activate-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.activate-header h1 {
+  font-size: 2rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+  font-family: 'Playfair Display', serif;
+}
+
+.activate-header p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.activate-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+  padding: 2rem;
+}
+
+.activate-card h2 {
+  font-size: 1.25rem;
+  color: var(--dark);
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .activate-content {
+    grid-template-columns: 1fr !important;
+  }
+}

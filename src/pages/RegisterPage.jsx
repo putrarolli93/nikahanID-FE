@@ -60,7 +60,7 @@ export default function RegisterPage() {
             const parsed = JSON.parse(pendingData);
             const authToken = localStorage.getItem("token");
             
-            const response = await fetch("http://localhost:5000/api/invitations", {
+            const response = await fetch(`http://${window.location.hostname}:5000/api/invitations`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

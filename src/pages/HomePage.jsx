@@ -1,6 +1,7 @@
 // pages/HomePage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const CAT_LABELS = {
   wedding: "Pernikahan",
@@ -11,12 +12,14 @@ const CAT_LABELS = {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [previews, setPreviews] = useState([]);
   const [loadingPreviews, setLoadingPreviews] = useState(true);
   const [previewError, setPreviewError] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/templates")
+    fetch(`http://${window.location.hostname}:5000/api/templates`)
       .then((res) => {
         if (!res.ok) throw new Error("Network error");
         return res.json();
@@ -34,12 +37,12 @@ export default function HomePage() {
 
   // ── STATIC DATA ─────────────────────────────────────────────
   const features = [
-    { icon: "ti-layout-template", title: "100+ Template Dinamis",      desc: "Template cantik yang bisa digonta-ganti warna & font sesuai selera." },
-    { icon: "ti-user-check",      title: "Nama Tamu Personal",         desc: "Tulis nama tujuan undangan tanpa batas untuk semua tamu." },
+    { icon: "ti-template",        title: "100+ Template Dinamis",      desc: "Template cantik yang bisa digonta-ganti warna & font sesuai selera." },
+    { icon: "ti-users",           title: "Nama Tamu Personal",         desc: "Tulis nama tujuan undangan tanpa batas untuk semua tamu." },
     { icon: "ti-map-pin",         title: "Peta & Lokasi Interaktif",   desc: "Tampilkan peta Google Maps langsung di dalam undangan." },
-    { icon: "ti-clock-countdown", title: "Countdown Hari H",           desc: "Hitung mundur otomatis menuju tanggal acara yang spesial." },
+    { icon: "ti-clock",           title: "Countdown Hari H",           desc: "Hitung mundur otomatis menuju tanggal acara yang spesial." },
     { icon: "ti-music",           title: "Musik Latar",                desc: "Pilih dari ribuan lagu untuk diputar saat undangan dibuka." },
-    { icon: "ti-message-2",       title: "RSVP & Buku Tamu",          desc: "Tamu bisa konfirmasi kehadiran & kirim ucapan langsung." },
+    { icon: "ti-message-circle",  title: "RSVP & Buku Tamu",          desc: "Tamu bisa konfirmasi kehadiran & kirim ucapan langsung." },
     { icon: "ti-photo",           title: "Galeri Foto",                desc: "Tampilkan foto-foto momen indah dalam galeri yang elegan." },
     { icon: "ti-share",           title: "Share ke WhatsApp",          desc: "Bagikan undangan dengan mudah lewat link atau QR code." },
   ];
@@ -55,53 +58,33 @@ export default function HomePage() {
     {
       name: "Gratis",
       amount: "Rp 0",
-      period: "Aktif selamanya",
+      period: "",
       popular: false,
       solid: false,
       features: [
-        { text: "1 undangan aktif",    active: true },
-        { text: "Template gratis",     active: true },
-        { text: "RSVP & buku tamu",    active: true },
-        { text: "Countdown timer",     active: true },
-        { text: "Nama tamu personal",  active: false },
-        { text: "Musik latar",         active: false },
-        { text: "Domain custom",       active: false },
+        { text: "Undangan digital tanpa batas", active: true },
+        { text: "Semua template gratis", active: true },
+        { text: "Fitur RSVP & Buku Tamu", active: false },
+        { text: "Tanpa Watermark", active: false },
+        { text: "Background Musik", active: false },
       ],
       cta: "Mulai Gratis",
     },
     {
-      name: "Standar",
-      amount: "Rp 75.000",
-      period: "Sekali bayar · aktif 1 tahun",
+      name: "Premium",
+      prefix: "Mulai dari ",
+      amount: "Rp 50.000",
+      period: "Sekali bayar",
       popular: true,
       solid: true,
       features: [
-        { text: "1 undangan premium",  active: true },
-        { text: "Semua template",      active: true },
-        { text: "RSVP & buku tamu",    active: true },
-        { text: "Countdown timer",     active: true },
-        { text: "Nama tamu personal",  active: true },
-        { text: "Musik latar",         active: true },
-        { text: "Domain custom",       active: false },
+        { text: "Undangan digital tanpa batas", active: true },
+        { text: "Semua template (Gratis & Premium)", active: true },
+        { text: "Fitur RSVP & Buku Tamu", active: true },
+        { text: "Tanpa Watermark", active: true },
+        { text: "Background Musik Pilihan", active: true },
       ],
-      cta: "Pilih Standar",
-    },
-    {
-      name: "Pro",
-      amount: "Rp 200.000",
-      period: "Sekali bayar · aktif selamanya",
-      popular: false,
-      solid: false,
-      features: [
-        { text: "Undangan unlimited",         active: true },
-        { text: "Semua template + eksklusif", active: true },
-        { text: "RSVP & buku tamu",           active: true },
-        { text: "Countdown timer",            active: true },
-        { text: "Nama tamu personal",         active: true },
-        { text: "Musik latar",                active: true },
-        { text: "Domain custom",              active: true },
-      ],
-      cta: "Pilih Pro",
+      cta: "Pilih Premium",
     },
   ];
 
@@ -140,8 +123,8 @@ export default function HomePage() {
           yang bisa langsung dibagikan ke WhatsApp — tanpa perlu keahlian desain.
         </p>
         <div className="hero-cta">
-          <button className="btn-primary" onClick={() => navigate("/register")}>
-            Buat Undangan Gratis
+          <button className="btn-primary" onClick={() => navigate(user ? "/templates" : "/register")}>
+            Buat Undangan Sekarang
           </button>
           <button className="btn-outline" onClick={() => navigate("/templates")}>
             Lihat Contoh
@@ -183,7 +166,7 @@ export default function HomePage() {
                   <div
                     className="phone-mockup"
                     style={{
-                      backgroundImage: `url(http://localhost:5000${p.preview_url_mobile || p.preview_url})`,
+                      backgroundImage: `url(http://${window.location.hostname}:5000${p.preview_url_mobile || p.preview_url})`,
                     }}
                   />
                 </div>
@@ -250,7 +233,7 @@ export default function HomePage() {
         <div className="section-center">
           <div className="tag">Harga</div>
           <h2>Mulai gratis, upgrade kapan saja</h2>
-          <p>Harga terjangkau tanpa biaya tersembunyi. Aktif selamanya.</p>
+          <p>Harga terjangkau tanpa biaya tersembunyi.</p>
         </div>
         <div className="pricing-grid">
           {pricingPlans.map((plan) => (
@@ -262,7 +245,8 @@ export default function HomePage() {
                 <div className="popular-badge">Paling Populer</div>
               )}
               <div className="price-name">{plan.name}</div>
-              <div className="price-amount">{plan.amount}</div>
+              {plan.prefix && <div style={{ fontSize: '1rem', color: 'var(--muted)', marginTop: '0.5rem' }}>{plan.prefix}</div>}
+              <div className="price-amount" style={{ marginTop: plan.prefix ? '0' : '0.5rem' }}>{plan.amount}</div>
               <div className="price-period">{plan.period}</div>
               <ul className="price-features">
                 {plan.features.map((f) => (
@@ -273,7 +257,7 @@ export default function HomePage() {
               </ul>
               <button
                 className={`btn-price${plan.solid ? " solid" : ""}`}
-                onClick={() => navigate("/register")}
+                onClick={() => navigate(user ? "/templates" : "/register")}
               >
                 {plan.cta}
               </button>

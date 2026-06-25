@@ -35,7 +35,7 @@ export default function CreateWizardPage() {
   useEffect(() => {
     const fetchAvatars = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/invitations/default-avatars");
+        const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/default-avatars`);
         const json = await res.json();
         if (res.ok && json.success) {
           setDefaultAvatars(json.data);
@@ -86,7 +86,7 @@ export default function CreateWizardPage() {
 
   // Load semua default list sekaligus
   useEffect(() => {
-    const BASE = 'http://localhost:5000/api/invitations';
+    const BASE = `http://${window.location.hostname}:5000/api/invitations`;
     const load = (path, setter) =>
       fetch(`${BASE}/${path}`).then(r => r.json()).then(res => { if (res.success) setter(res.data); }).catch(() => {});
     load('default-music', setDefaultMusicList);
@@ -99,7 +99,7 @@ export default function CreateWizardPage() {
   useEffect(() => {
     const fetchDraft = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/invitations/${slug}`);
+        const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
         const result = await response.json();
 
         if (response.ok && result.success) {
@@ -120,7 +120,7 @@ export default function CreateWizardPage() {
               photo_url: groomData.photo_url || ""
             });
             if (groomData.photo_url) {
-              setGroomPreview(`http://localhost:5000${groomData.photo_url}`);
+              setGroomPreview(`http://${window.location.hostname}:5000${groomData.photo_url}`);
               if (groomData.photo_url.startsWith("/uploads/default_avatars/")) {
                 setGroomPhotoType("avatar");
               }
@@ -139,7 +139,7 @@ export default function CreateWizardPage() {
               photo_url: brideData.photo_url || ""
             });
             if (brideData.photo_url) {
-              setBridePreview(`http://localhost:5000${brideData.photo_url}`);
+              setBridePreview(`http://${window.location.hostname}:5000${brideData.photo_url}`);
               if (brideData.photo_url.startsWith("/uploads/default_avatars/")) {
                 setBridePhotoType("avatar");
               }
@@ -221,7 +221,7 @@ export default function CreateWizardPage() {
   // Re-fetch full data to refresh the states
   const refreshData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/invitations/${slug}`);
+      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
       const result = await response.json();
       if (response.ok && result.success) {
         setInvitationData(result.data);
@@ -250,7 +250,7 @@ export default function CreateWizardPage() {
         groomForm.append("photo_url", groom.photo_url);
       }
 
-      await fetch(`http://localhost:5000/api/invitations/${weddingId}/bride-groom/groom`, {
+      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/bride-groom/groom`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: groomForm
@@ -270,7 +270,7 @@ export default function CreateWizardPage() {
         brideForm.append("photo_url", bride.photo_url);
       }
 
-      await fetch(`http://localhost:5000/api/invitations/${weddingId}/bride-groom/bride`, {
+      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/bride-groom/bride`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: brideForm
@@ -313,7 +313,7 @@ export default function CreateWizardPage() {
         });
       }
 
-      await fetch(`http://localhost:5000/api/invitations/${weddingId}/event-schedules`, {
+      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/event-schedules`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -323,7 +323,7 @@ export default function CreateWizardPage() {
       });
 
       await refreshData();
-      setActiveStep(3);
+      setActiveStep(isFree ? 5 : 3);
       setMaxUnlockedStep(prev => Math.max(prev, 5)); // Step 3 & 4 are optional, unlock up to step 5
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -350,7 +350,7 @@ export default function CreateWizardPage() {
       storyForm.append("order_index", stories.length);
       if (storyFile) storyForm.append("photo", storyFile);
 
-      const response = await fetch(`http://localhost:5000/api/invitations/${weddingId}/love-stories`, {
+      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/love-stories`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: storyForm
@@ -374,7 +374,7 @@ export default function CreateWizardPage() {
   const handleDeleteStory = async (id) => {
     if (!window.confirm("Hapus cerita ini?")) return;
     try {
-      await fetch(`http://localhost:5000/api/invitations/love-stories/${id}`, {
+      await fetch(`http://${window.location.hostname}:5000/api/invitations/love-stories/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -400,7 +400,7 @@ export default function CreateWizardPage() {
       });
       galleryForm.append("type", "gallery");
 
-      const response = await fetch(`http://localhost:5000/api/invitations/${weddingId}/moments`, {
+      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/moments`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: galleryForm
@@ -427,7 +427,7 @@ export default function CreateWizardPage() {
     try {
       // 1. Save Quotes
       if (quote.content) {
-        await fetch(`http://localhost:5000/api/invitations/${weddingId}/quotes`, {
+        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/quotes`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify(quote)
@@ -443,38 +443,51 @@ export default function CreateWizardPage() {
         blessingsToSave.push({ type: "footer_quote", content: footerQuote.content });
       }
       if (blessingsToSave.length > 0) {
-        await fetch(`http://localhost:5000/api/invitations/${weddingId}/blessings`, {
+        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/blessings`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify({ blessings: blessingsToSave })
         });
       }
 
-      // 3. Save Music
-      if (music.title) {
-        await fetch(`http://localhost:5000/api/invitations/${weddingId}/music`, {
+      // 3. Save Music (only if not free)
+      if (!isFree && music.title) {
+        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/music`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify(music)
         });
       }
 
-      // 4. Save Gifts
-      await fetch(`http://localhost:5000/api/invitations/${weddingId}/gifts`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          title: gift.title,
-          message: gift.message,
-          shipping_address: gift.shipping_address,
-          bank_accounts: bankAccounts
-        })
-      });
+      // 4. Save Gifts (only if not free)
+      if (!isFree) {
+        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/gifts`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({
+            title: gift.title,
+            message: gift.message,
+            shipping_address: gift.shipping_address,
+            bank_accounts: bankAccounts
+          })
+        });
+      }
 
       await refreshData();
-      setActiveStep(6);
-      setMaxUnlockedStep(prev => Math.max(prev, 6));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      
+      if (isFree) {
+        // Activate free template immediately
+        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/activate-free`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        alert("Undangan gratis berhasil diaktifkan!");
+        navigate("/dashboard");
+      } else {
+        setActiveStep(6);
+        setMaxUnlockedStep(prev => Math.max(prev, 6));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } catch (err) {
       console.error(err);
       alert("Gagal menyimpan data pendukung.");
@@ -501,8 +514,10 @@ export default function CreateWizardPage() {
     return <div className="loading-container"><div className="spinner"></div></div>;
   }
 
+  const isFree = invitationData?.template_is_premium === 0;
+
   // Stepper Header Links
-  const steps = [
+  let steps = [
     { num: 1, label: "Mempelai" },
     { num: 2, label: "Acara" },
     { num: 3, label: "Cerita" },
@@ -510,6 +525,14 @@ export default function CreateWizardPage() {
     { num: 5, label: "Detail" },
     { num: 6, label: "Aktivasi" }
   ];
+
+  if (isFree) {
+    steps = [
+      { num: 1, label: "Mempelai" },
+      { num: 2, label: "Acara" },
+      { num: 5, label: "Selesai" } // Reusing step 5 for basic details
+    ];
+  }
 
   return (
     <div className="event-schedule-page page-enter">
@@ -677,7 +700,7 @@ export default function CreateWizardPage() {
                         onClick={() => {
                           setGroomFile(null);
                           setGroom(prev => ({ ...prev, photo_url: av.photo_url }));
-                          setGroomPreview(`http://localhost:5000${av.photo_url}`);
+                          setGroomPreview(`http://${window.location.hostname}:5000${av.photo_url}`);
                         }}
                         style={{
                           cursor: "pointer",
@@ -690,7 +713,7 @@ export default function CreateWizardPage() {
                         }}
                       >
                         <img
-                          src={`http://localhost:5000${av.photo_url}`}
+                          src={`http://${window.location.hostname}:5000${av.photo_url}`}
                           alt={av.name}
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
                         />
@@ -794,7 +817,7 @@ export default function CreateWizardPage() {
                         onClick={() => {
                           setBrideFile(null);
                           setBride(prev => ({ ...prev, photo_url: av.photo_url }));
-                          setBridePreview(`http://localhost:5000${av.photo_url}`);
+                          setBridePreview(`http://${window.location.hostname}:5000${av.photo_url}`);
                         }}
                         style={{
                           cursor: "pointer",
@@ -807,7 +830,7 @@ export default function CreateWizardPage() {
                         }}
                       >
                         <img
-                          src={`http://localhost:5000${av.photo_url}`}
+                          src={`http://${window.location.hostname}:5000${av.photo_url}`}
                           alt={av.name}
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
                         />
@@ -996,7 +1019,7 @@ export default function CreateWizardPage() {
               {moments.length > 0 && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "1.5rem" }}>
                   {moments.map((m, idx) => (
-                    <img key={idx} src={`http://localhost:5000${m.photo_url}`} alt="Moments" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "var(--radius-sm)" }} />
+                    <img key={idx} src={`http://${window.location.hostname}:5000${m.photo_url}`} alt="Moments" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "var(--radius-sm)" }} />
                   ))}
                 </div>
               )}
@@ -1205,7 +1228,9 @@ export default function CreateWizardPage() {
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎵 Musik Latar</h2>
+              {!isFree && (
+                <>
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🎵 Musik Latar</h2>
               <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "1rem" }}>
                 Pilih lagu latar untuk undangan kamu, atau lewati jika tidak ingin menggunakan musik.
               </p>
@@ -1268,7 +1293,7 @@ export default function CreateWizardPage() {
 
                         {/* List Lagu */}
                         {defaultMusicList.map((song, idx) => {
-                          const songUrl = `http://localhost:5000${song.url}`;
+                          const songUrl = `http://${window.location.hostname}:5000${song.url}`;
                           const isSelected = music.url === songUrl;
                           return (
                             <div key={song.id}
@@ -1304,83 +1329,82 @@ export default function CreateWizardPage() {
                   </div>
                 )}
 
-                {/* Audio preview */}
-                {music.url && (
-                  <div style={{ marginTop: "14px", padding: "12px 14px", borderRadius: "10px", background: "rgba(201,169,110,0.08)", border: "1px solid rgba(201,169,110,0.2)" }}>
-                    <div style={{ fontSize: "0.75rem", color: "var(--primary, #c9a96e)", marginBottom: "8px", fontWeight: 600 }}>
-                      🎵 Preview: {music.title}
-                    </div>
-                    <audio key={music.url} controls src={music.url} style={{ width: "100%", borderRadius: "6px", height: "36px" }} />
-                  </div>
-                )}
-              </div>
 
+
+                    {music.url && (
+                      <div style={{ marginTop: "14px", padding: "12px 14px", borderRadius: "10px", background: "rgba(201,169,110,0.08)", border: "1px solid rgba(201,169,110,0.2)" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--primary, #c9a96e)", marginBottom: "8px", fontWeight: 600 }}>
+                          🎵 Preview: {music.title}
+                        </div>
+                        <audio key={music.url} controls src={music.url} style={{ width: "100%", borderRadius: "6px", height: "36px" }} />
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
 
               <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎁 Hadiah Pernikahan & Rekening (Opsional)</h2>
-              <div className="form-group">
-                <label className="es-label">Pesan Hadiah / Gift Message</label>
-                <select
-                  className="es-input"
-                  style={{ marginBottom: "8px", background: "rgba(255,255,255,0.02)", color: "var(--text)" }}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setGift(prev => ({ ...prev, message: e.target.value }));
-                    }
-                  }}
-                  defaultValue=""
-                >
-                  <option value="" disabled>-- Pilih Contoh Template Pesan (Opsional) --</option>
-                  <option value="Terima kasih telah menambah semangat kegembiraan pernikahan kami dengan kehadiran dan hadiah indah Anda.">
-                    "Terima kasih telah menambah semangat..."
-                  </option>
-                  <option value="Tanpa mengurangi rasa hormat, bagi rekan-rekan yang ingin memberikan kado/tanda kasih kepada kami, dapat mengirimkannya melalui detail di bawah ini:">
-                    "Tanpa mengurangi rasa hormat, bagi rekan-rekan..."
-                  </option>
-                  <option value="Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika Anda ingin mengirimkan kado/hadiah, silakan kirimkan melalui detail di bawah ini:">
-                    "Doa restu Anda merupakan hadiah terindah..."
-                  </option>
-                </select>
-                <textarea className="es-input" rows={2} placeholder="Pesan titip hadiah kado..." value={gift.message} onChange={(e) => setGift(prev => ({ ...prev, message: e.target.value }))} />
-              </div>
+              {!isFree && (
+                <>
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎁 Hadiah Pernikahan & Rekening (Opsional)</h2>
+                  <div className="form-group">
+                    <label className="es-label">Pesan Hadiah / Gift Message</label>
+                    <select
+                      className="es-input"
+                      style={{ marginBottom: "8px", background: "rgba(255,255,255,0.02)", color: "var(--text)" }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setGift(prev => ({ ...prev, message: e.target.value }));
+                        }
+                      }}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>-- Pilih Contoh Template Pesan (Opsional) --</option>
+                      <option value="Terima kasih telah menambah semangat kegembiraan pernikahan kami dengan kehadiran dan hadiah indah Anda.">
+                        Template 1: Terima kasih telah menambah semangat kegembiraan pernikahan kami...
+                      </option>
+                      <option value="Doa Restu Anda merupakan karunia yang sangat berarti bagi kami.">
+                        Template 2: Doa Restu Anda merupakan karunia yang sangat berarti bagi kami.
+                      </option>
+                    </select>
+                    <textarea className="es-input" rows={3} placeholder="Atau ketik pesan custom..." value={gift.message} onChange={(e) => setGift(prev => ({ ...prev, message: e.target.value }))} />
+                  </div>
 
-              <div className="form-group" style={{ marginBottom: "1.5rem" }}>
-                <label className="es-label">Alamat Kirim Kado Fisik</label>
-                <textarea
-                  className="es-input"
-                  rows={2}
-                  placeholder="Tuliskan alamat lengkap pengiriman kado fisik jika tamu ingin mengirimkan paket kado..."
-                  value={gift.shipping_address || ""}
-                  onChange={(e) => setGift(prev => ({ ...prev, shipping_address: e.target.value }))}
-                />
-              </div>
+                  <div className="form-group">
+                    <label className="es-label">Alamat Pengiriman Kado Fisik</label>
+                    <textarea className="es-input" rows={3} placeholder="Alamat lengkap penerima kado..." value={gift.shipping_address} onChange={(e) => setGift(prev => ({ ...prev, shipping_address: e.target.value }))} />
+                  </div>
 
-              {/* Bank Accounts List */}
-              {bankAccounts.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "10px" }}>
-                  {bankAccounts.map((b, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px", border: "1px solid var(--border)", borderRadius: "var(--radius-sm)" }}>
-                      <span style={{ fontSize: "13px" }}>{b.bank_name} - {b.account_number} (a.n. {b.account_holder})</span>
-                      <button className="auth-link" style={{ color: "#dc2626" }} onClick={() => handleDeleteBank(i)}>Hapus</button>
+                  <div className="form-group">
+                    <label className="es-label">Daftar Rekening / E-Wallet</label>
+                    {bankAccounts.length > 0 && (
+                      <div style={{ marginBottom: "12px", background: "rgba(255,255,255,0.03)", padding: "10px", borderRadius: "8px" }}>
+                        {bankAccounts.map((b, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "6px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "6px" }}>
+                            <div>
+                              <strong style={{ color: "var(--brand)" }}>{b.bank_name}</strong><br />
+                              {b.account_number} a/n {b.account_holder}
+                            </div>
+                            <button type="button" onClick={() => handleDeleteBank(idx)} style={{ color: "red", background: "none", border: "none", cursor: "pointer" }}>Hapus</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", background: "rgba(255,255,255,0.02)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nama Bank / E-Wallet (misal: BCA, OVO)" value={newBank.bank_name} onChange={(e) => setNewBank(prev => ({ ...prev, bank_name: e.target.value }))} />
+                      <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nomor Rekening" value={newBank.account_number} onChange={(e) => setNewBank(prev => ({ ...prev, account_number: e.target.value }))} />
+                      <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nama Pemilik Rekening" value={newBank.account_holder} onChange={(e) => setNewBank(prev => ({ ...prev, account_holder: e.target.value }))} />
+                      <button type="button" className="btn-ghost" style={{ width: "100%", padding: "8px" }} onClick={handleAddBank}>Tambah Rekening</button>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                </>
               )}
 
-              {/* Add Bank Form */}
-              <div style={{ border: "1px solid var(--border)", padding: "12px", borderRadius: "var(--radius-sm)", marginBottom: "1rem" }}>
-                <h4 style={{ margin: "0 0 8px", fontSize: "13px" }}>Tambah Rekening Baru</h4>
-                <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nama Bank (e.g. BCA, Mandiri)" value={newBank.bank_name} onChange={(e) => setNewBank(prev => ({ ...prev, bank_name: e.target.value }))} />
-                <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nomor Rekening" value={newBank.account_number} onChange={(e) => setNewBank(prev => ({ ...prev, account_number: e.target.value }))} />
-                <input type="text" className="es-input" style={{ marginBottom: "8px" }} placeholder="Nama Pemilik Rekening" value={newBank.account_holder} onChange={(e) => setNewBank(prev => ({ ...prev, account_holder: e.target.value }))} />
-                <button className="btn-ghost" style={{ width: "100%", padding: "8px" }} onClick={handleAddBank}>Tambah Rekening</button>
-              </div>
-
               <div className="es-actions">
-                <button type="button" className="es-btn-back" onClick={() => setActiveStep(4)}>← Kembali</button>
+                <button type="button" className="es-btn-back" onClick={() => setActiveStep(isFree ? 2 : 4)}>← Kembali</button>
                 <button type="submit" className="es-btn-next" disabled={saving}>
-                  {saving ? "Menyimpan..." : "Simpan & Lanjutkan →"}
+                  {saving ? "Menyimpan..." : (isFree ? "Selesai & Aktifkan →" : "Simpan & Lanjutkan →")}
                 </button>
               </div>
             </form>
@@ -1401,26 +1425,27 @@ export default function CreateWizardPage() {
                 <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>Template: {invitationData?.template_name}</span>
               </div>
 
-              <a
-                href={`https://wa.me/6282114467118?text=Halo%20Admin%2C%20saya%20ingin%20mengaktifkan%20undangan%20saya%20dengan%20ID%20${weddingId}%20dan%20slug%20${slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary"
+              <button
+                type="button"
+                onClick={() => navigate(`/activate/${slug}`, { state: { inv: invitationData } })}
+                className="btn-solid"
                 style={{
                   display: "block",
+                  width: "100%",
                   textAlign: "center",
-                  background: "#25d366",
+                  background: "#22c55e",
                   color: "#fff",
                   padding: "14px",
                   borderRadius: "var(--radius-sm)",
                   fontWeight: 800,
                   fontSize: "15px",
-                  textDecoration: "none",
-                  boxShadow: "0 4px 14px rgba(37,211,102,0.3)"
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(34,197,94,0.3)"
                 }}
               >
-                💬 Aktifkan Sekarang via WhatsApp
-              </a>
+                🚀 Aktifkan Undangan
+              </button>
 
               <div className="es-actions">
                 <button type="button" className="es-btn-back" onClick={() => setActiveStep(5)}>← Kembali</button>

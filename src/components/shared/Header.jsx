@@ -95,9 +95,17 @@ export default function Header() {
           ))}
 
           {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span className="user-greeting">Halo, <strong>{user.name}</strong></span>
-              <button className="btn-ghost" onClick={() => { logout(); navigate("/"); }}>Keluar</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button 
+                className="btn-ghost" 
+                onClick={() => handleNavigation("/dashboard")}
+              >
+                Dashboard
+              </button>
+              <div className="user-greeting">
+                Halo, <strong>{user.name || user.username}</strong>
+              </div>
+              <button className="btn-solid" onClick={logout}>Keluar</button>
             </div>
           ) : (
             <>
@@ -146,8 +154,11 @@ export default function Header() {
             
             {user ? (
               <div className="mobile-nav-buttons">
-                <span className="mobile-user-greeting">Halo, <strong>{user.name}</strong></span>
-                <button className="mobile-btn-ghost" onClick={() => { logout(); closeMenu(); navigate("/"); }}>
+                <span className="mobile-user-greeting">Halo, <strong>{user.name || user.username}</strong></span>
+                <button className="mobile-btn-ghost" onClick={() => handleNavigation("/dashboard")}>
+                  Dashboard
+                </button>
+                <button className="mobile-btn-solid" onClick={() => { logout(); closeMenu(); }}>
                   Keluar
                 </button>
               </div>

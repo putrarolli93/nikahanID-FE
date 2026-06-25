@@ -14,7 +14,7 @@ const formatRupiah = (amount) => {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
 };
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = `http://${window.location.hostname}:5000`;
 
 export default function TemplateDetailPage() {
   const { templateSlug } = useParams();
@@ -171,10 +171,10 @@ export default function TemplateDetailPage() {
               <>
                 <p className="detail-price-val">
                   <span className="detail-price-num">{formatRupiah(template.price)}</span>
-                  <span className="detail-price-note"> / Paket Standar</span>
+                  <span className="detail-price-note"> / Paket Premium</span>
                 </p>
                 <p className="detail-price-info">
-                  ℹ Template ini tersedia di paket Standar &amp; Pro
+                  ℹ Template ini tersedia di paket Premium
                 </p>
               </>
             ) : (
