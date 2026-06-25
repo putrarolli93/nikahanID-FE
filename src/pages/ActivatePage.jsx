@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const formatRupiah = (amount) => {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount || 0);
@@ -9,9 +10,16 @@ export default function ActivatePage() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { slug } = useParams();
+  const { token } = useAuth();
 
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
+  const [senderName, setSenderName] = useState('');
+  
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('');
+  const [promoStatus, setPromoStatus] = useState(null); // 'checking', 'valid', 'invalid'
+  const [promoMessage, setPromoMessage] = useState('');
 
   // Jika tidak ada state (diakses langsung dari URL tanpa klik tombol di dashboard), kembalikan ke dashboard
   useEffect(() => {
@@ -27,22 +35,50 @@ export default function ActivatePage() {
   const packageType = isPremium ? 'Paket Premium' : 'Paket Gratis';
   const price = inv.template_price || 0;
   
+  // Calculate discount (e.g. 10% discount for the customer)
+  const discountRate = 0.10; // 10%
+  const discountAmount = promoStatus === 'valid' ? price * discountRate : 0;
+  const finalPrice = price - discountAmount;
+  
   // Hardcoded Admin WhatsApp Number & Account Name (As proposed in the plan)
   const ADMIN_WA = '6282114467118'; 
   const ACCOUNT_NAME = 'Putra Rolli';
   const ACCOUNT_DEST_NUMBER = '5440133837';
 
-  const isFormValid = bankName.trim() !== '' && accountNumber.trim() !== '';
+  const isFormValid = bankName.trim() !== '' && accountNumber.trim() !== '' && senderName.trim() !== '';
+
+  const checkPromoCode = async () => {
+    if (!promoCode.trim()) return;
+    setPromoStatus('checking');
+    try {
+      const res = await fetch(`http://${window.location.hostname}:5000/api/reseller/check-promo/${promoCode}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setPromoStatus('valid');
+        setPromoMessage(`✅ Berhasil! Anda mendapat Diskon 10% (Kode dari ${result.data.reseller_name})`);
+      } else {
+        setPromoStatus('invalid');
+        setPromoMessage(`❌ ${result.message || 'Kode Referral tidak ditemukan.'}`);
+      }
+    } catch (err) {
+      setPromoStatus('invalid');
+      setPromoMessage('❌ Terjadi kesalahan jaringan.');
+    }
+  };
 
   const waMessage = `Halo Admin Datangya.site, saya ingin mengaktifkan undangan saya: *${inv.title || inv.slug}*. 
+ID Undangan: *${inv.id}*
 Link: datangya.site/template/${inv.template_slug || 'amore'}/${inv.slug}
 
 Berikut adalah detail pembayaran saya:
-- Total Tagihan: *${formatRupiah(price)}*
+- Total Tagihan: *${formatRupiah(finalPrice)}*
 - Transfer ke: BCA ${ACCOUNT_DEST_NUMBER} a.n ${ACCOUNT_NAME}
 - Dari Bank: *${bankName}*
+- Atas Nama: *${senderName}*
 - No. Rekening: *${accountNumber}*
-
+${promoStatus === 'valid' ? `- Kode Promo / Referral: *${promoCode}* (Dapat Diskon 10%)\n` : ''}
 Berikut adalah bukti transfer saya:`;
 
   const waLink = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(waMessage)}`;
@@ -77,11 +113,59 @@ Berikut adalah bukti transfer saya:`;
               <span style={{ color: 'var(--muted)' }}>Paket</span>
               <strong style={{ color: 'var(--dark)' }}>{packageType}</strong>
             </div>
-            <hr style={{ border: 'none', borderTop: '1px dashed var(--border)', margin: '1rem 0' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '1.1rem', color: 'var(--dark)' }}>Total Tagihan</span>
-              <strong style={{ fontSize: '1.5rem', color: 'var(--brand)' }}>{formatRupiah(price)}</strong>
+            
+            {/* Promo Code Section */}
+            <div style={{ marginTop: '1rem', marginBottom: '1rem', padding: '1rem', background: '#fff', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+              <label style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#334155', marginBottom: '0.5rem', display: 'block' }}>Gunakan Kode Referral Reseller</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input 
+                  type="text" 
+                  placeholder="Masukkan Kode Promo" 
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  style={{ flex: 1, padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #ccc', textTransform: 'uppercase', fontWeight: 'bold' }}
+                />
+                <button 
+                  onClick={checkPromoCode}
+                  disabled={promoStatus === 'checking' || !promoCode}
+                  style={{ padding: '0.6rem 1.2rem', background: promoStatus === 'valid' ? '#16a34a' : '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}
+                >
+                  {promoStatus === 'checking' ? 'Mengecek...' : (promoStatus === 'valid' ? 'Diterapkan' : 'Terapkan')}
+                </button>
+              </div>
+              {promoMessage && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', fontWeight: 'bold', color: promoStatus === 'valid' ? '#16a34a' : '#ef4444' }}>
+                  {promoMessage}
+                </div>
+              )}
             </div>
+
+            <hr style={{ border: 'none', borderTop: '1px dashed var(--border)', margin: '1rem 0' }} />
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: promoStatus === 'valid' ? '0.5rem' : '0' }}>
+              <span style={{ fontSize: '1.1rem', color: 'var(--dark)' }}>Harga Normal</span>
+              <strong style={{ fontSize: '1.2rem', color: promoStatus === 'valid' ? '#94a3b8' : 'var(--brand)', textDecoration: promoStatus === 'valid' ? 'line-through' : 'none' }}>
+                {formatRupiah(price)}
+              </strong>
+            </div>
+
+            {promoStatus === 'valid' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem', color: '#16a34a', fontWeight: 'bold' }}>Diskon 10%</span>
+                <strong style={{ fontSize: '1.2rem', color: '#16a34a' }}>
+                  - {formatRupiah(discountAmount)}
+                </strong>
+              </div>
+            )}
+
+            {promoStatus === 'valid' && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--dark)' }}>Total Tagihan</span>
+                <strong style={{ fontSize: '1.8rem', color: 'var(--brand)', fontWeight: '900' }}>
+                  {formatRupiah(finalPrice)}
+                </strong>
+              </div>
+            )}
           </div>
 
           {/* Payment Instructions */}
@@ -115,6 +199,16 @@ Berikut adalah bukti transfer saya:`;
                 className="form-input" 
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label>Atas Nama Pengirim</label>
+              <input 
+                type="text" 
+                placeholder="Contoh: Budi Santoso" 
+                className="form-input" 
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
               />
             </div>
             <div className="form-group">

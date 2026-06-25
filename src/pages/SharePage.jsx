@@ -17,7 +17,7 @@ export default function SharePage() {
   const [customMsg, setCustomMsg] = useState('');
   const [isSavingMsg, setIsSavingMsg] = useState(false);
   const [isAddingGuest, setIsAddingGuest] = useState(false);
-
+  const [toastMessage, setToastMessage] = useState('');
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -170,6 +170,22 @@ export default function SharePage() {
     }
   };
 
+  const handleCopyLink = async (guest) => {
+    const baseUrl = `http://${window.location.hostname}:5173/template/${invitation.template_slug}/${invitation.slug}`;
+    const encodedName = encodeURIComponent(guest.name);
+    const invitationLink = `${baseUrl}?to=${encodedName}`;
+    try {
+      await navigator.clipboard.writeText(invitationLink);
+      setToastMessage('Link undangan berhasil disalin!');
+      setTimeout(() => setToastMessage(''), 3000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      setToastMessage('Gagal menyalin link');
+      setTimeout(() => setToastMessage(''), 3000);
+    }
+  };
+
+
   if (loading || authLoading) {
     return <div style={{ padding: "100px", textAlign: "center" }}>Memuat...</div>;
   }
@@ -262,17 +278,30 @@ export default function SharePage() {
                           <div style={{ display: 'flex', gap: '0.5rem' }}>
                             <button 
                               onClick={() => handleSendWA(g)}
-                              style={{ padding: '8px 16px', background: '#25D366', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
+                              style={{ width: '36px', height: '36px', padding: '0', background: '#25D366', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(37,211,102,0.2)' }}
                               title="Kirim via WhatsApp"
                             >
-                              Kirim WA
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+                              </svg>
+                            </button>
+                            <button 
+                              onClick={() => handleCopyLink(g)}
+                              style={{ width: '36px', height: '36px', padding: '0', background: '#e0f2fe', color: '#0ea5e9', border: '1px solid #bae6fd', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                              title="Salin Link"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
                             </button>
                             <button 
                               onClick={() => handleDeleteGuest(g.id)}
-                              style={{ padding: '8px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              style={{ width: '36px', height: '36px', padding: '0', background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                               title="Hapus Tamu"
                             >
-                              X
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                              </svg>
                             </button>
                           </div>
                         </td>
@@ -286,6 +315,31 @@ export default function SharePage() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: '#0f172a',
+          color: '#f8fafc',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          zIndex: 1000,
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'fadein 0.3s ease-out'
+        }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }

@@ -201,17 +201,6 @@ export default function TemplateDetailPage() {
             </button>
           </div>
 
-          {/* Trust badges */}
-          <div className="detail-trust">
-            {[
-              "✓ Bisa diedit kapan saja",
-              "✓ Link aktif seumur hidup",
-              "✓ Bisa ganti template",
-            ].map((t) => (
-              <span key={t} className="trust-badge">{t}</span>
-            ))}
-          </div>
-
         </div>
       </div>
 

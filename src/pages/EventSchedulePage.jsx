@@ -10,6 +10,7 @@ export default function EventSchedulePage() {
   const [form, setForm] = useState({
     groomName: "",
     brideName: "",
+    slug: "",
     akadDate: "",
     akadTime: "",
     hasResepsi: false,
@@ -19,6 +20,8 @@ export default function EventSchedulePage() {
 
   const [errors, setErrors] = useState({});
   const [apiLoading, setApiLoading] = useState(false);
+  const [slugStatus, setSlugStatus] = useState("idle"); // idle, checking, available, unavailable
+  const [slugMessage, setSlugMessage] = useState("");
 
   // Load pending data if exists
   useEffect(() => {
@@ -37,20 +40,76 @@ export default function EventSchedulePage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-      ...(name === "hasResepsi" && !checked
-        ? { resepsiDate: "", resepsiTime: "" }
-        : {}),
-    }));
+    setForm((prev) => {
+      const newForm = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+        ...(name === "hasResepsi" && !checked
+          ? { resepsiDate: "", resepsiTime: "" }
+          : {}),
+      };
+      
+      // Auto-generate slug if groom or bride name changes
+      if (name === "groomName" || name === "brideName") {
+        const groom = name === "groomName" ? value : prev.groomName;
+        const bride = name === "brideName" ? value : prev.brideName;
+        if (groom || bride) {
+          const slugify = (text) => text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+          let baseSlug = '';
+          if (groom && bride) baseSlug = `${slugify(groom)}-dan-${slugify(bride)}`;
+          else if (groom) baseSlug = slugify(groom);
+          else if (bride) baseSlug = slugify(bride);
+          newForm.slug = baseSlug;
+        } else {
+          newForm.slug = "";
+        }
+      }
+
+      // If user types custom slug, format it
+      if (name === "slug") {
+        newForm.slug = value.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+      }
+
+      return newForm;
+    });
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
+
+  // Check slug availability
+  useEffect(() => {
+    if (!form.slug) {
+      setSlugStatus("idle");
+      setSlugMessage("");
+      return;
+    }
+
+    const checkTimeout = setTimeout(async () => {
+      setSlugStatus("checking");
+      try {
+        const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/check-slug/${form.slug}`);
+        if (res.ok) {
+          setSlugStatus("available");
+          setSlugMessage("Tersedia");
+        } else {
+          setSlugStatus("unavailable");
+          setSlugMessage("Sudah digunakan");
+        }
+      } catch (err) {
+        setSlugStatus("idle");
+        setSlugMessage("");
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(checkTimeout);
+  }, [form.slug]);
 
   const validate = () => {
     const newErrors = {};
     if (!form.groomName.trim()) newErrors.groomName = "Nama mempelai pria wajib diisi.";
     if (!form.brideName.trim()) newErrors.brideName = "Nama mempelai wanita wajib diisi.";
+    if (!form.slug.trim()) newErrors.slug = "Link undangan wajib diisi.";
+    if (slugStatus === "checking") newErrors.slug = "Sedang mengecek ketersediaan link...";
+    if (slugStatus === "unavailable") newErrors.slug = "Link undangan sudah digunakan, silakan ganti.";
     if (!form.akadDate) newErrors.akadDate = "Tanggal akad wajib diisi.";
     if (!form.akadTime) newErrors.akadTime = "Jam akad wajib diisi.";
     if (form.hasResepsi) {
@@ -204,6 +263,39 @@ export default function EventSchedulePage() {
                 {errors.brideName && (
                   <span className="es-error">{errors.brideName}</span>
                 )}
+              </div>
+            </div>
+
+            {/* Custom URL Input */}
+            <div className="es-form-row" style={{ marginTop: '1.5rem' }}>
+              <div className="es-form-group" style={{ flex: 1 }}>
+                <label className="es-label" htmlFor="slug">
+                  Custom Link Undangan
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden' }}>
+                  <span style={{ padding: '0.75rem 1rem', color: '#64748b', background: '#e2e8f0', borderRight: '1px solid #cbd5e1', fontSize: '0.9rem' }}>datangya.site/template/{templateSlug}/</span>
+                  <input
+                    id="slug"
+                    name="slug"
+                    type="text"
+                    style={{ flex: 1, border: 'none', padding: '0.75rem', background: 'transparent', outline: 'none', color: '#0f172a', fontWeight: 'bold' }}
+                    placeholder="nama-kamu-dan-pasangan"
+                    value={form.slug}
+                    onChange={handleChange}
+                    disabled={apiLoading}
+                  />
+                  {form.slug && (
+                    <div style={{ padding: '0 1rem', display: 'flex', alignItems: 'center' }}>
+                      {slugStatus === 'checking' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>⌛ Mengecek...</span>}
+                      {slugStatus === 'available' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>✅ {slugMessage}</span>}
+                      {slugStatus === 'unavailable' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>❌ {slugMessage}</span>}
+                    </div>
+                  )}
+                </div>
+                {errors.slug && (
+                  <span className="es-error">{errors.slug}</span>
+                )}
+                <p style={{ color: '#64748b', fontSize: '0.85rem', marginTop: '0.5rem' }}>Hanya huruf, angka, dan tanda hubung (-). Tanpa spasi.</p>
               </div>
             </div>
           </div>
