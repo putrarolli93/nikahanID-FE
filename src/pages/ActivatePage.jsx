@@ -173,7 +173,7 @@ Berikut adalah bukti transfer saya:`;
             <div style={{ marginBottom: '2rem' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--dark)' }}>Instruksi Pembayaran</h3>
               <div style={{ border: '1px solid var(--brand)', background: 'rgba(181, 101, 42, 0.05)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-                <p style={{ color: 'var(--muted)', marginBottom: '0.5rem', fontSize: '0.95rem' }}>Transfer tepat sejumlah <strong>{formatRupiah(price)}</strong> ke rekening berikut:</p>
+                <p style={{ color: 'var(--muted)', marginBottom: '0.5rem', fontSize: '0.95rem' }}>Transfer tepat sejumlah <strong>{formatRupiah(finalPrice)}</strong> ke rekening berikut:</p>
                 <div style={{ display: 'inline-block', background: '#fff', padding: '1rem 1.5rem', borderRadius: '8px', border: '1px dashed var(--brand)', marginBottom: '1rem' }}>
                   <p style={{ fontWeight: '800', color: '#0066AE', fontSize: '1.2rem', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '1.5rem', fontStyle: 'italic' }}>BCA</span> {ACCOUNT_DEST_NUMBER}
