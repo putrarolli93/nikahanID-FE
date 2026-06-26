@@ -12,6 +12,7 @@ import AmoreInvitationPage from "./pages/AmoreInvitationPage";
 import GardenInvitationPage from "./pages/GardenInvitationPage";
 import OceanicInvitationPage from "./pages/OceanicInvitationPage";
 import SimpleFreeTemplate from './templates/simple-free/SimpleFreeTemplate';
+import ModernFloralTemplate from './templates/modern-floral/ModernFloralTemplate';
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
 import CreateWizardPage from "./pages/CreateWizardPage"; // Multi-step creation wizard
@@ -56,6 +57,7 @@ function AppContent() {
         <Route path="/template/amore/:slug" element={<AmoreInvitationPage />} />
         <Route path="/template/garden/:slug" element={<GardenInvitationPage />} />
         <Route path="/template/oceanic/:slug" element={<OceanicInvitationPage />} />
+        <Route path="/template/modern-floral/:slug" element={<ModernFloralTemplate />} />
         <Route path="/template/simple-free/:slug" element={<SimpleFreeTemplate />} /> {/* New route for Oceanic invitations */}
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />

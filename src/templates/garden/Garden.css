@@ -297,10 +297,11 @@
 }
 
 .garden__photo-frame {
-  width: 220px;
-  height: 320px;
+  width: 100%;
+  max-width: 360px;
+  height: 460px;
   margin: 0 auto;
-  border-radius: 110px 110px 20px 20px;
+  border-radius: 180px 30px 180px 30px;
   overflow: hidden;
   border: 6px solid #fff;
   box-shadow: 0 15px 35px rgba(91,120,102,0.12);
@@ -308,8 +309,9 @@
 
 @media (min-width: 768px) {
   .garden__photo-frame {
-    width: 280px;
-    height: 400px;
+    width: 400px;
+    height: 560px;
+    border-radius: 200px 40px 200px 40px;
   }
 }
 

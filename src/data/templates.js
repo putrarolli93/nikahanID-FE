@@ -13,6 +13,7 @@ export const TEMPLATES = [
   { id: 11, name: "Pastel", slug: "pastel", category: "Ulang Tahun", emoji: "🎀", theme: "t4", pro: false },
   { id: 12, name: "Barokah", slug: "barokah", category: "Tasyakuran", emoji: "🤲", theme: "t6", pro: false },
   { id: 13, name: "Simple Free", slug: "simple-free", category: "Pernikahan", emoji: "🕊️", theme: "t1", pro: false },
+  { id: 14, name: "Modern Floral", slug: "modern-floral", category: "Pernikahan", emoji: "🌸", theme: "t1", pro: false },
 ];
 
 export const CATEGORIES = ["Semua", "Pernikahan", "Aqiqah", "Ulang Tahun", "Tasyakuran"];
