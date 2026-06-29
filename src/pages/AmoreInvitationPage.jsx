@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import AmoreTemplate from "../templates/amore/AmoreTemplate";
 
-const API_BASE = `http://${window.location.hostname}:5000`;
+const API_BASE = ``;
 
 export default function AmoreInvitationPage() {
   const { slug } = useParams();

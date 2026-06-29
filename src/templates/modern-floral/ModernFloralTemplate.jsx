@@ -135,7 +135,7 @@ export default function ModernFloralTemplate({ isPreview = false }) {
       return;
     }
 
-    fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`)
+    fetch(`/api/invitations/${slug}`)
       .then(res => res.json())
       .then(json => {
         if (json.success) {
@@ -143,7 +143,7 @@ export default function ModernFloralTemplate({ isPreview = false }) {
           if (json.data.moments && json.data.moments.length > 0) {
             fetchedGallery = json.data.moments
               .filter(m => m.type === 'gallery' && m.photo_url)
-              .map(m => m.photo_url.startsWith('http') ? m.photo_url : `http://${window.location.hostname}:5000${m.photo_url}`);
+              .map(m => m.photo_url.startsWith('http') ? m.photo_url : `${m.photo_url}`);
           }
 
           setData({
@@ -187,7 +187,7 @@ export default function ModernFloralTemplate({ isPreview = false }) {
     if (!url) return fallback;
     if (isPreview) return url;
     if (url.startsWith('http')) return url;
-    return `http://${window.location.hostname}:5000${url}`;
+    return `${url}`;
   };
 
   const currentHeroBg = getImageUrl(data.cover?.photo_url || data.cover?.photoUrl, null) || (data.gallery && data.gallery.length > 0 ? data.gallery[0] : heroBg);
@@ -242,7 +242,7 @@ export default function ModernFloralTemplate({ isPreview = false }) {
       if (rsvpAttendance === 'tidak') willAttendVal = 0;
       else if (rsvpAttendance === 'mungkin') willAttendVal = null;
       
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${data.id}/comments`, {
+      const response = await fetch(`/api/invitations/${data.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -277,7 +277,7 @@ export default function ModernFloralTemplate({ isPreview = false }) {
   const handleOpen = () => {
     setIsOpen(true);
     if (data.music?.url) {
-      const musicUrl = data.music.url.startsWith('http') ? data.music.url : `http://${window.location.hostname}:5000${data.music.url}`;
+      const musicUrl = data.music.url.startsWith('http') ? data.music.url : `${data.music.url}`;
       const player = new Audio(musicUrl);
       player.loop = true;
       player.play().then(() => {

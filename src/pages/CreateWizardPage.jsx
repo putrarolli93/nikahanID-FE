@@ -35,7 +35,7 @@ export default function CreateWizardPage() {
   useEffect(() => {
     const fetchAvatars = async () => {
       try {
-        const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/default-avatars`);
+        const res = await fetch(`/api/invitations/default-avatars`);
         const json = await res.json();
         if (res.ok && json.success) {
           setDefaultAvatars(json.data);
@@ -86,7 +86,7 @@ export default function CreateWizardPage() {
 
   // Load semua default list sekaligus
   useEffect(() => {
-    const BASE = `http://${window.location.hostname}:5000/api/invitations`;
+    const BASE = `/api/invitations`;
     const load = (path, setter) =>
       fetch(`${BASE}/${path}`).then(r => r.json()).then(res => { if (res.success) setter(res.data); }).catch(() => {});
     load('default-music', setDefaultMusicList);
@@ -99,7 +99,7 @@ export default function CreateWizardPage() {
   useEffect(() => {
     const fetchDraft = async () => {
       try {
-        const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
+        const response = await fetch(`/api/invitations/${slug}`);
         const result = await response.json();
 
         if (response.ok && result.success) {
@@ -120,7 +120,7 @@ export default function CreateWizardPage() {
               photo_url: groomData.photo_url || ""
             });
             if (groomData.photo_url) {
-              setGroomPreview(`http://${window.location.hostname}:5000${groomData.photo_url}`);
+              setGroomPreview(`${groomData.photo_url}`);
               if (groomData.photo_url.startsWith("/uploads/default_avatars/")) {
                 setGroomPhotoType("avatar");
               }
@@ -139,7 +139,7 @@ export default function CreateWizardPage() {
               photo_url: brideData.photo_url || ""
             });
             if (brideData.photo_url) {
-              setBridePreview(`http://${window.location.hostname}:5000${brideData.photo_url}`);
+              setBridePreview(`${brideData.photo_url}`);
               if (brideData.photo_url.startsWith("/uploads/default_avatars/")) {
                 setBridePhotoType("avatar");
               }
@@ -221,7 +221,7 @@ export default function CreateWizardPage() {
   // Re-fetch full data to refresh the states
   const refreshData = async () => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
+      const response = await fetch(`/api/invitations/${slug}`);
       const result = await response.json();
       if (response.ok && result.success) {
         setInvitationData(result.data);
@@ -250,7 +250,7 @@ export default function CreateWizardPage() {
         groomForm.append("photo_url", groom.photo_url);
       }
 
-      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/bride-groom/groom`, {
+      await fetch(`/api/invitations/${weddingId}/bride-groom/groom`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: groomForm
@@ -270,7 +270,7 @@ export default function CreateWizardPage() {
         brideForm.append("photo_url", bride.photo_url);
       }
 
-      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/bride-groom/bride`, {
+      await fetch(`/api/invitations/${weddingId}/bride-groom/bride`, {
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}` },
         body: brideForm
@@ -313,7 +313,7 @@ export default function CreateWizardPage() {
         });
       }
 
-      await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/event-schedules`, {
+      await fetch(`/api/invitations/${weddingId}/event-schedules`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -350,7 +350,7 @@ export default function CreateWizardPage() {
       storyForm.append("order_index", stories.length);
       if (storyFile) storyForm.append("photo", storyFile);
 
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/love-stories`, {
+      const response = await fetch(`/api/invitations/${weddingId}/love-stories`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: storyForm
@@ -374,7 +374,7 @@ export default function CreateWizardPage() {
   const handleDeleteStory = async (id) => {
     if (!window.confirm("Hapus cerita ini?")) return;
     try {
-      await fetch(`http://${window.location.hostname}:5000/api/invitations/love-stories/${id}`, {
+      await fetch(`/api/invitations/love-stories/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -400,7 +400,7 @@ export default function CreateWizardPage() {
       });
       galleryForm.append("type", "gallery");
 
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/moments`, {
+      const response = await fetch(`/api/invitations/${weddingId}/moments`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: galleryForm
@@ -427,7 +427,7 @@ export default function CreateWizardPage() {
     try {
       // 1. Save Quotes
       if (quote.content) {
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/quotes`, {
+        await fetch(`/api/invitations/${weddingId}/quotes`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify(quote)
@@ -443,7 +443,7 @@ export default function CreateWizardPage() {
         blessingsToSave.push({ type: "footer_quote", content: footerQuote.content });
       }
       if (blessingsToSave.length > 0) {
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/blessings`, {
+        await fetch(`/api/invitations/${weddingId}/blessings`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify({ blessings: blessingsToSave })
@@ -452,7 +452,7 @@ export default function CreateWizardPage() {
 
       // 3. Save Music (only if not free)
       if (!isFree && music.title) {
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/music`, {
+        await fetch(`/api/invitations/${weddingId}/music`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify(music)
@@ -461,7 +461,7 @@ export default function CreateWizardPage() {
 
       // 4. Save Gifts (only if not free)
       if (!isFree) {
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/gifts`, {
+        await fetch(`/api/invitations/${weddingId}/gifts`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
           body: JSON.stringify({
@@ -477,7 +477,7 @@ export default function CreateWizardPage() {
       
       if (isFree) {
         // Activate free template immediately
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/activate-free`, {
+        await fetch(`/api/invitations/${weddingId}/activate-free`, {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` }
         });
@@ -700,7 +700,7 @@ export default function CreateWizardPage() {
                         onClick={() => {
                           setGroomFile(null);
                           setGroom(prev => ({ ...prev, photo_url: av.photo_url }));
-                          setGroomPreview(`http://${window.location.hostname}:5000${av.photo_url}`);
+                          setGroomPreview(`${av.photo_url}`);
                         }}
                         style={{
                           cursor: "pointer",
@@ -713,7 +713,7 @@ export default function CreateWizardPage() {
                         }}
                       >
                         <img
-                          src={`http://${window.location.hostname}:5000${av.photo_url}`}
+                          src={`${av.photo_url}`}
                           alt={av.name}
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
                         />
@@ -817,7 +817,7 @@ export default function CreateWizardPage() {
                         onClick={() => {
                           setBrideFile(null);
                           setBride(prev => ({ ...prev, photo_url: av.photo_url }));
-                          setBridePreview(`http://${window.location.hostname}:5000${av.photo_url}`);
+                          setBridePreview(`${av.photo_url}`);
                         }}
                         style={{
                           cursor: "pointer",
@@ -830,7 +830,7 @@ export default function CreateWizardPage() {
                         }}
                       >
                         <img
-                          src={`http://${window.location.hostname}:5000${av.photo_url}`}
+                          src={`${av.photo_url}`}
                           alt={av.name}
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
                         />
@@ -1019,7 +1019,7 @@ export default function CreateWizardPage() {
               {moments.length > 0 && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "1.5rem" }}>
                   {moments.map((m, idx) => (
-                    <img key={idx} src={`http://${window.location.hostname}:5000${m.photo_url}`} alt="Moments" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "var(--radius-sm)" }} />
+                    <img key={idx} src={`${m.photo_url}`} alt="Moments" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "var(--radius-sm)" }} />
                   ))}
                 </div>
               )}
@@ -1293,7 +1293,7 @@ export default function CreateWizardPage() {
 
                         {/* List Lagu */}
                         {defaultMusicList.map((song, idx) => {
-                          const songUrl = `http://${window.location.hostname}:5000${song.url}`;
+                          const songUrl = `${song.url}`;
                           const isSelected = music.url === songUrl;
                           return (
                             <div key={song.id}

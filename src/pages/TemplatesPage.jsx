@@ -18,7 +18,7 @@ export default function TemplatesPage() {
   const [activeCategory, setActiveCategory] = useState("Semua");
 
   useEffect(() => {
-    fetch(`http://${window.location.hostname}:5000/api/templates`)
+    fetch(`/api/templates`)
       .then((res) => {
         if (!res.ok) throw new Error("Network error");
         return res.json();
@@ -77,7 +77,7 @@ export default function TemplatesPage() {
                   className="phone-mockup"
                   style={{ 
                     width: "120px", height: "240px",
-                    backgroundImage: `url(http://${window.location.hostname}:5000${t.preview_url_mobile || t.preview_url || t.thumbnail_url})` 
+                    backgroundImage: `url(${t.preview_url_mobile || t.preview_url || t.thumbnail_url})` 
                   }} 
                 />
                 <span className={t.is_premium === 1 ? "tmpl-badge-pro" : "tmpl-badge-free"}>

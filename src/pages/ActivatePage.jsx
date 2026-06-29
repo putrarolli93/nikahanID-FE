@@ -51,7 +51,7 @@ export default function ActivatePage() {
     if (!promoCode.trim()) return;
     setPromoStatus('checking');
     try {
-      const res = await fetch(`http://${window.location.hostname}:5000/api/reseller/check-promo/${promoCode}`, {
+      const res = await fetch(`/api/reseller/check-promo/${promoCode}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();

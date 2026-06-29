@@ -19,7 +19,7 @@ export default function HomePage() {
   const [previewError, setPreviewError] = useState(false);
 
   useEffect(() => {
-    fetch(`http://${window.location.hostname}:5000/api/templates`)
+    fetch(`/api/templates`)
       .then((res) => {
         if (!res.ok) throw new Error("Network error");
         return res.json();
@@ -166,7 +166,7 @@ export default function HomePage() {
                   <div
                     className="phone-mockup"
                     style={{
-                      backgroundImage: `url(http://${window.location.hostname}:5000${p.preview_url_mobile || p.preview_url})`,
+                      backgroundImage: `url(${p.preview_url_mobile || p.preview_url})`,
                     }}
                   />
                 </div>

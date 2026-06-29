@@ -361,7 +361,7 @@ function GuestBook({ initialEntries, weddingId, onCommentSubmitted }) {
       if (attendance === 'tidak') willAttendVal = 0;
       else if (attendance === 'mungkin') willAttendVal = null;
 
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/comments`, {
+      const response = await fetch(`/api/invitations/${weddingId}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

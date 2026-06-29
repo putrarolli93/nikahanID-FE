@@ -86,7 +86,7 @@ export default function EventSchedulePage() {
     const checkTimeout = setTimeout(async () => {
       setSlugStatus("checking");
       try {
-        const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/check-slug/${form.slug}`);
+        const res = await fetch(`/api/invitations/check-slug/${form.slug}`);
         if (res.ok) {
           setSlugStatus("available");
           setSlugMessage("Tersedia");
@@ -138,7 +138,7 @@ export default function EventSchedulePage() {
     // Create Draft invitation
     setApiLoading(true);
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations`, {
+      const response = await fetch(`/api/invitations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

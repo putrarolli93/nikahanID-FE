@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import GardenTemplate from "../templates/garden/GardenTemplate";
 
-const API_BASE = `http://${window.location.hostname}:5000`;
+const API_BASE = ``;
 
 export default function GardenInvitationPage() {
   const { slug } = useParams();

@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
   const fetchInvitations = async () => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/my-invitations`, {
+      const response = await fetch(`/api/invitations/my-invitations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
   const fetchResellerData = async () => {
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/reseller/dashboard`, {
+      const response = await fetch(`/api/reseller/dashboard`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
@@ -87,7 +87,7 @@ export default function DashboardPage() {
     e.preventDefault();
     setSavingProfile(true);
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/reseller/update-profile`, {
+      const response = await fetch(`/api/reseller/update-profile`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ export default function DashboardPage() {
     try {
       setSavingPassword(true);
       setPasswordMessage({ type: '', text: '' });
-      const res = await fetch(`http://${window.location.hostname}:5000/api/auth/change-password`, {
+      const res = await fetch(`/api/auth/change-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -543,7 +543,7 @@ export default function DashboardPage() {
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
                               <span style={{ padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 'bold', background: '#dcfce7', color: '#166534' }}>Sudah Cair</span>
                               {w.proof_image && (
-                                <a href={`http://${window.location.hostname}:5000${w.proof_image}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500', background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #bfdbfe', transition: 'all 0.2s' }}>
+                                <a href={`${w.proof_image}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', textDecoration: 'none', fontSize: '0.9rem', fontWeight: '500', background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #bfdbfe', transition: 'all 0.2s' }}>
                                   🖼️ Lihat Bukti Transfer
                                 </a>
                               )}

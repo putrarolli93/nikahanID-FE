@@ -41,7 +41,7 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
+        const res = await fetch(`/api/invitations/${slug}`);
         const result = await res.json();
         if (res.ok && result.success) {
           setData(result.data);
@@ -68,7 +68,7 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
 
     setSubmittingRsvp(true);
     try {
-      const res = await fetch(`http://${window.location.hostname}:5000/api/invitations/${data.id}/comments`, {
+      const res = await fetch(`/api/invitations/${data.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -80,7 +80,7 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
       if (res.ok) {
         setRsvpSuccess(true);
         // Refresh data to get new comments
-        const freshRes = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`);
+        const freshRes = await fetch(`/api/invitations/${slug}`);
         const freshData = await freshRes.json();
         setData(freshData.data);
       } else {
@@ -131,7 +131,7 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
           <h2 className="sf-section-title">Mempelai</h2>
           <div className="sf-couple-grid">
             <div className="sf-person">
-              <img src={groom.photo_url ? `http://${window.location.hostname}:5000${groom.photo_url}` : 'https://ui-avatars.com/api/?name=' + (groom.nickname || 'G') + '&background=2c3e50&color=fff&size=200'} alt="Groom" />
+              <img src={groom.photo_url ? `${groom.photo_url}` : 'https://ui-avatars.com/api/?name=' + (groom.nickname || 'G') + '&background=2c3e50&color=fff&size=200'} alt="Groom" />
               <div className="sf-person-name">{groom.full_name}</div>
               <div className="sf-person-parents">Putra dari Bpk. {groom.father_name} & Ibu {groom.mother_name}</div>
             </div>
@@ -139,7 +139,7 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
               <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '3rem', margin: '2rem 0', color: '#ccc' }}>&</h1>
             </div>
             <div className="sf-person">
-              <img src={bride.photo_url ? `http://${window.location.hostname}:5000${bride.photo_url}` : 'https://ui-avatars.com/api/?name=' + (bride.nickname || 'B') + '&background=e74c3c&color=fff&size=200'} alt="Bride" />
+              <img src={bride.photo_url ? `${bride.photo_url}` : 'https://ui-avatars.com/api/?name=' + (bride.nickname || 'B') + '&background=e74c3c&color=fff&size=200'} alt="Bride" />
               <div className="sf-person-name">{bride.full_name}</div>
               <div className="sf-person-parents">Putri dari Bpk. {bride.father_name} & Ibu {bride.mother_name}</div>
             </div>

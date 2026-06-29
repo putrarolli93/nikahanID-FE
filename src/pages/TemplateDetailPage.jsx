@@ -14,7 +14,7 @@ const formatRupiah = (amount) => {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(amount);
 };
 
-const API_BASE = `http://${window.location.hostname}:5000`;
+const API_BASE = ``;
 
 export default function TemplateDetailPage() {
   const { templateSlug } = useParams();

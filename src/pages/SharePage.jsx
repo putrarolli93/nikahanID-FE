@@ -27,7 +27,7 @@ export default function SharePage() {
 
     const fetchInvitation = async () => {
       try {
-        const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${slug}`, {
+        const response = await fetch(`/api/invitations/${slug}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -45,7 +45,7 @@ export default function SharePage() {
 
     const fetchGuests = async (weddingId) => {
       try {
-        const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${weddingId}/guests`, {
+        const response = await fetch(`/api/invitations/${weddingId}/guests`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await response.json();
@@ -70,7 +70,7 @@ export default function SharePage() {
   const saveCustomMessage = async () => {
     setIsSavingMsg(true);
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${invitation.id}/wa-message`, {
+      const response = await fetch(`/api/invitations/${invitation.id}/wa-message`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export default function SharePage() {
     if (!newGuestName.trim()) return;
     setIsAddingGuest(true);
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${invitation.id}/guests`, {
+      const response = await fetch(`/api/invitations/${invitation.id}/guests`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export default function SharePage() {
   const handleDeleteGuest = async (guestId) => {
     if (!window.confirm('Yakin ingin menghapus tamu ini?')) return;
     try {
-      const response = await fetch(`http://${window.location.hostname}:5000/api/invitations/${invitation.id}/guests/${guestId}`, {
+      const response = await fetch(`/api/invitations/${invitation.id}/guests/${guestId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
@@ -133,7 +133,7 @@ export default function SharePage() {
 
   const handleSendWA = async (guest) => {
     // Generate URL
-    const baseUrl = `http://${window.location.hostname}:5173/template/${invitation.template_slug}/${invitation.slug}`;
+    const baseUrl = `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}`;
     const encodedName = encodeURIComponent(guest.name);
     const invitationLink = `${baseUrl}?to=${encodedName}`;
 
@@ -159,7 +159,7 @@ export default function SharePage() {
     // Mark as sent
     if (guest.is_sent === 0) {
       try {
-        await fetch(`http://${window.location.hostname}:5000/api/invitations/${invitation.id}/guests/${guest.id}/mark-sent`, {
+        await fetch(`/api/invitations/${invitation.id}/guests/${guest.id}/mark-sent`, {
           method: 'PUT',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
@@ -171,7 +171,7 @@ export default function SharePage() {
   };
 
   const handleCopyLink = async (guest) => {
-    const baseUrl = `http://${window.location.hostname}:5173/template/${invitation.template_slug}/${invitation.slug}`;
+    const baseUrl = `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}`;
     const encodedName = encodeURIComponent(guest.name);
     const invitationLink = `${baseUrl}?to=${encodedName}`;
     try {
