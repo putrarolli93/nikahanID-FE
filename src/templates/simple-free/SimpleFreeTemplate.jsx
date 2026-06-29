@@ -109,7 +109,11 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
         {/* Hero Section */}
         <section className="sf-hero">
           <div className="sf-hero-subtitle">The Wedding Of</div>
-          <h1 className="sf-hero-title">{groom.nickname || 'Groom'} & {bride.nickname || 'Bride'}</h1>
+          <h1 className="sf-hero-title">
+            <span className="sf-hero-name">{groom.nickname || 'Groom'}</span>
+            <span className="sf-hero-amp">&</span>
+            <span className="sf-hero-name">{bride.nickname || 'Bride'}</span>
+          </h1>
           <div style={{ marginTop: '2rem' }}>
             <p>Kepada Yth.</p>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', margin: '0.5rem 0' }}>{guestName}</h2>

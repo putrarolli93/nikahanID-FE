@@ -305,12 +305,14 @@ export default function HomePage() {
       <div className="cta-bottom">
         <h2>Siap buat undangan yang memukau?</h2>
         <p>Bergabung dengan 50.000+ pengguna yang sudah mempercayai Datangya.site</p>
-        <button className="btn-cta-white" onClick={() => navigate("/register")}>
-          Mulai Gratis Sekarang
-        </button>
-        <button className="btn-cta-ghost2" onClick={() => navigate("/templates")}>
-          Lihat Template
-        </button>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+          <button className="btn-cta-white" onClick={() => navigate("/register")} style={{ margin: 0 }}>
+            Mulai Gratis Sekarang
+          </button>
+          <button className="btn-cta-ghost2" onClick={() => navigate("/templates")} style={{ margin: 0 }}>
+            Lihat Template
+          </button>
+        </div>
       </div>
 
     </div>

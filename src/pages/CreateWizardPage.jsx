@@ -31,6 +31,12 @@ export default function CreateWizardPage() {
   const [groomPhotoType, setGroomPhotoType] = useState("upload");
   const [bridePhotoType, setBridePhotoType] = useState("upload");
   const [showExampleModal, setShowExampleModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
 
   useEffect(() => {
     const fetchAvatars = async () => {
@@ -106,6 +112,11 @@ export default function CreateWizardPage() {
           const inv = result.data;
           setInvitationData(inv);
           setWeddingId(inv.id);
+
+          if (inv.template_is_premium === 0) {
+            setGroomPhotoType("avatar");
+            setBridePhotoType("avatar");
+          }
 
           // Populate step 1
           const groomData = inv.bride_groom?.find(p => p.type === "groom");
@@ -550,7 +561,7 @@ export default function CreateWizardPage() {
                       setActiveStep(s.num);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     } else {
-                      alert(`Silakan lengkapi langkah sebelumnya terlebih dahulu.`);
+                      showToast(`Silakan lengkapi langkah sebelumnya terlebih dahulu.`);
                     }
                   }}
                   style={{
@@ -640,7 +651,13 @@ export default function CreateWizardPage() {
                 <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
                   <button
                     type="button"
-                    onClick={() => setGroomPhotoType("upload")}
+                    onClick={() => {
+                      if (isFree) {
+                        showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
+                      } else {
+                        setGroomPhotoType("upload");
+                      }
+                    }}
                     style={{
                       flex: 1,
                       padding: "10px 14px",
@@ -650,7 +667,8 @@ export default function CreateWizardPage() {
                       color: groomPhotoType === "upload" ? "#fff" : "var(--text)",
                       fontSize: "13px",
                       fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: isFree ? "not-allowed" : "pointer",
+                      opacity: isFree ? 0.6 : 1,
                       transition: "all 0.2s ease",
                       display: "inline-flex",
                       alignItems: "center",
@@ -658,7 +676,11 @@ export default function CreateWizardPage() {
                       gap: "6px"
                     }}
                   >
-                    <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    {isFree ? (
+                      <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
+                    ) : (
+                      <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    )}
                     Unggah Foto Sendiri
                   </button>
                   <button
@@ -757,7 +779,13 @@ export default function CreateWizardPage() {
                 <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
                   <button
                     type="button"
-                    onClick={() => setBridePhotoType("upload")}
+                    onClick={() => {
+                      if (isFree) {
+                        showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
+                      } else {
+                        setBridePhotoType("upload");
+                      }
+                    }}
                     style={{
                       flex: 1,
                       padding: "10px 14px",
@@ -767,7 +795,8 @@ export default function CreateWizardPage() {
                       color: bridePhotoType === "upload" ? "#fff" : "var(--text)",
                       fontSize: "13px",
                       fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: isFree ? "not-allowed" : "pointer",
+                      opacity: isFree ? 0.6 : 1,
                       transition: "all 0.2s ease",
                       display: "inline-flex",
                       alignItems: "center",
@@ -775,7 +804,11 @@ export default function CreateWizardPage() {
                       gap: "6px"
                     }}
                   >
-                    <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    {isFree ? (
+                      <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
+                    ) : (
+                      <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                    )}
                     Unggah Foto Sendiri
                   </button>
                   <button
@@ -1045,8 +1078,8 @@ export default function CreateWizardPage() {
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                        color: quote.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        background: "var(--surface)", border: "1.5px solid var(--border)",
+                        color: quote.content ? "var(--dark)" : "var(--muted)",
                         fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
                       }}
                     >
@@ -1113,8 +1146,8 @@ export default function CreateWizardPage() {
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                        color: footerQuote.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        background: "var(--surface)", border: "1.5px solid var(--border)",
+                        color: footerQuote.content ? "var(--dark)" : "var(--muted)",
                         fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
                       }}
                     >
@@ -1176,8 +1209,8 @@ export default function CreateWizardPage() {
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                        color: blessing.content ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        background: "var(--surface)", border: "1.5px solid var(--border)",
+                        color: blessing.content ? "var(--dark)" : "var(--muted)",
                         fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
                       }}
                     >
@@ -1244,8 +1277,8 @@ export default function CreateWizardPage() {
                       style={{
                         width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                        background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)",
-                        color: music.url ? "var(--primary, #c9a96e)" : "var(--text-muted, #aaa)",
+                        background: "var(--surface)", border: "1.5px solid var(--border)",
+                        color: music.url ? "var(--dark)" : "var(--muted)",
                         fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
                       }}
                     >
@@ -1637,6 +1670,31 @@ export default function CreateWizardPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          background: '#0f172a',
+          color: '#f8fafc',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          zIndex: 2500,
+          fontWeight: '500',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'fadein 0.3s ease-out'
+        }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {toastMessage}
         </div>
       )}
     </div>

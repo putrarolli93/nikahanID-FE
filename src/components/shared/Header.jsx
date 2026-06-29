@@ -76,7 +76,7 @@ export default function Header() {
 
   return (
     <>
-      <nav className="nav">
+      <nav className={`nav ${isMenuOpen ? 'menu-open' : ''}`}>
         <div className="nav-logo" onClick={() => handleNavigation("/")}>
           <div className="nav-logo-icon">D</div>
           <span className="nav-logo-text">Datangya.site</span>
@@ -136,10 +136,7 @@ export default function Header() {
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside menu
       >
         <div className="mobile-nav-content">
-          {/* Close button inside menu */}
-          <button className="mobile-close-btn" onClick={closeMenu} aria-label="Tutup menu">
-            ✕
-          </button>
+
           
           <div className="mobile-nav-links">
             {links.map(l => (

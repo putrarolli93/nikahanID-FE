@@ -54,9 +54,9 @@ export default function TemplatesPage() {
             onClick={() => setActiveCategory(cat)}
           >{cat}</button>
         ))}
-        <div style={{marginLeft:"auto",display:"flex",gap:"0.5rem",alignItems:"center"}}>
-          <span style={{fontSize:12,color:"var(--muted)"}}>Urutkan:</span>
-          <select style={{border:"1px solid var(--border)",borderRadius:6,padding:"6px 10px",fontSize:12,color:"var(--text)",background:"#fff",outline:"none",fontFamily:"'Nunito',sans-serif"}}>
+        <div className="templates-sort">
+          <span className="sort-label">Urutkan:</span>
+          <select className="sort-select">
             <option>Terbaru</option>
             <option>Terpopuler</option>
             <option>Gratis Dulu</option>

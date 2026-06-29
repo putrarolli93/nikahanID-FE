@@ -272,26 +272,26 @@ export default function EventSchedulePage() {
                 <label className="es-label" htmlFor="slug">
                   Custom Link Undangan
                 </label>
-                <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden' }}>
-                  <span style={{ padding: '0.75rem 1rem', color: '#64748b', background: '#e2e8f0', borderRight: '1px solid #cbd5e1', fontSize: '0.9rem' }}>datangya.site/template/{templateSlug}/</span>
+                <div className="es-slug-input-wrapper">
+                  <span className="es-slug-prefix">datangya.site/template/{templateSlug}/</span>
                   <input
                     id="slug"
                     name="slug"
                     type="text"
-                    style={{ flex: 1, border: 'none', padding: '0.75rem', background: 'transparent', outline: 'none', color: '#0f172a', fontWeight: 'bold' }}
+                    className="es-slug-input"
                     placeholder="nama-kamu-dan-pasangan"
                     value={form.slug}
                     onChange={handleChange}
                     disabled={apiLoading}
                   />
-                  {form.slug && (
-                    <div style={{ padding: '0 1rem', display: 'flex', alignItems: 'center' }}>
-                      {slugStatus === 'checking' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>⌛ Mengecek...</span>}
-                      {slugStatus === 'available' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>✅ {slugMessage}</span>}
-                      {slugStatus === 'unavailable' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>❌ {slugMessage}</span>}
-                    </div>
-                  )}
                 </div>
+                {form.slug && (
+                  <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                    {slugStatus === 'checking' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '0.9rem' }}>⌛ Mengecek ketersediaan...</span>}
+                    {slugStatus === 'available' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '0.9rem', fontWeight: 'bold' }}>✅ Link tersedia dan bisa digunakan</span>}
+                    {slugStatus === 'unavailable' && <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontSize: '0.9rem', fontWeight: 'bold' }}>❌ Link sudah terpakai, silakan cari yang lain</span>}
+                  </div>
+                )}
                 {errors.slug && (
                   <span className="es-error">{errors.slug}</span>
                 )}

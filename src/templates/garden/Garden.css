@@ -298,10 +298,10 @@
 
 .garden__photo-frame {
   width: 100%;
-  max-width: 360px;
-  height: 460px;
+  max-width: 280px;
+  height: 360px;
   margin: 0 auto;
-  border-radius: 180px 30px 180px 30px;
+  border-radius: 140px 24px 140px 24px;
   overflow: hidden;
   border: 6px solid #fff;
   box-shadow: 0 15px 35px rgba(91,120,102,0.12);
