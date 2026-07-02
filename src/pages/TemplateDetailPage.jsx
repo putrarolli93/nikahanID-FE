@@ -22,14 +22,14 @@ export default function TemplateDetailPage() {
 
   const [template, setTemplate]   = useState(null);
   const [related, setRelated]     = useState([]);
-  const [activeTab, setActiveTab] = useState("preview");
+  const [activeTab, setActiveTab] = useState("mobile");
   const [imgError, setImgError]   = useState(false);
   const [loading, setLoading]     = useState(true);
 
   // reset state tiap template ganti
   useEffect(() => {
     setImgError(false);
-    setActiveTab("preview");
+    setActiveTab("mobile");
     setLoading(true);
     setTemplate(null); // Clear previous template data
 
@@ -98,7 +98,7 @@ export default function TemplateDetailPage() {
         <div className="detail-preview-col">
           {/* Tab */}
           <div className="detail-tabs">
-            {["preview", "mobile"].map((t) => (
+            {["mobile", "preview"].map((t) => (
               <button
                 key={t}
                 className={`detail-tab${activeTab === t ? " active" : ""}`}
@@ -109,19 +109,33 @@ export default function TemplateDetailPage() {
             ))}
           </div>
 
-          {/* Frame */}
-          <div className={`detail-frame${activeTab === "mobile" ? " mobile-frame" : ""}`}>
+          {/* Frame Wrapper */}
+          <div className="detail-preview-wrapper">
             {imgError ? (
               // Fallback for image error
               <div className="detail-frame-fallback">Preview belum tersedia</div>
             ) : ( 
-              <img
-                src={activeTab === "mobile" ? previewUrlMobile : previewUrl}
-                alt={`Preview template ${template.name}`}
-                className="detail-preview-img"
-                onError={() => setImgError(true)}
-                onLoad={() => setImgError(false)}
-              />
+              <>
+                {/* Desktop Frame */}
+                <div className={`detail-frame desktop-frame ${activeTab === "preview" ? "active" : ""}`}>
+                  <img
+                    src={previewUrl}
+                    alt={`Preview template ${template.name} desktop`}
+                    className="detail-preview-img"
+                    onError={() => setImgError(true)}
+                  />
+                </div>
+
+                {/* Mobile Frame */}
+                <div className={`detail-frame mobile-frame ${activeTab === "mobile" ? "active" : ""}`}>
+                  <img
+                    src={previewUrlMobile}
+                    alt={`Preview template ${template.name} mobile`}
+                    className="detail-preview-img"
+                    onError={() => setImgError(true)}
+                  />
+                </div>
+              </>
             )}
           </div>
 

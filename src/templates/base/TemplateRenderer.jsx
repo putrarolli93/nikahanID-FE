@@ -8,6 +8,7 @@ const templateComponents = {
   oceanic: lazy(() => import('../oceanic/OceanicTemplate')),
   'simple-free': lazy(() => import('../simple-free/SimpleFreeTemplate')),
   'modern-floral': lazy(() => import('../modern-floral/ModernFloralTemplate')),
+  'heartily': lazy(() => import('../heartily/HeartilyTemplate')),
 //   sage: lazy(() => import('../sage/SageTemplate')),
 //   bloom: lazy(() => import('../bloom/BloomTemplate')),
 //   madinah: lazy(() => import('../madinah/MadinahTemplate')),
