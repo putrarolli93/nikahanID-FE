@@ -15,6 +15,7 @@ export const TEMPLATES = [
   { id: 13, name: "Simple Free", slug: "simple-free", category: "Pernikahan", emoji: "🕊️", theme: "t1", pro: false },
   { id: 14, name: "Modern Floral", slug: "modern-floral", category: "Pernikahan", emoji: "🌸", theme: "t1", pro: false },
   { id: 15, name: "Heartily", slug: "heartily", category: "Pernikahan", emoji: "💕", theme: "t4", pro: false },
+  { id: 16, name: "Evergreen", slug: "evergreen", category: "Pernikahan", emoji: "🌿", theme: "t3", pro: false },
 ];
 
 export const CATEGORIES = ["Semua", "Pernikahan", "Aqiqah", "Ulang Tahun", "Tasyakuran"];

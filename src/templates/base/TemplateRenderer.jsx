@@ -9,14 +9,15 @@ const templateComponents = {
   'simple-free': lazy(() => import('../simple-free/SimpleFreeTemplate')),
   'modern-floral': lazy(() => import('../modern-floral/ModernFloralTemplate')),
   'heartily': lazy(() => import('../heartily/HeartilyTemplate')),
-//   sage: lazy(() => import('../sage/SageTemplate')),
-//   bloom: lazy(() => import('../bloom/BloomTemplate')),
-//   madinah: lazy(() => import('../madinah/MadinahTemplate')),
-//   luxe: lazy(() => import('../luxe/LuxeTemplate')),
-//   rustic: lazy(() => import('../rustic/RusticTemplate')),
-//   midnight: lazy(() => import('../midnight/MidnightTemplate')),
-//   garden: lazy(() => import('../garden/GardenTemplate')),
-//   barokah: lazy(() => import('../barokah/BarokahTemplate')),
+  'evergreen': lazy(() => import('../evergreen/EvergreenTemplate')),
+  //   sage: lazy(() => import('../sage/SageTemplate')),
+  //   bloom: lazy(() => import('../bloom/BloomTemplate')),
+  //   madinah: lazy(() => import('../madinah/MadinahTemplate')),
+  //   luxe: lazy(() => import('../luxe/LuxeTemplate')),
+  //   rustic: lazy(() => import('../rustic/RusticTemplate')),
+  //   midnight: lazy(() => import('../midnight/MidnightTemplate')),
+  //   garden: lazy(() => import('../garden/GardenTemplate')),
+  //   barokah: lazy(() => import('../barokah/BarokahTemplate')),
 };
 
 const LoadingSpinner = () => (
@@ -34,10 +35,10 @@ const ErrorTemplate = ({ message }) => (
 
 export default function TemplateRenderer({ templateSlug, data, config, isPreview = false }) {
   const [error, setError] = useState(null);
-  
+
   // Get template component based on slug
   const TemplateComponent = templateComponents[templateSlug];
-  
+
   useEffect(() => {
     if (!TemplateComponent && templateSlug) {
       setError(`Template "${templateSlug}" tidak ditemukan`);
@@ -45,20 +46,20 @@ export default function TemplateRenderer({ templateSlug, data, config, isPreview
       setError(null);
     }
   }, [templateSlug, TemplateComponent]);
-  
+
   if (error) {
     return <ErrorTemplate message={error} />;
   }
-  
+
   if (!TemplateComponent) {
     return <LoadingSpinner />;
   }
-  
+
   return (
     <Suspense fallback={<LoadingSpinner />}>
-      <TemplateComponent 
-        data={data} 
-        config={config} 
+      <TemplateComponent
+        data={data}
+        config={config}
         isPreview={isPreview}
       />
     </Suspense>

@@ -14,6 +14,7 @@ import OceanicInvitationPage from "./pages/OceanicInvitationPage";
 import SimpleFreeTemplate from './templates/simple-free/SimpleFreeTemplate';
 import ModernFloralTemplate from './templates/modern-floral/ModernFloralTemplate';
 import HeartilyTemplate from './templates/heartily/HeartilyTemplate';
+import EvergreenTemplate from './templates/evergreen/EvergreenTemplate';
 
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
@@ -36,7 +37,7 @@ function AppContent() {
   useEffect(() => {
     // Logic to hide header/footer based on current path
     const path = location.pathname;
-    
+
     // Cek apakah path diawali /template/ tapi BUKAN /templates/
     const isPreviewMode = path.startsWith("/template/") && !path.startsWith("/templates");
     setHideHeader(isPreviewMode);
@@ -44,7 +45,7 @@ function AppContent() {
   }, [location]);
 
   return (
-    <Layout 
+    <Layout
       hideHeader={hideHeader}
       hideFooter={hideFooter}
     >
@@ -60,9 +61,10 @@ function AppContent() {
         <Route path="/template/garden/:slug" element={<GardenInvitationPage />} />
         <Route path="/template/oceanic/:slug" element={<OceanicInvitationPage />} />
         <Route path="/template/modern-floral/:slug" element={<ModernFloralTemplate />} />
-        
+
         <Route path="/template/simple-free/:slug" element={<SimpleFreeTemplate />} />
         <Route path="/template/heartily/:slug" element={<HeartilyTemplate />} />
+        <Route path="/template/evergreen/:slug" element={<EvergreenTemplate />} />
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
