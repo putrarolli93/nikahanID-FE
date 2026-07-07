@@ -2,6 +2,72 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const compressImage = (file, maxMb = 1, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const maxSize = maxMb * 1024 * 1024;
+    if (file.size <= maxSize) {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        const maxDimension = 1600;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const compressedFile = new File([blob], file.name, {
+              type: "image/jpeg",
+              lastModified: Date.now(),
+            });
+            
+            if (compressedFile.size > maxSize && quality > 0.3) {
+              resolve(compressImage(compressedFile, maxMb, quality - 0.15));
+            } else {
+              resolve(compressedFile);
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = () => {
+        resolve(file);
+      };
+    };
+    reader.onerror = () => {
+      resolve(file);
+    };
+  });
+};
+
 export default function CreateWizardPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -256,7 +322,8 @@ export default function CreateWizardPage() {
       groomForm.append("address", groom.address);
       groomForm.append("instagram_username", groom.instagram_username);
       if (groomPhotoType === "upload" && groomFile) {
-        groomForm.append("photo", groomFile);
+        const compressedGroomFile = await compressImage(groomFile);
+        groomForm.append("photo", compressedGroomFile);
       } else if (groomPhotoType === "avatar" && groom.photo_url) {
         groomForm.append("photo_url", groom.photo_url);
       }
@@ -276,7 +343,8 @@ export default function CreateWizardPage() {
       brideForm.append("address", bride.address);
       brideForm.append("instagram_username", bride.instagram_username);
       if (bridePhotoType === "upload" && brideFile) {
-        brideForm.append("photo", brideFile);
+        const compressedBrideFile = await compressImage(brideFile);
+        brideForm.append("photo", compressedBrideFile);
       } else if (bridePhotoType === "avatar" && bride.photo_url) {
         brideForm.append("photo_url", bride.photo_url);
       }
@@ -359,7 +427,10 @@ export default function CreateWizardPage() {
       storyForm.append("story_date", newStory.story_date);
       storyForm.append("description", newStory.description);
       storyForm.append("order_index", stories.length);
-      if (storyFile) storyForm.append("photo", storyFile);
+      if (storyFile) {
+        const compressedStoryFile = await compressImage(storyFile);
+        storyForm.append("photo", compressedStoryFile);
+      }
 
       const response = await fetch(`/api/invitations/${weddingId}/love-stories`, {
         method: "POST",
@@ -406,7 +477,10 @@ export default function CreateWizardPage() {
     setMomentsLoading(true);
     try {
       const galleryForm = new FormData();
-      Array.from(galleryFiles).forEach(file => {
+      const compressedGalleryFiles = await Promise.all(
+        Array.from(galleryFiles).map(file => compressImage(file))
+      );
+      compressedGalleryFiles.forEach(file => {
         galleryForm.append("photos", file);
       });
       galleryForm.append("type", "gallery");

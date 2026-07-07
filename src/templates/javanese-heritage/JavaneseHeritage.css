@@ -1,0 +1,1458 @@
+@import url('https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+/* ─── SCROLL LOCKS ─── */
+.javanese-locked {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+/* ─── MOBILE LOCK WRAPPER ─── */
+.javanese-lock {
+  min-height: 100vh;
+  background: #F8F4EC;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ─── DESKTOP SPLIT SLIDER ─── */
+.javanese-desktop-slider {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .javanese-lock {
+    background: #EAE3D5;
+    display: block !important;
+  }
+
+  .javanese-desktop-slider {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 430px;
+    z-index: 100;
+    overflow: hidden;
+    background: #522F19;
+  }
+
+  .javanese-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+  }
+
+  .javanese-slide.active {
+    opacity: 1;
+  }
+
+  .javanese-slider-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(17, 8, 4, 0.85) 10%, rgba(17, 8, 4, 0.3) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 60px;
+    box-sizing: border-box;
+  }
+
+  .javanese-slider-content {
+    max-width: 600px;
+    color: #fdfbf7;
+  }
+
+  .javanese-slider-tag {
+    font-family: 'Marcellus', serif;
+    font-size: 0.9rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #c59b27;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .javanese-slider-title {
+    font-family: 'Marcellus', serif;
+    font-size: 3.2rem;
+    font-weight: 400;
+    margin: 0 0 20px;
+    line-height: 1.2;
+    color: #fdfbf7;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .javanese-slider-divider {
+    width: 80px;
+    height: 2px;
+    background: #c59b27;
+    margin-bottom: 20px;
+  }
+
+  .javanese-slider-date {
+    font-size: 1.05rem;
+    letter-spacing: 3px;
+    color: #dfd5c6;
+    margin: 0;
+  }
+
+  .javanese-template {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    border-left: 1px solid rgba(197, 155, 39, 0.2);
+  }
+
+  .javanese-opening {
+    left: auto !important;
+    right: 0 !important;
+    transform: translateX(0) translateY(0) !important;
+    width: 430px !important;
+  }
+
+  .javanese-opening.hidden {
+    transform: translateX(0) translateY(-100%) !important;
+  }
+}
+
+/* ─── TEMPLATE CONTAINER ─── */
+.javanese-template {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  background-color: #F8F4EC;
+  font-family: 'Jost', sans-serif;
+  color: #5B4447;
+  position: relative;
+  overflow-x: hidden;
+  box-shadow: 0 0 50px rgba(126, 93, 61, 0.15);
+}
+
+/* ─── MEGA MENDUNG CLOUD ANIMATIONS ─── */
+.javanese-clouds-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.javanese-cloud-item {
+  position: absolute;
+  width: 180px;
+  height: 90px;
+  pointer-events: none;
+  animation: driftCloud linear infinite;
+}
+
+@keyframes driftCloud {
+  0% {
+    left: -200px;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+.javanese-cloud-item-reverse {
+  position: absolute;
+  width: 180px;
+  height: 90px;
+  pointer-events: none;
+  animation: driftCloudReverse linear infinite;
+}
+
+@keyframes driftCloudReverse {
+  0% {
+    right: -200px;
+  }
+
+  100% {
+    right: 100%;
+  }
+}
+
+/* ─── OPENING SCREEN ─── */
+.javanese-opening {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background-color: #F8F4EC;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 28px;
+  box-sizing: border-box;
+  text-align: center;
+  transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+  overflow: hidden;
+}
+
+.javanese-opening.hidden {
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+/* Joglo corner frame decorations */
+.javanese-opening-corner-tl {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-top: 3px double #7E5D3D;
+  border-left: 3px double #7E5D3D;
+  border-top-left-radius: 12px;
+  opacity: 0.25;
+}
+
+.javanese-opening-corner-tr {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  border-top: 3px double #7E5D3D;
+  border-right: 3px double #7E5D3D;
+  border-top-right-radius: 12px;
+  opacity: 0.25;
+}
+
+/* Wayang & Gunungan Placements */
+.javanese-opening-gunungan {
+  width: 140px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 15px rgba(197, 155, 39, 0.4));
+  animation: floatGunungan 4s ease-in-out infinite alternate;
+}
+
+.javanese-opening-wayang-kiri {
+  position: absolute;
+  bottom: 0;
+  left: 240px;
+  width: 120px;
+  /* opacity: 0.85; */
+  filter: sepia(0.2) saturate(1.1);
+  transform-origin: bottom center;
+  animation: swingWayangKiriFlipped 5s ease-in-out infinite alternate;
+}
+
+.javanese-opening-wayang-kanan {
+  position: absolute;
+  bottom: 40px;
+  right: -20px;
+  width: 120px;
+  /* opacity: 0.85; */
+  filter: sepia(0.2) saturate(1.1);
+  transform-origin: bottom right;
+  animation: swingWayangKanan 5s ease-in-out infinite alternate;
+}
+
+@keyframes floatGunungan {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
+@keyframes swingWayangKiri {
+  0% {
+    transform: rotate(-1deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(3deg) translateY(-4px);
+  }
+}
+
+/* Flipped version for the centered-left wayang */
+@keyframes swingWayangKiriFlipped {
+  0% {
+    transform: scaleX(-1) rotate(-1deg) translateY(0);
+  }
+
+  100% {
+    transform: scaleX(-1) rotate(3deg) translateY(-4px);
+  }
+}
+
+@keyframes swingWayangKanan {
+  0% {
+    transform: rotate(1deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(-3deg) translateY(-4px);
+  }
+}
+
+.javanese-opening-label {
+  font-family: 'Marcellus', serif;
+  font-size: 0.8rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #7E5D3D;
+  margin-bottom: 12px;
+  animation: fadeIn 1.5s ease forwards 0.3s;
+  opacity: 0;
+}
+
+.javanese-opening-names {
+  font-family: 'Marcellus', serif;
+  font-size: 2.8rem;
+  font-weight: 400;
+  color: #7F5839;
+  line-height: 1.15;
+  margin: 0;
+  text-shadow: none;
+  animation: fadeUp 1.2s ease forwards 0.5s;
+  opacity: 0;
+}
+
+.javanese-opening-amp {
+  font-family: 'Marcellus', serif;
+  font-size: 2.2rem;
+  color: #7E5D3D;
+  margin: 0 12px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.javanese-opening-clouds-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.javanese-opening-cloud-kiri {
+  position: absolute;
+  left: 0;
+  width: 115px;
+  height: auto;
+  pointer-events: none;
+  animation: swayOpeningCloud 8s ease-in-out infinite;
+  /* opacity: 0.45; */
+  filter: sepia(0.1) saturate(0.9);
+}
+
+.javanese-opening-cloud-kanan {
+  position: absolute;
+  right: 0;
+  width: 115px;
+  height: auto;
+  pointer-events: none;
+  animation: swayOpeningCloud 10s ease-in-out infinite alternate;
+  /* opacity: 0.45; */
+  filter: sepia(0.1) saturate(0.9);
+}
+
+@keyframes swayOpeningCloud {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-4px) translateX(3px) scale(1.02);
+  }
+
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+.javanese-opening-awan-bawah {
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.javanese-opening-label,
+.javanese-opening-names,
+.javanese-opening-date,
+.javanese-opening-invite-text,
+.javanese-opening-guest,
+.javanese-opening-apology,
+.javanese-btn-open,
+.javanese-opening-gunungan {
+  position: relative;
+  z-index: 5;
+}
+
+.javanese-opening-date {
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #5B4447;
+  margin-top: 10px;
+  font-weight: 500;
+  animation: fadeIn 1.5s ease forwards 0.8s;
+  opacity: 0;
+}
+
+.javanese-opening-invite-text {
+  font-size: 0.8rem;
+  color: #5B4447;
+  margin: 32px 0 10px;
+  line-height: 1.6;
+}
+
+.javanese-opening-guest {
+  font-family: 'Marcellus', serif;
+  font-size: 1.35rem;
+  color: #7E5D3D;
+  margin-bottom: 8px;
+  text-shadow: none;
+}
+
+.javanese-opening-apology {
+  font-size: 0.65rem;
+  color: #8b7d72;
+  font-style: italic;
+  margin-bottom: 32px;
+}
+
+.javanese-btn-open {
+  background: linear-gradient(180deg, #7E5D3D 0%, #522F19 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 27px;
+  padding: 11px 28px;
+  font-family: 'Marcellus', serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(126, 93, 61, 0.25);
+  font-weight: 500;
+}
+
+.javanese-btn-open:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(126, 93, 61, 0.4);
+}
+
+/* ─── INNER CONTENT ─── */
+.javanese-inner {
+  position: relative;
+  z-index: 2;
+  background-color: #F8F4EC;
+}
+
+/* ─── SECTION BASE ─── */
+.javanese-section {
+  position: relative;
+  padding: 85px 28px;
+  text-align: center;
+  border-bottom: 1px solid rgba(197, 155, 39, 0.15);
+  overflow: visible;
+}
+
+/* Alternating background colors */
+.javanese-template .section-hero {
+  background-color: rgba(248, 244, 236, 0.95) !important;
+}
+
+.javanese-template .section-couple {
+  background-color: #f4eee3 !important;
+}
+
+.javanese-template .section-schedule {
+  background-color: rgba(248, 244, 236, 0.95) !important;
+}
+
+.javanese-template .section-gallery {
+  background-color: #f4eee3 !important;
+}
+
+.javanese-template .section-gifts {
+  background-color: rgba(248, 244, 236, 0.95) !important;
+}
+
+.javanese-template .section-rsvp {
+  background-color: #f4eee3 !important;
+}
+
+/* Wayang decorations framing sections */
+.javanese-section-decor-kiri {
+  position: absolute;
+  /* top: 800px; */
+  bottom: 0;
+  /* margin-bottom: auto; */
+  left: -40px;
+  width: 220px;
+  /* opacity: 0.35; */
+  pointer-events: none;
+  transform-origin: bottom left;
+  animation: swingWayangKiri 6s ease-in-out infinite alternate;
+}
+
+.javanese-section-decor-kanan {
+  position: absolute;
+  /* top: 800px; */
+  bottom: 0;
+  right: -40px;
+  width: 220px;
+  /* opacity: 0.35; */
+  pointer-events: none;
+  transform-origin: bottom right;
+  animation: swingWayangKanan 6s ease-in-out infinite alternate-reverse;
+}
+
+.javanese-couple-gunungan-decor {
+  width: 60px;
+  opacity: 0.25;
+  margin-bottom: 12px;
+}
+
+.javanese-gallery-gunungan-decor {
+  width: 50px;
+  opacity: 0.2;
+  margin-bottom: 12px;
+}
+
+/* ─── DIVIDERS & LABELS ─── */
+.javanese-section-label {
+  font-family: 'Marcellus', serif;
+  font-size: 0.72rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: #7E5D3D;
+  margin-bottom: 8px;
+}
+
+.javanese-section-title {
+  font-family: 'Marcellus', serif;
+  font-size: 2.1rem;
+  font-weight: 400;
+  color: #7F5839;
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+
+.javanese-divider {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #7E5D3D, transparent);
+  margin: 14px auto;
+  position: relative;
+}
+
+.javanese-divider::after {
+  content: '♦';
+  color: #7E5D3D;
+  font-size: 0.6rem;
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ─── HERO SECTION ─── */
+.javanese-hero-tag {
+  font-family: 'Marcellus', serif;
+  font-size: 0.8rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #7E5D3D;
+  margin-bottom: 24px;
+}
+
+.javanese-hero-photo-wrapper {
+  position: relative;
+  width: 200px;
+  height: 270px;
+  margin: 0 auto 32px;
+  filter: drop-shadow(0 12px 28px rgba(34, 20, 13, 0.15));
+  z-index: 1;
+  /* allow z-index negative children */
+  overflow: visible;
+}
+
+.javanese-hero-bg-gunungan-left {
+  position: absolute;
+  top: 50%;
+  left: -80px;
+  transform: translateY(-50%) rotate(-15deg);
+  width: 140px;
+  height: auto;
+  opacity: 0.5;
+  z-index: -2;
+  pointer-events: none;
+  filter: sepia(0.2) saturate(0.8);
+  animation: floatLeftGunungan 5s ease-in-out infinite alternate;
+}
+
+.javanese-hero-bg-gunungan-right {
+  position: absolute;
+  top: 50%;
+  right: -80px;
+  transform: translateY(-50%) rotate(15deg);
+  width: 140px;
+  height: auto;
+  opacity: 0.5;
+  z-index: -2;
+  pointer-events: none;
+  filter: sepia(0.2) saturate(0.8);
+  animation: floatRightGunungan 5s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatLeftGunungan {
+  0% {
+    transform: translateY(-50%) rotate(-15deg) scale(1);
+  }
+
+  100% {
+    transform: translateY(-53%) rotate(-13deg) scale(1.02);
+  }
+}
+
+@keyframes floatRightGunungan {
+  0% {
+    transform: translateY(-50%) rotate(15deg) scale(1);
+  }
+
+  100% {
+    transform: translateY(-53%) rotate(13deg) scale(1.02);
+  }
+}
+
+.javanese-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 100px 100px 8px 8px;
+  border: 6px solid #7E5D3D;
+  box-shadow: 0 8px 24px rgba(126, 93, 61, 0.15);
+}
+
+.javanese-hero-photo-ring {
+  display: none;
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  25% {
+    transform: scale(1.04);
+  }
+
+  50% {
+    transform: scale(1);
+  }
+
+  75% {
+    transform: scale(1.02);
+  }
+}
+
+.javanese-hero-names {
+  font-family: 'Marcellus', serif;
+  font-size: 2.8rem;
+  font-weight: 400;
+  color: #7F5839;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.javanese-hero-amp {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: #7E5D3D;
+  font-size: 1.8rem;
+  margin: 2px 0;
+}
+
+.javanese-hero-date {
+  font-size: 0.85rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #7F5839;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.javanese-verse {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #5B4447;
+  line-height: 1.7;
+  margin: 24px auto 0;
+  max-width: 320px;
+}
+
+.javanese-verse-source {
+  font-size: 0.7rem;
+  color: #7E5D3D;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+/* ─── COUPLE SECTION ─── */
+.javanese-blessing-text {
+  font-size: 0.85rem;
+  color: #5B4447;
+  max-width: 320px;
+  margin: 0 auto 28px;
+  line-height: 1.75;
+  font-style: italic;
+}
+
+.javanese-couple-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  margin-top: 24px;
+}
+
+.javanese-person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.javanese-person-photo {
+  width: 130px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 65px 65px 12px 12px;
+  border: 3px solid #fff;
+  box-shadow: 0 8px 24px rgba(34, 20, 13, 0.15);
+}
+
+.javanese-person-name {
+  font-family: 'Marcellus', serif;
+  font-size: 1.55rem;
+  color: #7F5839;
+  margin: 0;
+}
+
+.javanese-person-fullname {
+  font-size: 0.8rem;
+  color: #7E5D3D;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.javanese-person-parents {
+  font-size: 0.78rem;
+  color: #5B4447;
+  line-height: 1.6;
+}
+
+.javanese-couple-and {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 2.2rem;
+  color: #7E5D3D;
+  margin: 8px 0;
+}
+
+/* ─── SCHEDULE SECTION ─── */
+.javanese-event-card {
+  background: #fff;
+  border: 1px solid rgba(126, 93, 61, 0.15);
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(126, 93, 61, 0.04);
+}
+
+.javanese-event-name {
+  font-family: 'Marcellus', serif;
+  font-size: 1.3rem;
+  color: #7F5839;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.javanese-event-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #5B4447;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.javanese-event-icon {
+  font-size: 1rem;
+}
+
+.javanese-maps-btn {
+  display: inline-block;
+  background: #7E5D3D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 24px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(126, 93, 61, 0.2);
+}
+
+.javanese-maps-btn:hover {
+  background: #522F19;
+  color: #FFFFFF;
+}
+
+/* ─── GALLERY SECTION ─── */
+.javanese-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.javanese-gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  cursor: zoom-in;
+  border: 2px solid #fff;
+}
+
+.javanese-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.javanese-gallery-item:hover img {
+  transform: scale(1.08);
+}
+
+/* ─── GIFTS SECTION ─── */
+.javanese-gifts-intro {
+  font-size: 0.85rem;
+  color: #5B4447;
+  max-width: 320px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.javanese-gifts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.javanese-gift-card {
+  background: #fff;
+  border: 1px solid rgba(126, 93, 61, 0.15);
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 4px 15px rgba(126, 93, 61, 0.04);
+}
+
+.gift-bank-badge,
+.gift-address-badge {
+  background: #7E5D3D;
+  color: #FFFFFF;
+  display: inline-block;
+  padding: 4px 16px;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  font-family: 'Marcellus', serif;
+}
+
+.gift-account-number {
+  font-family: 'Marcellus', serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: #7F5839;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.gift-account-name,
+.gift-recipient-name {
+  font-size: 0.82rem;
+  color: #8b7d72;
+  margin-bottom: 16px;
+}
+
+.gift-address-text {
+  font-size: 0.85rem;
+  color: #5B4447;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.javanese-copy-btn {
+  width: 100%;
+  background: #FFFBF5;
+  color: #7E5D3D;
+  border: 1px solid rgba(126, 93, 61, 0.3);
+  border-radius: 50px;
+  padding: 10px;
+  font-size: 0.75rem;
+  font-family: 'Marcellus', serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.javanese-copy-btn:hover {
+  background: #7E5D3D;
+  color: #FFFFFF;
+  border-color: #7E5D3D;
+}
+
+/* ─── RSVP SECTION ─── */
+.javanese-rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.javanese-input,
+.javanese-select,
+.javanese-textarea {
+  background: #fff;
+  border: 1px solid rgba(126, 93, 61, 0.25);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #5B4447;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.javanese-input:focus,
+.javanese-select:focus,
+.javanese-textarea:focus {
+  border-color: #7E5D3D;
+}
+
+.javanese-submit-btn {
+  background: linear-gradient(180deg, #7E5D3D 0%, #522F19 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 50px;
+  padding: 12px;
+  font-family: 'Marcellus', serif;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(126, 93, 61, 0.25);
+}
+
+.javanese-submit-btn:hover {
+  background: linear-gradient(180deg, #522F19 0%, #301a0d 100%);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.javanese-success {
+  color: #7F5839;
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.javanese-comments {
+  margin-top: 36px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.javanese-comment-card {
+  background: #fff;
+  border: 1px solid rgba(126, 93, 61, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01);
+}
+
+.javanese-comment-name {
+  font-family: 'Marcellus', serif;
+  font-size: 0.95rem;
+  color: #7F5839;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.javanese-comment-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 50px;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.javanese-comment-badge.badge-hadir {
+  background: rgba(126, 93, 61, 0.1);
+  color: #7E5D3D;
+}
+
+.javanese-comment-badge.badge-tidak {
+  background: #fdf0ee;
+  color: #b05040;
+}
+
+.javanese-comment-badge.badge-mungkin {
+  background: #fcf6e8;
+  color: #887040;
+}
+
+.javanese-comment-text {
+  font-size: 0.82rem;
+  color: #5B4447;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ─── FOOTER ─── */
+.javanese-footer {
+  padding: 80px 28px;
+  text-align: center;
+  background-color: #f4eee3;
+}
+
+.javanese-footer-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #5B4447;
+  max-width: 300px;
+  margin: 0 auto 20px;
+  line-height: 1.6;
+}
+
+.javanese-footer-date {
+  font-size: 0.78rem;
+  color: #7E5D3D;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.javanese-footer-gunungan {
+  width: 60px;
+  opacity: 0.25;
+  margin-bottom: 16px;
+}
+
+.javanese-footer-brand {
+  font-size: 0.72rem;
+  color: #8b7d72;
+}
+
+.javanese-footer-brand a {
+  color: #7E5D3D;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ─── LIGHTBOX ZOOM MODAL ─── */
+.javanese-lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(17, 8, 4, 0.95);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+.javanese-lightbox img {
+  max-width: 90%;
+  max-height: 80%;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  border: 4px solid #fff;
+}
+
+.javanese-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.5rem;
+  cursor: pointer;
+}
+
+/* ─── STICKY BOTTOM NAVIGATION ─── */
+.javanese-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: 64px;
+  background: rgba(82, 47, 25, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(126, 93, 61, 0.25);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 10px;
+  box-sizing: border-box;
+  z-index: 999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.javanese-bottom-nav .nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dfd5c6;
+  opacity: 0.65;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.javanese-bottom-nav .nav-item.active {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.javanese-bottom-nav .nav-icon {
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+
+.javanese-bottom-nav .nav-text {
+  font-size: 0.62rem;
+  font-family: 'Marcellus', serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ─── FLOATING AUDIO CONTROLLER ─── */
+.javanese-audio-toggle {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(82, 47, 25, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(126, 93, 61, 0.3);
+  color: #dfd5c6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 998;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.javanese-audio-toggle.playing {
+  animation: rotateAudio 10s linear infinite;
+  box-shadow: 0 4px 20px rgba(126, 93, 61, 0.4);
+  background: rgba(126, 93, 61, 0.95);
+}
+
+.javanese-audio-icon {
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+@keyframes rotateAudio {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── SCROLL REVEAL CLUES ─── */
+.javanese-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.javanese-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Base animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── TOP DECORATIVE CLOUDS ─── */
+.javanese-decor-awan-kiri {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 140px;
+  z-index: 10;
+  pointer-events: none;
+  animation: floatTopCloud 6s ease-in-out infinite alternate;
+}
+
+.javanese-decor-awan-kanan {
+  position: absolute;
+  top: 25px;
+  right: 0;
+  width: 140px;
+  z-index: 10;
+  pointer-events: none;
+  animation: floatTopCloud 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatTopCloud {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    transform: translateY(-5px) scale(1.03);
+  }
+}
+
+/* ─── WAYANG CLOUD SECTION DIVIDERS ─── */
+.javanese-cloud-wayang-divider {
+  /* position: relative; */
+  width: 100%;
+  height: 90px;
+  margin-top: 30px;
+  /* margin-bottom: -90px; */
+  overflow: visible;
+  z-index: 5;
+}
+
+.divider-cloud-base {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.divider-wayang-gunungan {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: auto;
+  opacity: 0.35;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.divider-gunungans-wrapper {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.divider-gunungans-wrapper .divider-wayang-gunungan-right {
+  position: absolute;
+  bottom: 50px;
+  right: -120px;
+  width: 246px;
+  /* height: auto; */
+  /* opacity: 0.35; */
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: zoomUpDownRight 5s ease-in-out infinite alternate;
+}
+
+.divider-gunungans-wrapper .divider-wayang-gunungan-left {
+  position: absolute;
+  bottom: 40px;
+  left: 70px;
+  width: 246px;
+  /* height: auto; */
+  /* opacity: 0.35; */
+  pointer-events: none;
+  transform-origin: bottom center;
+  animation: zoomUpDownLeft 5s ease-in-out infinite alternate;
+}
+
+@keyframes zoomUpDownLeft {
+  0% {
+    transform: rotate(-10deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(-8deg) scale(1.06);
+  }
+}
+
+@keyframes zoomUpDownRight {
+  0% {
+    transform: rotate(3deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(5deg) scale(1.06);
+  }
+}
+
+/* ─── COUNTDOWN STYLING ─── */
+.javanese-countdown {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 24px auto 16px;
+  max-width: 320px;
+}
+
+.javanese-countdown-item {
+  background: rgba(34, 20, 13, 0.6);
+  border: 1px solid rgba(197, 155, 39, 0.35);
+  border-radius: 12px;
+  padding: 10px 8px;
+  min-width: 60px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+.javanese-countdown-num {
+  font-family: 'Jost', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #c59b27;
+  line-height: 1.1;
+}
+
+.javanese-countdown-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.65rem;
+  color: #a08060;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+/* Mini countdown inside white cards */
+.javanese-countdown-mini {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px auto;
+  max-width: 280px;
+}
+
+.javanese-countdown-mini .javanese-countdown-item {
+  background: rgba(126, 93, 61, 0.06);
+  border: 1px solid rgba(126, 93, 61, 0.2);
+  border-radius: 8px;
+  padding: 6px 4px;
+  min-width: 50px;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.javanese-countdown-mini .javanese-countdown-num {
+  font-size: 1.15rem;
+  color: #7E5D3D;
+}
+
+.javanese-countdown-mini .javanese-countdown-label {
+  font-size: 0.58rem;
+  color: #8b7d72;
+}

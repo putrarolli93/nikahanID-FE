@@ -87,6 +87,55 @@ function Butterfly({ className }) {
   );
 }
 
+// Countdown component for Heartily Template
+function HeartilyCountdown({ targetISO, isMini = false }) {
+  const [time, setTime] = useState({ d: '00', h: '00', m: '00', s: '00' });
+
+  useEffect(() => {
+    if (!targetISO) return;
+    const tick = () => {
+      const diff = new Date(targetISO) - new Date();
+      if (diff <= 0) {
+        setTime({ d: '00', h: '00', m: '00', s: '00' });
+        return;
+      }
+      
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+
+      setTime({
+        d: d < 10 ? `0${d}` : String(d),
+        h: h < 10 ? `0${h}` : String(h),
+        m: m < 10 ? `0${m}` : String(m),
+        s: s < 10 ? `0${s}` : String(s)
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [targetISO]);
+
+  const items = [
+    { num: time.d, label: 'Hari' },
+    { num: time.h, label: 'Jam' },
+    { num: time.m, label: 'Menit' },
+    { num: time.s, label: 'Detik' }
+  ];
+
+  return (
+    <div className={`heartily-countdown ${isMini ? 'heartily-countdown-mini' : ''}`}>
+      {items.map(({ num, label }, i) => (
+        <div key={i} className="heartily-countdown-item">
+          <div className="heartily-countdown-num">{num}</div>
+          <div className="heartily-countdown-label">{label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function HeartilyTemplate({ isPreview = false }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
@@ -115,9 +164,10 @@ export default function HeartilyTemplate({ isPreview = false }) {
 
   // Desktop slider carousel transition timer
   useEffect(() => {
-    if (!data?.galleries || data.galleries.length <= 1) return;
+    const list = data?.moments || data?.galleries || [];
+    if (list.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % data.galleries.length);
+      setCurrentSlide(prev => (prev + 1) % list.length);
     }, 4500);
     return () => clearInterval(interval);
   }, [data]);
@@ -143,7 +193,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
     };
   }, [audio]);
 
-  useEffect(() => {
+  const fetchInvitation = () => {
     if (isPreview || !slug || slug === 'preview') {
       setData(MOCK_DATA);
       setLoading(false);
@@ -153,6 +203,10 @@ export default function HeartilyTemplate({ isPreview = false }) {
       .then(r => r.json())
       .then(d => { setData(d.data || d); setLoading(false); })
       .catch(() => { setData(MOCK_DATA); setLoading(false); });
+  };
+
+  useEffect(() => {
+    fetchInvitation();
   }, [slug, isPreview]);
 
   // Scroll reveal observer
@@ -230,13 +284,29 @@ export default function HeartilyTemplate({ isPreview = false }) {
     if (!rsvpForm.guest_name.trim()) return;
     setSubmitting(true);
     try {
-      await fetch(`/api/invitations/${slug}/rsvp`, {
+      let willAttendVal = 1;
+      if (rsvpForm.attendance_status === 'tidak') willAttendVal = 0;
+      else if (rsvpForm.attendance_status === 'mungkin') willAttendVal = null;
+
+      const response = await fetch(`/api/invitations/${data.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rsvpForm),
+        body: JSON.stringify({
+          guest_name: rsvpForm.guest_name,
+          will_attend: willAttendVal,
+          jumlah_tamu: 1,
+          message: rsvpForm.message
+        }),
       });
-      setRsvpSuccess(true);
-    } catch {
+
+      if (response.ok) {
+        setRsvpSuccess(true);
+        fetchInvitation();
+      } else {
+        alert('Gagal mengirim ucapan');
+      }
+    } catch (err) {
+      console.error(err);
       setRsvpSuccess(true);
     } finally {
       setSubmitting(false);
@@ -250,11 +320,29 @@ export default function HeartilyTemplate({ isPreview = false }) {
   const bride = data.bride_groom?.find(p => p.type === 'bride') || {};
   const akad = data.schedules?.find(s => s.event_name === 'Akad Nikah');
   const resepsi = data.schedules?.find(s => s.event_name === 'Resepsi');
-  const displayQuote = data.quote || (data.quotes && data.quotes.length > 0 ? data.quotes[0] : null) || data.blessings?.find(b => b.type === 'prayer');
-  const displayFooterQuote = data.footer_quote || (data.quotes && data.quotes.length > 1 ? data.quotes[1] : null);
-  const displayBlessing = data.blessing || (data.blessings && data.blessings.length > 0 ? data.blessings[0] : null);
-  const galleries = data.galleries || [];
+  const displayQuote = data.quote || (data.quotes && data.quotes.length > 0 ? data.quotes[0] : null) || data.blessings?.find(b => b.type === 'prayer') || {
+    content: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.",
+    source: "QS. Ar-Rum: 21"
+  };
+  const displayFooterQuote = data.footer_quote || data.blessings?.find(b => b.type === 'footer_quote') || (data.quotes && data.quotes.length > 1 ? data.quotes[1] : null) || {
+    content: "Cinta sejati tidak pernah memiliki akhir yang bahagia, karena cinta sejati tidak pernah berakhir.",
+    source: ""
+  };
+  const displayBlessing = data.blessing || data.blessings?.find(b => b.type === 'prayer') || (data.blessings && data.blessings.length > 0 ? data.blessings[0] : null) || {
+    content: "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kami."
+  };
+  const galleries = data.moments || data.galleries || [];
   const comments = data.comments || [];
+
+  const getEventIsoString = (schedule) => {
+    if (!schedule || !schedule.event_date) return null;
+    const datePart = schedule.event_date.split("T")[0];
+    const timePart = schedule.start_time ? schedule.start_time : "08:00:00";
+    return `${datePart}T${timePart}`;
+  };
+  
+  const countdownTarget = akad ? getEventIsoString(akad) : null;
+  const resepsiTarget = resepsi ? getEventIsoString(resepsi) : null;
 
   // Normalize gifts from API or MOCK_DATA
   const normalizedGifts = [];
@@ -362,7 +450,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
             {displayQuote && (
               <>
                 <div className="heartily-divider" />
-                <p className="heartily-verse">"{displayQuote.content}"</p>
+                <p className="heartily-verse">"{displayQuote.content || displayQuote}"</p>
                 {displayQuote.source && <div style={{ fontSize: '0.72rem', color: '#c47a8a', marginTop: 8, letterSpacing: 1 }}>{displayQuote.source}</div>}
               </>
             )}
@@ -383,7 +471,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
 
             {displayBlessing && (
               <p style={{ fontSize: '0.85rem', color: '#9a6070', maxWidth: '320px', margin: '0 auto 24px', lineHeight: '1.6' }}>
-                {displayBlessing.content}
+                {displayBlessing.content || displayBlessing}
               </p>
             )}
 
@@ -424,6 +512,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
             {akad && (
               <div className="heartily-event-card">
                 <div className="heartily-event-name">Akad Nikah</div>
+                {countdownTarget && <HeartilyCountdown targetISO={countdownTarget} isMini={true} />}
                 <div className="heartily-event-row"><span className="heartily-event-icon">📅</span>{formatDate(akad.event_date)}</div>
                 <div className="heartily-event-row"><span className="heartily-event-icon">⏰</span>{akad.start_time} – {akad.end_time || 'Selesai'}</div>
                 <div className="heartily-event-row"><span className="heartily-event-icon">📍</span>{akad.event_address}</div>
@@ -433,6 +522,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
             {resepsi && (
               <div className="heartily-event-card">
                 <div className="heartily-event-name">Resepsi</div>
+                {resepsiTarget && <HeartilyCountdown targetISO={resepsiTarget} isMini={true} />}
                 <div className="heartily-event-row"><span className="heartily-event-icon">📅</span>{formatDate(resepsi.event_date)}</div>
                 <div className="heartily-event-row"><span className="heartily-event-icon">⏰</span>{resepsi.start_time} – {resepsi.end_time || 'Selesai'}</div>
                 <div className="heartily-event-row"><span className="heartily-event-icon">📍</span>{resepsi.event_address}</div>
@@ -583,9 +673,9 @@ export default function HeartilyTemplate({ isPreview = false }) {
           <footer className="heartily-footer">
             <div className="heartily-divider" />
             
-            {displayFooterQuote && displayFooterQuote.content && (
+            {displayFooterQuote && (
               <p style={{ fontStyle: 'italic', fontSize: '0.9rem', color: '#9a6070', margin: '0 auto 20px', maxWidth: '300px', lineHeight: '1.6' }}>
-                "{displayFooterQuote.content}"
+                "{displayFooterQuote.content || displayFooterQuote}"
               </p>
             )}
 
@@ -596,7 +686,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
               {akad ? formatDate(akad.event_date) : ''}
             </div>
             <div className="heartily-footer-brand">
-              Dibuat dengan 💕 oleh <a href="/">nikahanID</a>
+              Dibuat dengan ❤️ oleh <a href="/">datangya.site</a>
             </div>
           </footer>
 

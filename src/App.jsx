@@ -15,6 +15,8 @@ import SimpleFreeTemplate from './templates/simple-free/SimpleFreeTemplate';
 import ModernFloralTemplate from './templates/modern-floral/ModernFloralTemplate';
 import HeartilyTemplate from './templates/heartily/HeartilyTemplate';
 import EvergreenTemplate from './templates/evergreen/EvergreenTemplate';
+import JavaneseHeritageTemplate from './templates/javanese-heritage/JavaneseHeritageTemplate';
+
 
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
 import EventSchedulePage from "./pages/EventSchedulePage"; // Step 2: Event schedule form
@@ -65,6 +67,7 @@ function AppContent() {
         <Route path="/template/simple-free/:slug" element={<SimpleFreeTemplate />} />
         <Route path="/template/heartily/:slug" element={<HeartilyTemplate />} />
         <Route path="/template/evergreen/:slug" element={<EvergreenTemplate />} />
+        <Route path="/template/javanese-heritage/:slug" element={<JavaneseHeritageTemplate />} />
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

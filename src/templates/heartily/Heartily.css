@@ -501,7 +501,7 @@
 
 .flower-bl {
   bottom: 110px;
-  left: 224px;
+  left: 254px;
   width: 200px;
   transform-origin: bottom left;
   animation: zoomInOutBL 6s ease-in-out infinite alternate;
@@ -676,7 +676,7 @@
   padding: 28px 24px;
   margin-bottom: 16px;
   box-shadow: 0 4px 20px rgba(180, 80, 110, 0.08);
-  text-align: left;
+  text-align: center;
 }
 
 .heartily-event-name {
@@ -689,6 +689,7 @@
 .heartily-event-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 8px;
   font-size: 0.82rem;
@@ -1331,4 +1332,40 @@ body.heartily-locked {
   color: #7a3050;
   border-color: #c47a8a;
   transform: translateY(-1px);
+}
+
+/* ─── COUNTDOWN STYLING ─── */
+.heartily-countdown-mini {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px auto;
+  max-width: 280px;
+}
+
+.heartily-countdown-mini .heartily-countdown-item {
+  background: rgba(196, 122, 138, 0.06);
+  border: 1px solid rgba(196, 122, 138, 0.2);
+  border-radius: 8px;
+  padding: 6px 4px;
+  min-width: 50px;
+  box-shadow: none;
+  text-align: center;
+}
+
+.heartily-countdown-mini .heartily-countdown-num {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #c47a8a;
+  line-height: 1.1;
+}
+
+.heartily-countdown-mini .heartily-countdown-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.58rem;
+  color: #a67c84;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
 }

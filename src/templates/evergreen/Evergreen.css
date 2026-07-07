@@ -711,7 +711,7 @@
   padding: 28px 24px;
   margin-bottom: 16px;
   box-shadow: 0 4px 20px rgba(45, 90, 39, 0.08);
-  text-align: left;
+  text-align: center;
 }
 
 .evergreen-event-name {
@@ -724,6 +724,7 @@
 .evergreen-event-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 8px;
   font-size: 0.82rem;
@@ -1388,4 +1389,40 @@ body.evergreen-locked {
   height: 48px;
   transform-origin: center center;
   will-change: transform;
+}
+
+/* ─── COUNTDOWN STYLING ─── */
+.evergreen-countdown-mini {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px auto;
+  max-width: 280px;
+}
+
+.evergreen-countdown-mini .evergreen-countdown-item {
+  background: rgba(45, 90, 39, 0.06);
+  border: 1px solid rgba(45, 90, 39, 0.2);
+  border-radius: 8px;
+  padding: 6px 4px;
+  min-width: 50px;
+  box-shadow: none;
+  text-align: center;
+}
+
+.evergreen-countdown-mini .evergreen-countdown-num {
+  font-family: 'Jost', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2d5a27;
+  line-height: 1.1;
+}
+
+.evergreen-countdown-mini .evergreen-countdown-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.58rem;
+  color: #6e8c68;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
 }

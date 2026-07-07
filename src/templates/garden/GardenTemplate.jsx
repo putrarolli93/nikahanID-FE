@@ -849,7 +849,7 @@ export default function GardenTemplate({ data: dataProp, weddingId, onRsvpSubmit
             </>
           )}
         </div>
-        <div className="garden__footer-brand">Made with nikahanID</div>
+        <div className="garden__footer-brand">Made with Datangya.site</div>
       </div>
 
       {/* ── LIGHTBOX MODAL ── */}
