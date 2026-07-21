@@ -268,6 +268,49 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
+                    {inv.status === 'active' && inv.template_is_guestbook_active === 1 && (
+                      <div className="card-analytics" style={{
+                        marginTop: '1rem',
+                        marginBottom: '1rem',
+                        background: '#f8fafc',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: '1px solid #e2e8f0',
+                      }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          📊 Analitik Kehadiran & Guestbook
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>👥 Total Tamu</span>
+                            <span style={{ fontSize: '16px', fontWeight: '800', color: '#1e293b' }}>{inv.total_guests || 0}</span>
+                          </div>
+                          
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>🚪 Check-in</span>
+                            <span style={{ fontSize: '16px', fontWeight: '800', color: '#10b981' }}>
+                              {inv.checked_in_guests || 0}
+                              {inv.total_guests > 0 && (
+                                <span style={{ fontSize: '10px', fontWeight: '500', color: '#64748b', marginLeft: '4px' }}>
+                                  ({Math.round((inv.checked_in_guests / inv.total_guests) * 100)}%)
+                                </span>
+                              )}
+                            </span>
+                          </div>
+
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>💬 Ucapan</span>
+                            <span style={{ fontSize: '16px', fontWeight: '800', color: '#3b82f6' }}>{inv.total_wishes || 0}</span>
+                          </div>
+
+                          <div style={{ background: '#fff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>📸 Selfie</span>
+                            <span style={{ fontSize: '16px', fontWeight: '800', color: '#d97706' }}>{inv.selfie_wishes || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                   <div className="card-actions" style={{ flexDirection: 'column', gap: '0.5rem' }}>
                     {inv.status === 'draft' && (
                       <button 
@@ -301,6 +344,33 @@ export default function DashboardPage() {
                         🔍 Lihat
                       </button>
                     </div>
+                    {inv.status === 'active' && inv.template_is_guestbook_active === 1 && (
+                      <div style={{ display: 'flex', gap: '0.75rem', width: '100%', marginTop: '0.5rem' }}>
+                        <button 
+                          className="btn-ghost" 
+                          style={{ flex: 1, padding: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                          onClick={() => navigate(`/share/${inv.slug}/scan`)}
+                        >
+                          📷 Scan Check-in
+                        </button>
+                        <button 
+                          className="btn-ghost" 
+                          style={{ flex: 1, padding: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                          onClick={() => window.open(`/live/${inv.slug}`, '_blank')}
+                        >
+                          📺 Live Screen
+                        </button>
+                      </div>
+                    )}
+                    {inv.status === 'active' && inv.template_is_guestbook_active === 1 && (
+                      <button 
+                        className="btn-ghost" 
+                        style={{ width: '100%', padding: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '0.5rem', border: '1px dashed #bae6fd', color: '#0369a1', background: '#f0f9ff' }}
+                        onClick={() => navigate(`/share/${inv.slug}/wishes`)}
+                      >
+                        📖 History Ucapan & Foto
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

@@ -1520,44 +1520,105 @@ export default function CreateWizardPage() {
           {/* STEP 6: REVIEW & ACTIVATE */}
           {activeStep === 6 && (
             <div className="form-section text-center">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🚀 Undangan Selesai Dibuat!</h2>
-              <p style={{ fontSize: "14px", color: "var(--text)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-                Undangan digital Anda saat ini tersimpan sebagai **Draf**. Untuk mengaktifkan undangan agar bisa disebarkan ke tamu undangan Anda, silakan hubungi admin kami melalui WhatsApp.
-              </p>
+              {invitationData?.status === 'active' ? (
+                <>
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>✅ Data Undangan Berhasil Diperbarui!</h2>
+                  <p style={{ fontSize: "14px", color: "var(--text)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+                    Undangan Anda sudah aktif dan siap disebarkan ke tamu undangan.
+                  </p>
 
-              <div style={{ background: "var(--brand-light)", padding: "1.25rem", borderRadius: "var(--radius-md)", marginBottom: "1.5rem", textAlign: "left" }}>
-                <strong style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>Detail Undangan Anda:</strong>
-                <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>ID Undangan: #{weddingId}</span>
-                <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>Slug: {slug}</span>
-                <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>Template: {invitationData?.template_name}</span>
-              </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/share/${slug}`, { state: { inv: invitationData } })}
+                      className="btn-solid"
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "center",
+                        background: "#3b82f6",
+                        color: "#fff",
+                        padding: "14px",
+                        borderRadius: "var(--radius-sm)",
+                        fontWeight: 800,
+                        fontSize: "15px",
+                        border: "none",
+                        cursor: "pointer",
+                        boxShadow: "0 4px 14px rgba(59,130,246,0.3)"
+                      }}
+                    >
+                      📢 Sebar Undangan
+                    </button>
 
-              <button
-                type="button"
-                onClick={() => navigate(`/activate/${slug}`, { state: { inv: invitationData } })}
-                className="btn-solid"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "center",
-                  background: "#22c55e",
-                  color: "#fff",
-                  padding: "14px",
-                  borderRadius: "var(--radius-sm)",
-                  fontWeight: 800,
-                  fontSize: "15px",
-                  border: "none",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 14px rgba(34,197,94,0.3)"
-                }}
-              >
-                🚀 Aktifkan Undangan
-              </button>
+                    <button
+                      type="button"
+                      onClick={() => window.open(`/template/${invitationData?.template_slug || 'amore'}/${slug}`, '_blank')}
+                      className="btn-solid"
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "center",
+                        background: "#f8fafc",
+                        color: "var(--dark)",
+                        padding: "14px",
+                        borderRadius: "var(--radius-sm)",
+                        fontWeight: 700,
+                        fontSize: "14px",
+                        border: "1px solid var(--border)",
+                        cursor: "pointer"
+                      }}
+                    >
+                      🔍 Lihat Preview Undangan
+                    </button>
+                  </div>
 
-              <div className="es-actions">
-                <button type="button" className="es-btn-back" onClick={() => setActiveStep(5)}>← Kembali</button>
-                <button type="button" className="es-btn-next" onClick={() => navigate("/")}>Kembali ke Beranda</button>
-              </div>
+                  <div className="es-actions">
+                    <button type="button" className="es-btn-back" onClick={() => setActiveStep(5)}>← Kembali Edit</button>
+                    <button type="button" className="es-btn-next" onClick={() => navigate("/dashboard")}>Kembali ke Dashboard</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🚀 Undangan Selesai Dibuat!</h2>
+                  <p style={{ fontSize: "14px", color: "var(--text)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+                    Undangan digital Anda saat ini tersimpan sebagai **Draf**. Untuk mengaktifkan undangan agar bisa disebarkan ke tamu undangan Anda, silakan hubungi admin kami melalui WhatsApp.
+                  </p>
+
+                  <div style={{ background: "var(--brand-light)", padding: "1.25rem", borderRadius: "var(--radius-md)", marginBottom: "1.5rem", textAlign: "left" }}>
+                    <strong style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>Detail Undangan Anda:</strong>
+                    <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>ID Undangan: #{weddingId}</span>
+                    <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>Slug: {slug}</span>
+                    <span style={{ display: "block", fontSize: "13px", color: "var(--text)" }}>Template: {invitationData?.template_name}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/activate/${slug}`, { state: { inv: invitationData } })}
+                    className="btn-solid"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "center",
+                      background: "#22c55e",
+                      color: "#fff",
+                      padding: "14px",
+                      borderRadius: "var(--radius-sm)",
+                      fontWeight: 800,
+                      fontSize: "15px",
+                      border: "none",
+                      cursor: "pointer",
+                      boxShadow: "0 4px 14px rgba(34,197,94,0.3)"
+                    }}
+                  >
+                    🚀 Aktifkan Undangan
+                  </button>
+
+                  <div className="es-actions">
+                    <button type="button" className="es-btn-back" onClick={() => setActiveStep(5)}>← Kembali</button>
+                    <button type="button" className="es-btn-next" onClick={() => navigate("/")}>Kembali ke Beranda</button>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

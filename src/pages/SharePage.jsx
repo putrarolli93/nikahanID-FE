@@ -18,6 +18,7 @@ export default function SharePage() {
   const [isSavingMsg, setIsSavingMsg] = useState(false);
   const [isAddingGuest, setIsAddingGuest] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [activeQrGuest, setActiveQrGuest] = useState(null);
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -135,7 +136,7 @@ export default function SharePage() {
     // Generate URL
     const baseUrl = `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}`;
     const encodedName = encodeURIComponent(guest.name);
-    const invitationLink = `${baseUrl}?to=${encodedName}`;
+    const invitationLink = `${baseUrl}?to=${encodedName}${guest.passcode ? `&code=${guest.passcode}` : ''}`;
 
     // Generate Text
     let text = customMsg;
@@ -173,7 +174,7 @@ export default function SharePage() {
   const handleCopyLink = async (guest) => {
     const baseUrl = `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}`;
     const encodedName = encodeURIComponent(guest.name);
-    const invitationLink = `${baseUrl}?to=${encodedName}`;
+    const invitationLink = `${baseUrl}?to=${encodedName}${guest.passcode ? `&code=${guest.passcode}` : ''}`;
     try {
       await navigator.clipboard.writeText(invitationLink);
       setToastMessage('Link undangan berhasil disalin!');
@@ -185,6 +186,134 @@ export default function SharePage() {
     }
   };
 
+  const handlePrintAllBarcodes = () => {
+    const guestsWithCode = guests.filter(g => g.passcode);
+    if (guestsWithCode.length === 0) {
+      alert('Belum ada tamu dengan barcode/passcode.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    const groomBride = invitation.bride_groom || [];
+    const groom = groomBride.find(bg => bg.type === 'groom');
+    const bride = groomBride.find(bg => bg.type === 'bride');
+    const coupleLabel = groom && bride ? `${groom.nickname} & ${bride.nickname}` : invitation.slug;
+
+    const cardsHtml = guestsWithCode.map(g => {
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+        `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}?to=${encodeURIComponent(g.name)}&code=${g.passcode}`
+      )}`;
+      return `
+        <div class="card">
+          <div class="qr-wrapper">
+            <img src="${qrUrl}" alt="QR ${g.name}" />
+          </div>
+          <div class="guest-name">${g.name}</div>
+          <div class="guest-code">KODE: ${g.passcode}</div>
+        </div>
+      `;
+    }).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Print Barcode Tamu - ${coupleLabel}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: #1e293b;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+          }
+          .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+          }
+          .header p {
+            font-size: 12px;
+            color: #64748b;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+          }
+          .card {
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 14px 10px 12px;
+            text-align: center;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          .qr-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+          }
+          .qr-wrapper img {
+            width: 120px;
+            height: 120px;
+            display: block;
+          }
+          .guest-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2px;
+            word-break: break-word;
+          }
+          .guest-code {
+            font-size: 10px;
+            font-family: monospace;
+            color: #64748b;
+            letter-spacing: 1px;
+          }
+          .no-print { text-align: center; margin-bottom: 20px; }
+          .no-print button {
+            padding: 10px 28px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+          }
+          .no-print button:hover { background: #2563eb; }
+          @media print {
+            .no-print { display: none !important; }
+            body { padding: 10px; }
+            .grid { gap: 10px; }
+            .card { border-color: #94a3b8; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print">
+          <button onclick="window.print()">🖨️ Print Sekarang</button>
+        </div>
+        <div class="header">
+          <h1>Barcode Check-in Tamu — ${coupleLabel}</h1>
+          <p>Total ${guestsWithCode.length} tamu &bull; Gunting setiap kartu dan tempelkan pada undangan fisik</p>
+        </div>
+        <div class="grid">${cardsHtml}</div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   if (loading || authLoading) {
     return <div style={{ padding: "100px", textAlign: "center" }}>Memuat...</div>;
@@ -196,9 +325,21 @@ export default function SharePage() {
         <button className="btn-back" onClick={() => navigate("/dashboard")}>
           &larr; Kembali ke Dashboard
         </button>
-        <div className="activate-header">
-          <h1>📢 Sebar Undangan</h1>
-          <p>Kelola daftar tamu dan sebar undangan via WhatsApp dengan mudah</p>
+        <div className="activate-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+          <div>
+            <h1>📢 Sebar Undangan</h1>
+            <p>Kelola daftar tamu dan sebar undangan via WhatsApp dengan mudah</p>
+          </div>
+          {invitation.template_is_guestbook_active === 1 && (
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button className="btn-solid" onClick={() => navigate(`/share/${slug}/scan`)} style={{ background: '#7e5d3d', borderColor: '#7e5d3d' }}>
+                📷 Scan Check-in
+              </button>
+              <button className="btn-solid" onClick={() => window.open(`/live/${slug}`, '_blank')} style={{ background: '#c59b27', borderColor: '#c59b27' }}>
+                🖥️ Live Screen Proyektor
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="activate-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
@@ -264,7 +405,34 @@ export default function SharePage() {
                   <thead style={{ background: 'var(--bg-light)', borderBottom: '1px solid var(--border)' }}>
                     <tr>
                       <th style={{ padding: '1rem' }}>Nama Tamu</th>
-                      <th style={{ padding: '1rem', width: '120px' }}>Aksi</th>
+                      <th style={{ padding: '1rem', width: '150px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                          <span>Aksi</span>
+                          {invitation.template_is_guestbook_active === 1 && guests.some(g => g.passcode) && (
+                            <button
+                              onClick={handlePrintAllBarcodes}
+                              title="Print semua barcode tamu"
+                              style={{
+                                padding: '4px 10px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                background: '#f1f5f9',
+                                color: '#475569',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                whiteSpace: 'nowrap',
+                                transition: 'all 0.2s'
+                              }}
+                            >
+                              🖨️ Print Barcode
+                            </button>
+                          )}
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,6 +462,15 @@ export default function SharePage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                               </svg>
                             </button>
+                            {invitation.template_is_guestbook_active === 1 && (
+                              <button 
+                                onClick={() => setActiveQrGuest(g)}
+                                style={{ width: '36px', height: '36px', padding: '0', background: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                                title="Lihat QR Code"
+                              >
+                                <img src="/images/ic_qr.png" alt="QR" style={{ width: '20px', height: '20px', display: 'block' }} />
+                              </button>
+                            )}
                             <button 
                               onClick={() => handleDeleteGuest(g.id)}
                               style={{ width: '36px', height: '36px', padding: '0', background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
@@ -338,6 +515,57 @@ export default function SharePage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {toastMessage}
+        </div>
+      )}
+
+      {/* QR Code Modal */}
+      {activeQrGuest && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }} onClick={() => setActiveQrGuest(null)}>
+          <div style={{
+            background: '#fff',
+            padding: '30px',
+            borderRadius: '16px',
+            width: '320px',
+            textAlign: 'center',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid var(--border)'
+          }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '10px', color: 'var(--dark)' }}>QR Code {activeQrGuest.name}</h3>
+            <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>Tunjukkan QR Code ini di meja resepsionis saat check-in tamu.</p>
+            
+            <div style={{ background: '#f8fafc', padding: '15px', borderRadius: '12px', display: 'inline-block', marginBottom: '15px', border: '1px solid #e2e8f0' }}>
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                  `${window.location.origin}/template/${invitation.template_slug}/${invitation.slug}?to=${encodeURIComponent(activeQrGuest.name)}&code=${activeQrGuest.passcode}`
+                )}`} 
+                alt="QR Code" 
+                style={{ width: '200px', height: '200px', display: 'block' }}
+              />
+            </div>
+
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#c59b27', letterSpacing: '1px', marginBottom: '20px' }}>
+              KODE: {activeQrGuest.passcode}
+            </div>
+
+            <button 
+              className="btn-solid" 
+              onClick={() => setActiveQrGuest(null)}
+              style={{ width: '100%' }}
+            >
+              Tutup
+            </button>
+          </div>
         </div>
       )}
     </div>

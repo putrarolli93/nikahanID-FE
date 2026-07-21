@@ -24,6 +24,9 @@ import CreateWizardPage from "./pages/CreateWizardPage"; // Multi-step creation 
 import DashboardPage from "./pages/DashboardPage";
 import ActivatePage from "./pages/ActivatePage";
 import SharePage from "./pages/SharePage";
+import LiveScreenPage from "./pages/LiveScreenPage";
+import ScanCheckInPage from "./pages/ScanCheckInPage";
+import GuestbookHistoryPage from "./pages/GuestbookHistoryPage";
 
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/global.css";
@@ -37,13 +40,18 @@ function AppContent() {
 
   // Effect untuk handle body scroll saat menu terbuka (opsional)
   useEffect(() => {
+    // Scroll to top on every route change
+    window.scrollTo(0, 0);
+
     // Logic to hide header/footer based on current path
     const path = location.pathname;
 
     // Cek apakah path diawali /template/ tapi BUKAN /templates/
     const isPreviewMode = path.startsWith("/template/") && !path.startsWith("/templates");
-    setHideHeader(isPreviewMode);
-    setHideFooter(isPreviewMode);
+    const isLiveScreen = path.startsWith("/live/");
+    const isScanPage = path.startsWith("/share/") && path.endsWith("/scan");
+    setHideHeader(isPreviewMode || isLiveScreen || isScanPage);
+    setHideFooter(isPreviewMode || isLiveScreen || isScanPage);
   }, [location]);
 
   return (
@@ -74,6 +82,9 @@ function AppContent() {
         <Route path="/create" element={<CreateWizardPage />} />
         <Route path="/activate/:slug" element={<ActivatePage />} />
         <Route path="/share/:slug" element={<SharePage />} />
+        <Route path="/share/:slug/scan" element={<ScanCheckInPage />} />
+        <Route path="/share/:slug/wishes" element={<GuestbookHistoryPage />} />
+        <Route path="/live/:slug" element={<LiveScreenPage />} />
         <Route path="*" element={<HomePage />} /> {/* Fallback for unknown routes */}
       </Routes>
     </Layout>

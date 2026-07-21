@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import './SimpleFree.css';
 
 export default function SimpleFreeTemplate({ isPreview = false }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const guestName = searchParams.get('to') || 'Tamu Undangan';
   
   const [data, setData] = useState(null);
@@ -44,6 +45,10 @@ export default function SimpleFreeTemplate({ isPreview = false }) {
         const res = await fetch(`/api/invitations/${slug}`);
         const result = await res.json();
         if (res.ok && result.success) {
+          if (result.data && result.data.template_slug && result.data.template_slug !== 'simple-free') {
+            navigate(`/template/${result.data.template_slug}/${slug}${window.location.search}`);
+            return;
+          }
           setData(result.data);
         }
       } catch (err) {

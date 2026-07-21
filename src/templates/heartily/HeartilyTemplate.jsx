@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { compressImage } from '../../utils/selfieCompressor';
 import './Heartily.css';
 
 // Flower assets - anthurium PNG with transparent background
@@ -139,6 +140,7 @@ function HeartilyCountdown({ targetISO, isMini = false }) {
 export default function HeartilyTemplate({ isPreview = false }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const guestName = searchParams.get('to') || 'Tamu Undangan';
 
   const [isOpen, setIsOpen] = useState(false);
@@ -148,6 +150,12 @@ export default function HeartilyTemplate({ isPreview = false }) {
   const [rsvpSuccess, setRsvpSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [activePhoto, setActivePhoto] = useState(null);
+  
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [showSelfieModal, setShowSelfieModal] = useState(false);
+  const [selfieFile, setSelfieFile] = useState(null);
+  const [selfiePreview, setSelfiePreview] = useState(null);
+  const [selfieSubmittedLocal, setSelfieSubmittedLocal] = useState(false);
   
   // Section refs for direct scrolling and navigation
   const heroRef = useRef(null);
@@ -201,13 +209,116 @@ export default function HeartilyTemplate({ isPreview = false }) {
     }
     fetch(`/api/invitations/${slug}`)
       .then(r => r.json())
-      .then(d => { setData(d.data || d); setLoading(false); })
+      .then(d => {
+        const invData = d.data || d;
+        if (invData && invData.template_slug && invData.template_slug !== 'heartily') {
+          navigate(`/template/${invData.template_slug}/${slug}${window.location.search}`);
+          return;
+        }
+        setData(invData);
+        setLoading(false);
+      })
       .catch(() => { setData(MOCK_DATA); setLoading(false); });
   };
 
   useEffect(() => {
     fetchInvitation();
   }, [slug, isPreview]);
+
+  const guestCode = searchParams.get('code') || '';
+
+  // Sync rsvpForm guest name
+  useEffect(() => {
+    if (guestName && guestName !== 'Tamu Undangan') {
+      setRsvpForm(prev => ({ ...prev, guest_name: guestName }));
+    }
+  }, [guestName]);
+
+  // Poll check-in status
+  useEffect(() => {
+    if (isPreview || !guestCode || !data || data.template_is_guestbook_active !== 1) return;
+    const checkCheckInStatus = async () => {
+      try {
+        const response = await fetch(`/api/invitations/guests/check-status/${guestCode}`);
+        const result = await response.json();
+        if (result.success && result.data.is_checked_in === 1) {
+          setIsCheckedIn(true);
+        }
+      } catch (err) {
+        console.error("Error checking check-in status", err);
+      }
+    };
+    checkCheckInStatus();
+    const interval = setInterval(checkCheckInStatus, 4000);
+    return () => clearInterval(interval);
+  }, [guestCode, isPreview, data]);
+
+  const handleSelfieChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const compressed = await compressImage(file, 1.0);
+    setSelfieFile(compressed);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelfiePreview(reader.result);
+    };
+    reader.readAsDataURL(compressed);
+  };
+
+  const handleSelfieSubmit = async (e) => {
+    e.preventDefault();
+    if (!selfieFile || submitting) return;
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('guest_name', guestName);
+      formData.append('will_attend', 1);
+      formData.append('jumlah_tamu', 1);
+      formData.append('message', rsvpForm.message);
+      formData.append('passcode', guestCode);
+      formData.append('photo_selfie', selfieFile);
+
+      const response = await fetch(`/api/invitations/${data.id}/comments-with-selfie`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Ucapan dan selfie Anda berhasil dikirim ke layar proyektor!');
+        setShowSelfieModal(false);
+        setSelfieFile(null);
+        setSelfiePreview(null);
+        setRsvpForm(prev => ({ ...prev, message: '' }));
+        setSelfieSubmittedLocal(true);
+        fetchInvitation();
+      } else {
+        alert('Gagal mengirim selfie');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat mengirim.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const downloadQRCode = async () => {
+    try {
+      const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${guestCode}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR_Checkin_${guestName.replace(/\s+/g, '_')}_${guestCode}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Gagal mendownload QR Code", err);
+      window.open(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${guestCode}`, '_blank');
+    }
+  };
 
   // Scroll reveal observer
   useEffect(() => {
@@ -333,6 +444,7 @@ export default function HeartilyTemplate({ isPreview = false }) {
   };
   const galleries = data.moments || data.galleries || [];
   const comments = data.comments || [];
+  const hasSentSelfie = selfieSubmittedLocal || comments.some(c => c.guest_name === guestName && c.photo_selfie_url);
 
   const getEventIsoString = (schedule) => {
     if (!schedule || !schedule.event_date) return null;
@@ -529,6 +641,49 @@ export default function HeartilyTemplate({ isPreview = false }) {
                 {resepsi.google_map_link && <a href={resepsi.google_map_link} target="_blank" rel="noreferrer" className="heartily-maps-btn">🗺 Lihat Peta</a>}
               </div>
             )}
+
+            {guestCode && data?.template_is_guestbook_active === 1 && (
+              <div className="heartily-event-card" style={{ border: '2px dashed #e27c95', background: 'rgba(255, 241, 242, 0.65)', marginTop: '28px', padding: '24px 20px', borderRadius: '16px' }}>
+                <div className="heartily-event-name" style={{ color: '#e27c95', fontSize: '1.2rem', marginBottom: '8px', letterSpacing: '1px' }}>🏷️ TIKET CHECK-IN TAMU</div>
+                <div style={{ fontSize: '0.85rem', color: '#7a3050', marginBottom: '16px' }}>Hai <strong>{guestName}</strong>, simpan QR Code di bawah untuk masuk ke acara pernikahan.</div>
+                
+                <div style={{ background: '#fff', padding: '12px', borderRadius: '12px', display: 'inline-block', margin: '0 auto 16px auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${guestCode}`} 
+                    alt="QR Check-in" 
+                    style={{ display: 'block', width: '150px', height: '150px' }} 
+                  />
+                </div>
+                
+                <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: 'bold', color: '#e27c95', letterSpacing: '2px', marginBottom: '8px' }}>
+                  KODE: {guestCode}
+                </div>
+                
+                <button 
+                  onClick={downloadQRCode}
+                  style={{
+                    background: 'linear-gradient(135deg, #e27c95 0%, #c47a8a 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px 18px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    boxShadow: '0 4px 10px rgba(226, 124, 149, 0.2)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  📥 Simpan / Download Barcode
+                </button>
+                <div style={{ fontSize: '0.75rem', color: '#9a6070', marginTop: '12px', fontStyle: 'italic' }}>
+                  *Tunjukkan barcode ini kepada petugas penerima tamu untuk check-in cepat.
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ── GALLERY ── */}
@@ -654,11 +809,11 @@ export default function HeartilyTemplate({ isPreview = false }) {
               </form>
             )}
 
-            {comments.length > 0 && (
+            {comments.filter(c => !c.photo_selfie_url).length > 0 && (
               <div className="heartily-comments">
-                {comments.map((c, i) => (
+                {comments.filter(c => !c.photo_selfie_url).map((c, i) => (
                   <div key={i} className="heartily-comment-card">
-                    <div className="heartily-comment-name">{c.guest_name}</div>
+                    <div className="evergreen-comment-name">{c.guest_name}</div>
                     <span className={`heartily-comment-badge ${c.will_attend === 1 ? 'badge-hadir' : c.will_attend === 0 ? 'badge-tidak' : 'badge-mungkin'}`}>
                       {c.will_attend === 1 ? '✓ Hadir' : c.will_attend === 0 ? '✕ Tidak Hadir' : '? Mungkin'}
                     </span>
@@ -734,9 +889,203 @@ export default function HeartilyTemplate({ isPreview = false }) {
             className={`heartily-audio-toggle ${isPlaying ? 'playing' : ''}`} 
             onClick={togglePlay}
             title={isPlaying ? "Mute Music" : "Play Music"}
+            style={{ bottom: isCheckedIn && !hasSentSelfie ? '210px' : '20px' }}
           >
             {isPlaying ? '🎵' : '🔇'}
           </button>
+        )}
+
+        {/* Floating Check-in Banner / Button */}
+        {isCheckedIn && isOpen && data?.template_is_guestbook_active === 1 && !hasSentSelfie && (
+          <div style={{
+            position: 'fixed',
+            bottom: '30px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            background: 'rgba(255, 241, 242, 0.98)',
+            border: '2px solid #e27c95',
+            padding: '20px 24px',
+            borderRadius: '20px',
+            boxShadow: '0 15px 40px rgba(0,0,0,0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: '90%',
+            maxWidth: '440px',
+            boxSizing: 'border-box'
+          }}>
+            <span style={{ fontSize: '18px', color: '#7a3050', fontWeight: 'bold', fontFamily: 'serif' }}>
+              Selamat Datang, {guestName}! 👋
+            </span>
+            <p style={{ fontSize: '13px', color: '#7a3050', margin: '0', lineHeight: '1.6', textAlign: 'center' }}>
+              Terima kasih sudah melakukan check-in di meja tamu. Yuk, kirim ucapan selamat beserta foto selfie terbaik Anda agar langsung tayang di layar proyektor utama!
+            </p>
+            <button 
+              onClick={() => setShowSelfieModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #e27c95 0%, #c47a8a 100%)',
+                color: '#fff',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '14px',
+                width: '100%',
+                boxShadow: '0 4px 15px rgba(226, 124, 149, 0.3)',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              📸 Kirim Selfie & Ucapan Sekarang
+            </button>
+          </div>
+        )}
+
+        {/* Selfie Guestbook Modal */}
+        {showSelfieModal && data?.template_is_guestbook_active === 1 && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '20px'
+          }} onClick={() => setShowSelfieModal(false)}>
+            <div style={{
+              background: '#fff1f2',
+              border: '2px solid #e27c95',
+              padding: '25px',
+              borderRadius: '20px',
+              width: '100%',
+              maxWidth: '400px',
+              color: '#4a1525',
+              position: 'relative',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              textAlign: 'left'
+            }} onClick={e => e.stopPropagation()}>
+              <button 
+                onClick={() => setShowSelfieModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '15px',
+                  right: '15px',
+                  background: 'none',
+                  border: 'none',
+                  color: '#7a3050',
+                  fontSize: '20px',
+                  cursor: 'pointer'
+                }}
+              >
+                ✕
+              </button>
+              <h3 style={{ fontSize: '20px', color: '#7a3050', fontFamily: 'serif', marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>Buku Tamu Selfie</h3>
+              <p style={{ fontSize: '13px', color: '#9a6070', textAlign: 'center', marginBottom: '20px' }}>
+                Foto selfie & ucapan selamatmu akan langsung tayang di proyektor aula pernikahan!
+              </p>
+
+              <form onSubmit={handleSelfieSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {/* Photo Snap area */}
+                <div style={{
+                  height: '180px',
+                  border: '2px dashed rgba(226, 124, 149, 0.4)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.5)',
+                  position: 'relative'
+                }}>
+                  {selfiePreview ? (
+                    <>
+                      <img src={selfiePreview} alt="Selfie Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button 
+                        type="button"
+                        onClick={() => { setSelfieFile(null); setSelfiePreview(null); }}
+                        style={{
+                          position: 'absolute',
+                          bottom: '10px',
+                          background: 'rgba(239, 68, 68, 0.9)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '5px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Ulangi Foto
+                      </button>
+                    </>
+                  ) : (
+                    <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '20px', width: '100%', height: '100%', justifyContent: 'center' }}>
+                      <span style={{ fontSize: '32px' }}>📸</span>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#7a3050' }}>Ambil Selfie Sekarang</span>
+                      <span style={{ fontSize: '11px', color: '#9a6070' }}>(Klik untuk membuka kamera HP)</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        capture="user" 
+                        onChange={handleSelfieChange}
+                        style={{ display: 'none' }}
+                        required
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Message text */}
+                <textarea 
+                  placeholder="Tulis ucapan selamat Anda di sini..."
+                  rows={3}
+                  value={rsvpForm.message}
+                  onChange={e => setRsvpForm(prev => ({ ...prev, message: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    background: 'rgba(255,255,255,0.7)',
+                    border: '1px solid rgba(226, 124, 149, 0.3)',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    color: '#4a1525',
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    resize: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                  required
+                />
+
+                <button 
+                  type="submit" 
+                  disabled={submitting || !selfieFile}
+                  style={{
+                    background: 'linear-gradient(135deg, #e27c95 0%, #c47a8a 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    boxShadow: '0 4px 15px rgba(226, 124, 149, 0.3)'
+                  }}
+                >
+                  {submitting ? 'Mengirim...' : 'Kirim Ke Layar Utama 🚀'}
+                </button>
+              </form>
+            </div>
+          </div>
         )}
 
         {/* Hidden SVG for responsive clipPath masks */}

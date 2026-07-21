@@ -253,7 +253,7 @@
 
 /* ── PRICING ── */
 .pricing { background: #fff; }
-.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 2rem; max-width: 960px; margin: 0 auto; align-items: center; }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(270px,1fr)); gap: 2rem; max-width: 1060px; margin: 0 auto; align-items: center; }
 .price-card { 
   border: 1px solid rgba(0,0,0,0.05); border-radius: 24px; padding: 2.5rem; 
   background: #fafafa; position: relative; 
@@ -266,6 +266,36 @@
   transform: scale(1.03); z-index: 2;
 }
 .price-card.popular:hover { transform: scale(1.03) translateY(-5px); }
+.price-card.platinum {
+  border: 2px solid #c59b27;
+  background: linear-gradient(165deg, #1a1208 0%, #2a1d10 60%, #1a1208 100%);
+  color: #f5f0e8;
+  box-shadow: 0 20px 50px rgba(197, 155, 39, 0.15);
+}
+.price-card.platinum:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(197, 155, 39, 0.25); }
+.price-card.platinum .price-name { color: #c59b27; }
+.price-card.platinum .price-amount { color: #fff; }
+.price-card.platinum .price-period { color: rgba(255,255,255,0.5); }
+.price-card.platinum .price-features li { color: rgba(255,255,255,0.85); }
+.price-card.platinum .price-features li::before { color: #c59b27; }
+.platinum-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, #c59b27, #e8c84a);
+  color: #1a1208;
+  font-size: 11px; font-weight: 800; padding: 6px 18px; border-radius: 999px;
+  white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(197, 155, 39, 0.35);
+}
+.btn-price.platinum-btn {
+  background: linear-gradient(135deg, #c59b27, #e8c84a) !important;
+  color: #1a1208 !important;
+  border-color: #c59b27 !important;
+  box-shadow: 0 4px 15px rgba(197, 155, 39, 0.3) !important;
+}
+.btn-price.platinum-btn:hover {
+  background: linear-gradient(135deg, #b08a20, #c59b27) !important;
+  box-shadow: 0 6px 20px rgba(197, 155, 39, 0.4) !important;
+}
 .popular-badge { 
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%); 
   background: linear-gradient(135deg, var(--brand), #c87941); color: #fff; 

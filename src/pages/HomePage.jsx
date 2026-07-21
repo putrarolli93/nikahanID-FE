@@ -86,6 +86,25 @@ export default function HomePage() {
       ],
       cta: "Pilih Premium",
     },
+    {
+      name: "Platinum",
+      prefix: "Mulai dari ",
+      amount: "Rp 150.000",
+      period: "Sekali bayar",
+      popular: false,
+      platinum: true,
+      solid: true,
+      features: [
+        { text: "Semua fitur Premium", active: true },
+        { text: "QR Check-in & Guestbook Selfie", active: true },
+        { text: "Live Screen Proyektor Acara", active: true },
+        { text: "Print Barcode Undangan Fisik", active: true },
+        { text: "Riwayat & Moderasi Ucapan", active: true },
+        { text: "Analytic Dashboard Tamu", active: true },
+      ],
+      cta: "Hubungi Kami",
+      waLink: "https://wa.me/6282114467118?text=Halo%20min%2C%20saya%20tertarik%20dengan%20paket%20Platinum%20datangya.site",
+    },
   ];
 
   const testimonials = [
@@ -250,11 +269,14 @@ export default function HomePage() {
         <div className="pricing-grid">
           {pricingPlans.map((plan) => (
             <div
-              className={`price-card${plan.popular ? " popular" : ""}`}
+              className={`price-card${plan.popular ? " popular" : ""}${plan.platinum ? " platinum" : ""}`}
               key={plan.name}
             >
               {plan.popular && (
                 <div className="popular-badge">Paling Populer</div>
+              )}
+              {plan.platinum && (
+                <div className="platinum-badge">✦ Terlengkap</div>
               )}
               <div className="price-name">{plan.name}</div>
               {plan.prefix && <div style={{ fontSize: '1rem', color: 'var(--muted)', marginTop: '0.5rem' }}>{plan.prefix}</div>}
@@ -268,8 +290,14 @@ export default function HomePage() {
                 ))}
               </ul>
               <button
-                className={`btn-price${plan.solid ? " solid" : ""}`}
-                onClick={() => navigate(user ? "/templates" : "/register")}
+                className={`btn-price${plan.solid ? " solid" : ""}${plan.platinum ? " platinum-btn" : ""}`}
+                onClick={() => {
+                  if (plan.waLink) {
+                    window.open(plan.waLink, '_blank');
+                  } else {
+                    navigate(user ? "/templates" : "/register");
+                  }
+                }}
               >
                 {plan.cta}
               </button>

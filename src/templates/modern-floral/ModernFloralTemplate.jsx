@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import './ModernFloral.css';
 
 // Import local photos
@@ -16,6 +16,7 @@ import gal6 from '../../gallery/wedding-assets/4/11.jpg';
 export default function ModernFloralTemplate({ isPreview = false }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const guestName = searchParams.get('to') || 'Tamu Undangan';
   
   const [data, setData] = useState(null);
@@ -139,6 +140,10 @@ export default function ModernFloralTemplate({ isPreview = false }) {
       .then(res => res.json())
       .then(json => {
         if (json.success) {
+          if (json.data && json.data.template_slug && json.data.template_slug !== 'modern-floral') {
+            navigate(`/template/${json.data.template_slug}/${slug}${window.location.search}`);
+            return;
+          }
           let fetchedGallery = null;
           if (json.data.moments && json.data.moments.length > 0) {
             fetchedGallery = json.data.moments
