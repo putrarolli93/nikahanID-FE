@@ -39,6 +39,11 @@ export default function DashboardPage() {
       return;
     }
 
+    if (user.role === 'admin') {
+      navigate('/admin');
+      return;
+    }
+
     fetchInvitations();
     fetchResellerData();
   }, [user, token, authLoading, navigate]);

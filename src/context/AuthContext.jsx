@@ -72,6 +72,7 @@ export function AuthProvider({ children }) {
 
       return {
         success: true,
+        user: loggedInUser,
         message: result.message || "Login berhasil",
       };
     } catch (error) {

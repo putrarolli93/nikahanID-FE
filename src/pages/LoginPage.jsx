@@ -41,6 +41,12 @@ export default function LoginPage() {
     const result = await login(email, password);
     
     if (result.success) {
+      if (result.user?.role === 'admin') {
+        setLoading(false);
+        navigate('/admin');
+        return;
+      }
+
       const queryParams = new URLSearchParams(window.location.search);
       const redirectParam = queryParams.get("redirect");
       

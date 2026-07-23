@@ -28,6 +28,9 @@ import LiveScreenPage from "./pages/LiveScreenPage";
 import ScanCheckInPage from "./pages/ScanCheckInPage";
 import GuestbookHistoryPage from "./pages/GuestbookHistoryPage";
 
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import { useAnalyticsTracker } from "./utils/useAnalyticsTracker";
+
 import { AuthProvider } from "./context/AuthContext";
 import "./styles/global.css";
 import "./styles/components.css";
@@ -37,6 +40,9 @@ function AppContent() {
   const location = useLocation();
   const [hideHeader, setHideHeader] = useState(false);
   const [hideFooter, setHideFooter] = useState(false);
+
+  // Automatically track page views
+  useAnalyticsTracker();
 
   // Effect untuk handle body scroll saat menu terbuka (opsional)
   useEffect(() => {
@@ -61,6 +67,7 @@ function AppContent() {
     >
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/templates" element={<TemplatesPage />} />
         <Route path="/templates/:templateSlug" element={<TemplateDetailPage />} />
         <Route path="/create/:templateSlug" element={<EventSchedulePage />} />

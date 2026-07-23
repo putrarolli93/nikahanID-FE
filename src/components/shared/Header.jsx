@@ -98,9 +98,9 @@ export default function Header() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button 
                 className="btn-ghost" 
-                onClick={() => handleNavigation("/dashboard")}
+                onClick={() => handleNavigation(user?.role === 'admin' ? "/admin" : "/dashboard")}
               >
-                Dashboard
+                {user?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
               </button>
               <div className="user-greeting">
                 Halo, <strong>{user.name || user.username}</strong>
@@ -152,8 +152,8 @@ export default function Header() {
             {user ? (
               <div className="mobile-nav-buttons">
                 <span className="mobile-user-greeting">Halo, <strong>{user.name || user.username}</strong></span>
-                <button className="mobile-btn-ghost" onClick={() => handleNavigation("/dashboard")}>
-                  Dashboard
+                <button className="mobile-btn-ghost" onClick={() => handleNavigation(user?.role === 'admin' ? "/admin" : "/dashboard")}>
+                  {user?.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
                 </button>
                 <button className="mobile-btn-solid" onClick={() => { logout(); closeMenu(); }}>
                   Keluar
