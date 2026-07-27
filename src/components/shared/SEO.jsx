@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 const DEFAULT_TITLE = 'Datangya.site - Undangan Pernikahan Digital Elegan & Modern';
 const DEFAULT_DESC = 'Datangya.site - Platform pembuatan undangan pernikahan digital elegan, praktis, & modern. Fitur RSVP, ucapan tamu, lokasi Google Maps, dan musik background.';
-const DEFAULT_IMAGE = 'https://datangya.site/favicon.svg';
+const DEFAULT_IMAGE = 'https://datangya.site/favicon-192x192.png';
 const BASE_SITE_URL = 'https://datangya.site';
 
 export default function SEO({
