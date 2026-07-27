@@ -1,7 +1,7 @@
-// pages/TemplatesPage.jsx
 import { useState, useEffect } from "react";
-import { CATEGORIES } from "../data/templates";
 import { useNavigate } from "react-router-dom";
+import { CATEGORIES } from "../data/templates";
+import SEO from "../components/shared/SEO";
 
 const CAT_LABELS = {
   wedding: "Pernikahan",
@@ -16,6 +16,25 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Semua");
+
+  const catalogSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Beranda",
+        "item": "https://datangya.site/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Katalog Template Undangan",
+        "item": "https://datangya.site/templates"
+      }
+    ]
+  };
 
   useEffect(() => {
     fetch(`/api/templates`)
@@ -40,6 +59,12 @@ export default function TemplatesPage() {
   
   return (
     <div className="page-enter">
+      <SEO 
+        title="Katalog Template Undangan Digital - Gratis & Premium"
+        description="Temukan 100+ pilihan template undangan pernikahan digital elegan, aqiqah, ulang tahun, & tasyakuran. Pilih desain kesukaanmu & buat dalam hitungan menit."
+        keywords="katalog template undangan, desain undangan pernikahan, template undangan digital gratis, template premium datangya site"
+        schemaData={catalogSchema}
+      />
       <div className="templates-hero">
         <div className="tag">100+ Pilihan Template</div>
         <h1>Template untuk Setiap Momen</h1>

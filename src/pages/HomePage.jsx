@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+import SEO from "../components/shared/SEO";
+
 const CAT_LABELS = {
   wedding: "Pernikahan",
   aqiqah: "Aqiqah",
@@ -17,6 +19,19 @@ export default function HomePage() {
   const [previews, setPreviews] = useState([]);
   const [loadingPreviews, setLoadingPreviews] = useState(true);
   const [previewError, setPreviewError] = useState(false);
+
+  const homeSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Datangya.site",
+    "url": "https://datangya.site/",
+    "description": "Datangya.site - Platform pembuatan undangan pernikahan digital elegan, praktis, & modern dengan fitur RSVP, lokasi Google Maps, dan musik background.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Datangya.site",
+      "logo": "https://datangya.site/favicon.svg"
+    }
+  };
 
   useEffect(() => {
     fetch(`/api/templates`)
@@ -128,6 +143,12 @@ export default function HomePage() {
   // ── RENDER ───────────────────────────────────────────────────
   return (
     <div className="page-enter">
+      <SEO 
+        title="Buat Undangan Pernikahan Digital Elegan & Modern"
+        description="Datangya.site - Platform pembuatan undangan pernikahan digital elegan, praktis, & modern. Pilihan template gratis dan premium terlengkap dengan RSVP & Musik."
+        keywords="undangan pernikahan digital, buat undangan online, website pernikahan, template undangan digital, nikahan id, datangya site"
+        schemaData={homeSchema}
+      />
 
       {/* ── HERO ── */}
       <section className="hero">

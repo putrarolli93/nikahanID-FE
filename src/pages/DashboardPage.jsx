@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SEO from '../components/shared/SEO';
 
 export default function DashboardPage() {
   const { user, token, loading: authLoading } = useAuth();
@@ -170,6 +171,7 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-page">
+      <SEO title="Dashboard Saya" noindex={true} />
       <div className="dashboard-header">
         <div className="dashboard-header-content">
           <div className="dashboard-title-wrapper">

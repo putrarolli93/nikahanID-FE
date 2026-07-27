@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /templates
+Allow: /templates/*
+Allow: /template/*
+Allow: /login
+Allow: /register
+
+# Disallow indexing of private dashboard and admin routes
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /customize/*
+Disallow: /create*
+Disallow: /share/*
+Disallow: /live/*
+Disallow: /activate/*
+
+Sitemap: https://datangya.site/sitemap.xml

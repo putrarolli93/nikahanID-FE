@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import SEO from "../components/shared/SEO";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -104,6 +105,10 @@ export default function LoginPage() {
 
   return (
     <div className="auth-wrapper page-enter">
+      <SEO 
+        title="Masuk ke Akun Anda"
+        description="Masuk ke Datangya.site untuk mengelola undangan pernikahan digital, daftar tamu, RSVP, dan fitur affiliate Anda."
+      />
       <div className="auth-card">
         <div className="auth-logo">
           <div className="auth-logo-icon">i</div>

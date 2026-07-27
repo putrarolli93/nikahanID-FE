@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import SEO from "../components/shared/SEO";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -106,6 +107,10 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-wrapper page-enter">
+      <SEO 
+        title="Daftar Akun Gratis"
+        description="Buat akun gratis di Datangya.site dan mulai buat undangan pernikahan digital impianmu dalam hitungan menit."
+      />
       <div className="auth-card">
         <div className="auth-logo">
           <div className="auth-logo-icon">i</div>

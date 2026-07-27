@@ -1,6 +1,6 @@
-// pages/TemplateDetailPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SEO from "../components/shared/SEO";
 
 const CAT_LABELS = {
   wedding:    "Pernikahan",
@@ -78,10 +78,29 @@ export default function TemplateDetailPage() {
   const previewUrlMobile = template.preview_url_mobile
                             ? `${API_BASE}${template.preview_url_mobile}`
                             : previewUrl;
-  const thumbUrl        = `${API_BASE}${template.thumbnail_url}`;
+  const templateSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": `Template Undangan ${template.name}`,
+    "image": previewUrlMobile || previewUrl,
+    "description": template.description || `Template undangan digital ${template.name} buatan Datangya.site.`,
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "IDR",
+      "price": template.price || 0,
+      "availability": "https://schema.org/InStock"
+    }
+  };
 
   return (
     <div className="detail-page page-enter">
+      <SEO 
+        title={`Template ${template.name} (${CAT_LABELS[template.category] || 'Undangan'})`}
+        description={template.description || `Lihat preview & buat undangan pernikahan digital dengan template ${template.name}. Desain modern, responsive, & penuh fitur di Datangya.site.`}
+        keywords={`template ${template.name}, undangan ${CAT_LABELS[template.category]}, buat undangan ${template.name}, datangya site`}
+        ogImage={previewUrlMobile || previewUrl}
+        schemaData={templateSchema}
+      />
 
       {/* ── BREADCRUMB ── */}
       <div className="detail-breadcrumb">

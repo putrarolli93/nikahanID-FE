@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import SEO from '../components/shared/SEO';
 import './AdminDashboardPage.css';
 
 export default function AdminDashboardPage() {
@@ -92,6 +93,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="admin-dashboard-container">
+      <SEO title="Admin Analytics Dashboard" noindex={true} />
       {/* Header */}
       <div className="admin-header">
         <div className="admin-header-title">
