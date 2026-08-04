@@ -39,7 +39,7 @@ export default function TemplateDetailPage() {
     }
 
     // Fetch template details based on slug
-    fetch(`${API_BASE}/api/templates/${templateSlug}`) // Assuming an API endpoint for single template by slug
+    fetch(`${API_BASE}/api/templates/${templateSlug}`)
       .then((res) => res.json())
       .then((json) => {
         if (json.success) {
@@ -108,14 +108,14 @@ export default function TemplateDetailPage() {
         <span className="breadcrumb-sep">›</span>
         <span className="breadcrumb-link" onClick={() => navigate("/templates")}>Template</span>
         <span className="breadcrumb-sep">›</span>
-        <span className="breadcrumb-current">{template.name}</span> {/* Use template.name directly */}
+        <span className="breadcrumb-current">{template.name}</span>
       </div>
 
       <div className="detail-layout">
 
         {/* ── KIRI: PREVIEW ── */}
         <div className="detail-preview-col">
-          {/* Tab */}
+          {/* Tab Device Mode Selector */}
           <div className="detail-tabs">
             {["mobile", "preview"].map((t) => (
               <button
@@ -123,7 +123,8 @@ export default function TemplateDetailPage() {
                 className={`detail-tab${activeTab === t ? " active" : ""}`}
                 onClick={() => setActiveTab(t)}
               >
-                {t === "preview" ? "Desktop / Fullscreen" : "Tampilan Mobile"}
+                <i className={`ti ${t === "mobile" ? "ti-device-mobile" : "ti-device-desktop"}`} style={{ fontSize: "16px" }} />
+                <span>{t === "preview" ? "Tampilan Desktop" : "Tampilan Mobile"}</span>
               </button>
             ))}
           </div>
@@ -131,7 +132,6 @@ export default function TemplateDetailPage() {
           {/* Frame Wrapper */}
           <div className="detail-preview-wrapper">
             {imgError ? (
-              // Fallback for image error
               <div className="detail-frame-fallback">Preview belum tersedia</div>
             ) : ( 
               <>
@@ -168,9 +168,9 @@ export default function TemplateDetailPage() {
 
           {/* Badges */}
           <div className="detail-badges">
-            <span className="tag">{CAT_LABELS[template.category]}</span>
+            <span className="tag">{CAT_LABELS[template.category] || template.category}</span>
             {template.is_premium ? (
-              <span className="badge-pro">STANDAR</span>
+              <span className="badge-pro">PREMIUM</span>
             ) : (
               <span className="badge-free">GRATIS</span>
             )}
@@ -241,7 +241,7 @@ export default function TemplateDetailPage() {
       {!loading && related.length > 0 && (
         <div className="detail-related">
           <h2 className="detail-related-title">
-            Template {CAT_LABELS[template.category]} Lainnya
+            Template {CAT_LABELS[template.category] || template.category} Lainnya
           </h2>
           <div className="detail-related-grid">
             {related.map((t) => (
@@ -260,8 +260,11 @@ export default function TemplateDetailPage() {
                 </div>
                 <div className="preview-info">
                   <div className="preview-name">{t.name}</div>
-                  <div className="preview-tag">
-                    {CAT_LABELS[t.category]} · {t.price_type}
+                  <div className="preview-tag" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
+                    <span>{CAT_LABELS[t.category] || t.category}</span>
+                    <span className={`price-pill ${['free', 'gratis'].includes((t.price_type || '').toLowerCase()) || !t.is_premium ? 'free' : 'pro'}`}>
+                      {t.price_type || (t.is_premium ? 'Premium' : 'Gratis')}
+                    </span>
                   </div>
                 </div>
               </div>
