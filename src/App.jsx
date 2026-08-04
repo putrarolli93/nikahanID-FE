@@ -16,6 +16,7 @@ import ModernFloralTemplate from './templates/modern-floral/ModernFloralTemplate
 import HeartilyTemplate from './templates/heartily/HeartilyTemplate';
 import EvergreenTemplate from './templates/evergreen/EvergreenTemplate';
 import JavaneseHeritageTemplate from './templates/javanese-heritage/JavaneseHeritageTemplate';
+import AqiqahBlessingTemplate from './templates/aqiqah-blessing/AqiqahBlessingTemplate';
 
 
 import TemplateDetailPage from "./pages/TemplateDetailPage"; // For direct access to detail page
@@ -83,6 +84,7 @@ function AppContent() {
         <Route path="/template/heartily/:slug" element={<HeartilyTemplate />} />
         <Route path="/template/evergreen/:slug" element={<EvergreenTemplate />} />
         <Route path="/template/javanese-heritage/:slug" element={<JavaneseHeritageTemplate />} />
+        <Route path="/template/aqiqah-blessing/:slug" element={<AqiqahBlessingTemplate />} />
         <Route path="/template/:templateSlug" element={<TemplatePreviewPage />} />
         <Route path="/customize/:templateSlug" element={<CustomizePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

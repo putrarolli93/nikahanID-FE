@@ -11,6 +11,7 @@ const templateComponents = {
   'heartily': lazy(() => import('../heartily/HeartilyTemplate')),
   'evergreen': lazy(() => import('../evergreen/EvergreenTemplate')),
   'javanese-heritage': lazy(() => import('../javanese-heritage/JavaneseHeritageTemplate')),
+  'aqiqah-blessing': lazy(() => import('../aqiqah-blessing/AqiqahBlessingTemplate')),
   //   sage: lazy(() => import('../sage/SageTemplate')),
   //   bloom: lazy(() => import('../bloom/BloomTemplate')),
   //   madinah: lazy(() => import('../madinah/MadinahTemplate')),

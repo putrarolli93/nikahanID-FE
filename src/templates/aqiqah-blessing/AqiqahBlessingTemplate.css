@@ -1,0 +1,377 @@
+/* src/templates/aqiqah-blessing/AqiqahBlessingTemplate.css */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --aq-primary: #70a9a1;
+  --aq-primary-light: #e8f3f1;
+  --aq-accent: #e76f51;
+  --aq-gold: #f4a261;
+  --aq-bg: #faf7f2;
+  --aq-card: #ffffff;
+  --aq-dark: #264653;
+  --aq-muted: #6c757d;
+  --aq-border: rgba(112, 169, 161, 0.25);
+  --aq-font-heading: 'Fredoka', cursive, sans-serif;
+  --aq-font-sans: 'Plus Jakarta Sans', sans-serif;
+  --aq-font-arabic: 'Amiri', serif;
+}
+
+.aqiqah-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--aq-bg);
+  min-height: 100vh;
+  font-family: var(--aq-font-sans);
+  color: var(--aq-dark);
+  position: relative;
+  overflow-x: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+}
+
+/* ── ANIMATED CLOUDS ── */
+.aq-cloud-group {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 200px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.aq-cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 100px;
+  filter: drop-shadow(0 8px 16px rgba(112, 169, 161, 0.08));
+}
+.aq-cloud::before, .aq-cloud::after {
+  content: ''; position: absolute; background: rgba(255, 255, 255, 0.85); border-radius: 50%;
+}
+.aq-cloud-1 {
+  width: 140px; height: 45px; top: 25px; left: -140px;
+  animation: floatCloud1 22s linear infinite;
+}
+.aq-cloud-1::before { width: 60px; height: 60px; top: -25px; left: 20px; }
+.aq-cloud-1::after { width: 50px; height: 50px; top: -18px; left: 65px; }
+
+.aq-cloud-2 {
+  width: 180px; height: 55px; top: 70px; right: -180px;
+  animation: floatCloud2 28s linear 4s infinite;
+}
+.aq-cloud-2::before { width: 75px; height: 75px; top: -30px; left: 25px; }
+.aq-cloud-2::after { width: 60px; height: 60px; top: -20px; left: 85px; }
+
+@keyframes floatCloud1 { 0% { transform: translateX(0); } 100% { transform: translateX(650px); } }
+@keyframes floatCloud2 { 0% { transform: translateX(0); } 100% { transform: translateX(-650px); } }
+
+/* Twinkling Stars */
+.aq-star {
+  position: absolute; color: var(--aq-gold); font-size: 16px; pointer-events: none;
+  animation: starTwinkle 2.5s ease-in-out infinite alternate;
+}
+@keyframes starTwinkle {
+  0% { transform: scale(0.7) rotate(0deg); opacity: 0.3; }
+  100% { transform: scale(1.2) rotate(45deg); opacity: 1; filter: drop-shadow(0 0 6px rgba(244, 162, 97, 0.8)); }
+}
+
+.aq-moon {
+  position: absolute; top: 20px; right: 25px; font-size: 32px; color: var(--aq-gold);
+  filter: drop-shadow(0 0 12px rgba(244, 162, 97, 0.5));
+  animation: moonFloat 4s ease-in-out infinite alternate; pointer-events: none;
+}
+@keyframes moonFloat { 0% { transform: translateY(0) rotate(-5deg); } 100% { transform: translateY(-8px) rotate(5deg); } }
+
+/* ── SHEEP MASCOT ASSETS ── */
+.aq-mascot-img {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.1));
+}
+
+.aq-anim-lamb {
+  width: 75px; height: auto; max-height: 85px;
+  animation: gentleLambSway 4.5s ease-in-out infinite alternate;
+}
+
+/* Cover Opening - 1 Single sheep_1.png */
+.aq-lamb-cover-single {
+  top: 75px; right: 18px;
+  width: 75px;
+}
+
+/* Interspersed sheep_1.png */
+.aq-lamb-card-1 { top: -38px; left: 12px; width: 72px; }
+
+/* Bottom Alternating sheep_bottom.png */
+.aq-sheep-bottom {
+  position: absolute;
+  bottom: 0;
+  width: 115px;
+  height: auto;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+}
+.aq-sheep-bottom-right { right: 6px; }
+.aq-sheep-bottom-left { left: 6px; transform: scaleX(-1); }
+
+@keyframes gentleLambSway {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+  100% { transform: translateY(4px) rotate(-2.5deg); }
+}
+
+/* ── COVER MODAL (MOBILE VIEW ONLY - CENTERED LIKE MAIN PAGE) ── */
+.aq-cover-modal {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  z-index: 9999;
+  background: linear-gradient(160deg, #fefae0 0%, #fae1dd 50%, #e8f3f1 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.25rem 1.25rem 1.5rem;
+  text-align: center;
+  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
+}
+.aq-cover-modal.closed {
+  transform: translate(-50%, -100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Subtitle lowered comfortably */
+.aq-cover-subtitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--aq-primary);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 3;
+}
+
+.aq-cover-photo-wrapper {
+  position: relative; width: 165px; height: 165px; border-radius: 50%;
+  border: 5px solid #ffffff; box-shadow: 0 12px 30px rgba(38, 70, 83, 0.14);
+  margin: 0 auto 1.25rem; overflow: hidden; z-index: 3; flex-shrink: 0;
+}
+.aq-cover-photo { width: 100%; height: 100%; object-fit: cover; }
+
+.aq-cover-title {
+  font-family: var(--aq-font-heading); font-size: 2.15rem; font-weight: 700;
+  color: var(--aq-dark); margin-bottom: 0.35rem; position: relative; z-index: 3;
+}
+.aq-cover-sub {
+  font-size: 13.5px; color: var(--aq-muted); margin-bottom: 1.5rem; max-width: 320px;
+  position: relative; z-index: 3; line-height: 1.5;
+}
+
+.aq-btn-open {
+  padding: 13px 34px; background: linear-gradient(135deg, var(--aq-primary), #2a9d8f);
+  color: #ffffff; border: none; border-radius: 999px; font-size: 14.5px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 10px 25px rgba(112, 169, 161, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex; align-items: center; gap: 8px; position: relative; z-index: 3;
+}
+.aq-btn-open:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 30px rgba(112, 169, 161, 0.45); }
+
+/* Animated Zoom In Zoom Out Bottom Sheep (Positioned at Bottom Right Corner) */
+.aq-cover-bottom-sheep {
+  position: absolute;
+  bottom: 0;
+  right: 6px;
+  width: 135px;
+  height: auto;
+  pointer-events: none;
+  z-index: 2;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
+  animation: sheepZoomInOutRight 3.5s ease-in-out infinite alternate;
+  transform-origin: bottom right;
+}
+
+@keyframes sheepZoomInOutRight {
+  0% { transform: scale(0.92); }
+  100% { transform: scale(1.12); }
+}
+
+/* ── HERO SECTION ── */
+.aq-hero-section {
+  padding: 4.5rem 1.5rem 3.5rem; text-align: center;
+  background: linear-gradient(180deg, #e8f3f1 0%, var(--aq-bg) 100%);
+  position: relative; overflow: hidden;
+}
+
+.aq-bismillah {
+  font-family: var(--aq-font-arabic); font-size: 1.9rem; color: var(--aq-dark);
+  margin-bottom: 1.25rem; line-height: 1.6; position: relative; z-index: 3;
+}
+
+.aq-hadith-box {
+  background: rgba(255, 255, 255, 0.92); border: 1.5px solid var(--aq-border);
+  border-radius: 20px; padding: 1.35rem 1.5rem; margin: 1.5rem 0 2.5rem;
+  font-size: 13.5px; color: #457b9d; line-height: 1.65;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03); position: relative; z-index: 3;
+}
+
+.aq-baby-card {
+  background: #ffffff; border-radius: 28px; padding: 2.25rem 1.5rem;
+  border: 1.5px solid var(--aq-border); box-shadow: 0 15px 35px rgba(38, 70, 83, 0.06);
+  text-align: center; margin-bottom: 2.5rem; position: relative; z-index: 3;
+}
+.aq-baby-img-box {
+  width: 145px; height: 145px; border-radius: 50%; border: 4px solid var(--aq-gold);
+  margin: 0 auto 1.25rem; overflow: hidden; box-shadow: 0 10px 25px rgba(244, 162, 97, 0.25);
+  position: relative;
+}
+.aq-baby-img { width: 100%; height: 100%; object-fit: cover; }
+.aq-baby-name {
+  font-family: var(--aq-font-heading); font-size: 1.85rem; font-weight: 700;
+  color: var(--aq-dark); margin-bottom: 0.25rem;
+}
+.aq-baby-nick { font-size: 14.5px; font-weight: 700; color: var(--aq-accent); margin-bottom: 1.25rem; }
+
+.aq-baby-stats {
+  display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;
+  margin-top: 1rem; padding-top: 1rem; border-top: 1.5px dashed var(--aq-border);
+}
+.aq-stat-pill {
+  background: var(--aq-primary-light); padding: 7px 16px; border-radius: 999px;
+  font-size: 13px; font-weight: 700; color: var(--aq-dark);
+  box-shadow: 0 2px 8px rgba(112, 169, 161, 0.12);
+}
+
+/* ── EVENT SCHEDULE ── */
+.aq-section { padding: 3rem 1.5rem 3.5rem; position: relative; }
+.aq-section-title {
+  font-family: var(--aq-font-heading); font-size: 1.65rem; color: var(--aq-dark);
+  text-align: center; margin-bottom: 0.5rem;
+}
+.aq-section-sub { font-size: 13.5px; color: var(--aq-muted); text-align: center; margin-bottom: 2rem; }
+
+.aq-event-card {
+  background: #ffffff; border-radius: 24px; padding: 1.75rem;
+  border: 1.5px solid var(--aq-border); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  text-align: center; margin-bottom: 1.5rem; position: relative; z-index: 2;
+}
+.aq-event-icon {
+  width: 54px; height: 54px; background: linear-gradient(135deg, var(--aq-gold), var(--aq-accent));
+  color: #ffffff; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 1.25rem; box-shadow: 0 8px 20px rgba(244, 162, 97, 0.3);
+}
+.aq-event-name { font-family: var(--aq-font-heading); font-size: 1.4rem; font-weight: 700; color: var(--aq-dark); margin-bottom: 0.5rem; }
+.aq-event-detail { font-size: 14px; color: #457b9d; margin-bottom: 0.4rem; font-weight: 600; }
+.aq-btn-map {
+  margin-top: 1.25rem; display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 26px; background: var(--aq-primary-light); color: var(--aq-primary);
+  border: 1.5px solid var(--aq-primary); border-radius: 999px; font-size: 13.5px; font-weight: 700;
+  text-decoration: none; cursor: pointer; transition: all 0.25s ease;
+}
+.aq-btn-map:hover { background: var(--aq-primary); color: #ffffff; }
+
+/* ── CLICKABLE GALLERY GRID & LIGHTBOX ── */
+.aq-gallery-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; position: relative; z-index: 2;
+}
+.aq-gallery-item {
+  position: relative; border-radius: 16px; overflow: hidden; height: 120px; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); border: 2px solid #ffffff; transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.aq-gallery-item:hover { transform: scale(1.04); box-shadow: 0 8px 22px rgba(112, 169, 161, 0.25); }
+.aq-gallery-img { width: 100%; height: 100%; object-fit: cover; }
+.aq-gallery-overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(38, 70, 83, 0.35);
+  display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 20px;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.aq-gallery-item:hover .aq-gallery-overlay { opacity: 1; }
+
+/* Lightbox Modal */
+.aq-lightbox-modal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem; animation: fadeInModal 0.25s ease;
+}
+@keyframes fadeInModal { 0% { opacity: 0; } 100% { opacity: 1; } }
+
+.aq-lightbox-content {
+  position: relative; max-width: 420px; width: 100%; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); border: 3px solid #ffffff;
+}
+.aq-lightbox-img { width: 100%; height: auto; max-height: 75vh; object-fit: contain; display: block; background: #000; }
+.aq-lightbox-close {
+  position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6); color: #ffffff; border: none; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── RSVP & GUESTBOOK ── */
+.aq-rsvp-form {
+  background: #ffffff; border-radius: 24px; padding: 1.75rem 1.5rem; border: 1.5px solid var(--aq-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+.aq-form-group { margin-bottom: 1.25rem; text-align: left; }
+.aq-form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--aq-dark); margin-bottom: 6px; }
+.aq-form-input, .aq-form-select, .aq-form-textarea {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--aq-border); border-radius: 12px;
+  font-size: 13.5px; font-family: var(--aq-font-sans); color: var(--aq-dark); outline: none; background: #faf7f2;
+}
+.aq-form-input:focus, .aq-form-textarea:focus { border-color: var(--aq-primary); background: #ffffff; }
+.aq-btn-submit {
+  width: 100%; padding: 13px; background: linear-gradient(135deg, var(--aq-primary), #2a9d8f);
+  color: #ffffff; border: none; border-radius: 999px; font-size: 14.5px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 8px 20px rgba(112, 169, 161, 0.3);
+}
+
+.aq-wishes-list { margin-top: 1.75rem; display: flex; flex-direction: column; gap: 1rem; }
+.aq-wish-item {
+  background: #ffffff; border-radius: 16px; padding: 1rem 1.25rem; border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+.aq-wish-name { font-weight: 700; font-size: 13.5px; color: var(--aq-dark); margin-bottom: 4px; }
+.aq-wish-msg { font-size: 13px; color: #555; line-height: 1.5; }
+
+/* ── MUSIC TOGGLE FAB (FIXED HIGH Z-INDEX & ALWAYS VISIBLE) ── */
+.aq-music-fab {
+  position: fixed !important;
+  bottom: 28px !important;
+  right: 20px !important;
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #e76f51, #f4a261) !important;
+  color: #ffffff !important;
+  border: 2.5px solid #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  z-index: 9999999 !important;
+  box-shadow: 0 8px 25px rgba(231, 111, 81, 0.5) !important;
+  animation: pulseMusic 2s infinite alternate;
+}
+@keyframes pulseMusic { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+
+/* ── FOOTER ── */
+.aq-footer {
+  padding: 3rem 1.5rem 6rem;
+  text-align: center;
+  background: #ffffff;
+  border-top: 1.5px solid var(--aq-border);
+  font-size: 13.5px;
+  color: var(--aq-muted);
+  position: relative;
+  z-index: 2;
+}
