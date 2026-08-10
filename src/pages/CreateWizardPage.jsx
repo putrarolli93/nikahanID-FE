@@ -185,18 +185,20 @@ export default function CreateWizardPage() {
           }
 
           // Populate step 1
-          const groomData = inv.bride_groom?.find(p => p.type === "groom");
-          if (groomData) {
+          const groomData = inv.bride_groom?.find(p => p.type === "groom") || inv.bride_groom?.[0];
+          const brideData = inv.bride_groom?.find(p => p.type === "bride") || inv.bride_groom?.[1];
+
+          if (groomData || inv.groom_name || inv.groomName) {
             setGroom({
-              full_name: groomData.full_name || "",
-              nickname: groomData.nickname || "",
-              father_name: groomData.father_name || "",
-              mother_name: groomData.mother_name || "",
-              address: groomData.address || "",
-              instagram_username: groomData.instagram_username || "",
-              photo_url: groomData.photo_url || ""
+              full_name: groomData?.full_name || inv.groom_name || inv.groomName || inv.title || "",
+              nickname: groomData?.nickname || inv.bride_name || inv.brideName || (groomData?.full_name ? groomData.full_name.split(' ')[0] : ""),
+              father_name: groomData?.father_name || brideData?.father_name || inv.father_name || inv.fatherName || "",
+              mother_name: groomData?.mother_name || brideData?.mother_name || inv.mother_name || inv.motherName || "",
+              address: groomData?.address || "",
+              instagram_username: groomData?.instagram_username || "",
+              photo_url: groomData?.photo_url || ""
             });
-            if (groomData.photo_url) {
+            if (groomData?.photo_url) {
               setGroomPreview(`${groomData.photo_url}`);
               if (groomData.photo_url.startsWith("/uploads/default_avatars/")) {
                 setGroomPhotoType("avatar");
@@ -204,7 +206,6 @@ export default function CreateWizardPage() {
             }
           }
 
-          const brideData = inv.bride_groom?.find(p => p.type === "bride");
           if (brideData) {
             setBride({
               full_name: brideData.full_name || "",
@@ -224,15 +225,40 @@ export default function CreateWizardPage() {
           }
 
           // Populate step 2
-          const akadData = inv.schedules?.find(s => s.event_name === "Akad Nikah");
-          if (akadData) {
-            setAkad({
-              event_address: akadData.event_address || "",
-              google_map_link: akadData.google_map_link || "",
-              event_date: akadData.event_date ? akadData.event_date.split("T")[0] : "",
-              start_time: akadData.start_time || ""
-            });
+          const isAqiqahType = slug?.includes("aqiqah") || inv.template_slug?.includes("aqiqah");
+          // For aqiqah: prefer "Tasyakuran & Aqiqah" schedule; for wedding: prefer "Akad Nikah"
+          const akadData = isAqiqahType
+            ? (inv.schedules?.find(s => s.event_name === "Tasyakuran & Aqiqah")
+                || inv.schedules?.find(s => s.event_address || s.address || s.location)
+                || inv.schedules?.[0])
+            : (inv.schedules?.find(s => s.event_name === "Akad Nikah")
+                || inv.schedules?.find(s => s.event_address || s.address || s.location)
+                || inv.schedules?.[0]
+                || inv);
+
+          let addressVal = akadData?.event_address || akadData?.address || akadData?.location || inv.event_address || inv.address || inv.location || "";
+          let mapsVal = akadData?.google_map_link || akadData?.google_maps_link || akadData?.maps_url || inv.google_map_link || inv.google_maps_link || inv.maps_url || "";
+          let dateVal = akadData?.event_date ? akadData.event_date.split("T")[0] : (inv.event_date ? inv.event_date.split("T")[0] : "");
+          let timeVal = akadData?.start_time || inv.start_time || "";
+
+          // Fallback to sessionStorage if empty
+          const cachedAkad = sessionStorage.getItem(`draft_akad_${slug}`);
+          if (cachedAkad && (!addressVal || !mapsVal)) {
+            try {
+              const parsed = JSON.parse(cachedAkad);
+              if (!addressVal && parsed.event_address) addressVal = parsed.event_address;
+              if (!mapsVal && parsed.google_map_link) mapsVal = parsed.google_map_link;
+              if (!dateVal && parsed.event_date) dateVal = parsed.event_date;
+              if (!timeVal && parsed.start_time) timeVal = parsed.start_time;
+            } catch (e) {}
           }
+
+          setAkad({
+            event_address: addressVal,
+            google_map_link: mapsVal,
+            event_date: dateVal,
+            start_time: timeVal
+          });
 
           const resepsiData = inv.schedules?.find(s => s.event_name === "Resepsi");
           if (resepsiData) {
@@ -252,33 +278,47 @@ export default function CreateWizardPage() {
           if (inv.moments) setMoments(inv.moments);
 
           // Populate step 5
-          if (inv.quotes && inv.quotes.length > 0) setQuote(inv.quotes[0]);
+          const isAqiqahDraft = slug?.includes("aqiqah") || inv.template_slug?.includes("aqiqah") || inv.category === "aqiqah";
+          if (inv.quotes && inv.quotes.length > 0) {
+            setQuote(inv.quotes[0]);
+          } else if (isAqiqahDraft) {
+            setQuote({
+              content: "“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”",
+              source: "(HR. An-Nasa’i & Tirmidzi)"
+            });
+          }
+
           if (inv.blessings && inv.blessings.length > 0) {
             const prayerBlessing = inv.blessings.find(b => b.type === "prayer");
             if (prayerBlessing) setBlessing(prayerBlessing);
-            const footerQuoteBlessing = inv.blessings.find(b => b.type === "footer_quote");
+            const footerQuoteBlessing = inv.blessings?.find(b => b.type === "footer_quote");
             if (footerQuoteBlessing) setFooterQuote(footerQuoteBlessing);
           }
           if (inv.music) setMusic(inv.music);
+          const defaultAqiqahGiftMsg = "Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless.";
+
           if (inv.gifts && inv.gifts.length > 0) {
             setGift({
-              title: inv.gifts[0].title || "Titip Hadiah",
-              message: inv.gifts[0].message || "",
+              title: inv.gifts[0].title || (isAqiqahDraft ? "🎁 Hadiah & Rekening (Opsional)" : "Titip Hadiah"),
+              message: inv.gifts[0].message || (isAqiqahDraft ? defaultAqiqahGiftMsg : ""),
               shipping_address: inv.gifts[0].shipping_address || ""
             });
             if (inv.gifts[0].bank_accounts) setBankAccounts(inv.gifts[0].bank_accounts);
+          } else if (isAqiqahDraft) {
+            setGift({
+              title: "🎁 Hadiah & Rekening (Opsional)",
+              message: defaultAqiqahGiftMsg,
+              shipping_address: ""
+            });
           }
 
           // Calculate initial max unlocked step based on database customize progress
           let initialMax = 1;
-          if (groomData?.nickname || groomData?.father_name) {
+          if (groomData?.nickname || groomData?.father_name || isAqiqahDraft) {
             initialMax = 2;
           }
-          if (initialMax >= 2 && akadData?.event_address) {
-            initialMax = 5; // Akad is filled -> unlock up to step 5 since Step 3 & 4 are optional
-          }
-          if (initialMax >= 5 && (inv.quotes?.length > 0 || inv.blessings?.length > 0 || inv.gifts?.length > 0)) {
-            initialMax = 6;
+          if (initialMax >= 2 && (akadData?.event_address || isAqiqahDraft)) {
+            initialMax = 6; // Unlock all steps for Aqiqah or when schedule exists
           }
           setMaxUnlockedStep(initialMax);
         } else {
@@ -301,7 +341,24 @@ export default function CreateWizardPage() {
       const response = await fetch(`/api/invitations/${slug}`);
       const result = await response.json();
       if (response.ok && result.success) {
-        setInvitationData(result.data);
+        const inv = result.data;
+        setInvitationData(inv);
+        const isAqiqahTypeR = slug?.includes("aqiqah") || inv.template_slug?.includes("aqiqah");
+        const akadData = isAqiqahTypeR
+          ? (inv.schedules?.find(s => s.event_name === "Tasyakuran & Aqiqah")
+              || inv.schedules?.find(s => s.event_address || s.address || s.location)
+              || inv.schedules?.[0] || inv)
+          : (inv.schedules?.find(s => s.event_name === "Akad Nikah")
+              || inv.schedules?.find(s => s.event_address || s.address || s.location)
+              || inv.schedules?.[0] || inv);
+        if (akadData) {
+          setAkad({
+            event_address: akadData.event_address || akadData.address || akadData.location || inv.event_address || inv.address || "",
+            google_map_link: akadData.google_map_link || akadData.google_maps_link || akadData.maps_url || inv.google_map_link || inv.google_maps_link || "",
+            event_date: akadData.event_date ? akadData.event_date.split("T")[0] : (inv.event_date ? inv.event_date.split("T")[0] : ""),
+            start_time: akadData.start_time || inv.start_time || ""
+          });
+        }
       }
     } catch (err) {
       console.error("Error refreshing data", err);
@@ -334,26 +391,28 @@ export default function CreateWizardPage() {
         body: groomForm
       });
 
-      // 2. Bride
-      const brideForm = new FormData();
-      brideForm.append("full_name", bride.full_name);
-      brideForm.append("nickname", bride.nickname);
-      brideForm.append("father_name", bride.father_name);
-      brideForm.append("mother_name", bride.mother_name);
-      brideForm.append("address", bride.address);
-      brideForm.append("instagram_username", bride.instagram_username);
-      if (bridePhotoType === "upload" && brideFile) {
-        const compressedBrideFile = await compressImage(brideFile);
-        brideForm.append("photo", compressedBrideFile);
-      } else if (bridePhotoType === "avatar" && bride.photo_url) {
-        brideForm.append("photo_url", bride.photo_url);
-      }
+      // 2. Bride (Wedding only)
+      if (!isAqiqah) {
+        const brideForm = new FormData();
+        brideForm.append("full_name", bride.full_name);
+        brideForm.append("nickname", bride.nickname);
+        brideForm.append("father_name", bride.father_name);
+        brideForm.append("mother_name", bride.mother_name);
+        brideForm.append("address", bride.address);
+        brideForm.append("instagram_username", bride.instagram_username);
+        if (bridePhotoType === "upload" && brideFile) {
+          const compressedBrideFile = await compressImage(brideFile);
+          brideForm.append("photo", compressedBrideFile);
+        } else if (bridePhotoType === "avatar" && bride.photo_url) {
+          brideForm.append("photo_url", bride.photo_url);
+        }
 
-      await fetch(`/api/invitations/${weddingId}/bride-groom/bride`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: brideForm
-      });
+        await fetch(`/api/invitations/${weddingId}/bride-groom/bride`, {
+          method: "PUT",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: brideForm
+        });
+      }
 
       await refreshData();
       setActiveStep(2);
@@ -372,38 +431,59 @@ export default function CreateWizardPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const schedules = [
-        {
-          event_name: "Akad Nikah",
-          event_address: akad.event_address,
-          google_map_link: akad.google_map_link,
-          event_date: akad.event_date,
-          start_time: akad.start_time
-        }
-      ];
+      sessionStorage.setItem(`draft_akad_${slug}`, JSON.stringify(akad));
 
-      if (hasResepsi) {
+      const mainSchedule = {
+        event_name: isAqiqah ? "Tasyakuran & Aqiqah" : "Akad Nikah",
+        event_address: akad.event_address,
+        address: akad.event_address,
+        location: akad.event_address,
+        google_map_link: akad.google_map_link,
+        google_maps_link: akad.google_map_link,
+        maps_url: akad.google_map_link,
+        event_date: akad.event_date,
+        start_time: akad.start_time
+      };
+      const schedules = [mainSchedule];
+
+      if (!isAqiqah && hasResepsi) {
         schedules.push({
           event_name: "Resepsi",
           event_address: resepsi.event_address,
+          address: resepsi.event_address,
+          location: resepsi.event_address,
           google_map_link: resepsi.google_map_link,
+          google_maps_link: resepsi.google_map_link,
+          maps_url: resepsi.google_map_link,
           event_date: resepsi.event_date,
           start_time: resepsi.start_time
         });
       }
 
-      await fetch(`/api/invitations/${weddingId}/event-schedules`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ schedules })
-      });
+      const targetId = weddingId || invitationData?.id;
+      if (targetId) {
+        await Promise.allSettled([
+          fetch(`/api/invitations/${targetId}/event-schedules`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ schedules, event_schedules: schedules, event_address: akad.event_address, google_map_link: akad.google_map_link, event_date: akad.event_date, start_time: akad.start_time })
+          }),
+          fetch(`/api/invitations/${targetId}/schedules`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ schedules, event_schedules: schedules, event_address: akad.event_address, google_map_link: akad.google_map_link, event_date: akad.event_date, start_time: akad.start_time })
+          }),
+          fetch(`/api/invitations/${targetId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ event_address: akad.event_address, google_map_link: akad.google_map_link, event_date: akad.event_date, start_time: akad.start_time })
+          })
+        ]);
+      }
 
       await refreshData();
-      setActiveStep(isFree ? 5 : 3);
-      setMaxUnlockedStep(prev => Math.max(prev, 5)); // Step 3 & 4 are optional, unlock up to step 5
+      setActiveStep(isAqiqah ? 4 : (isFree ? 5 : 3));
+      setMaxUnlockedStep(prev => Math.max(prev, 6));
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(err);
@@ -544,8 +624,15 @@ export default function CreateWizardPage() {
         });
       }
 
-      // 4. Save Gifts (only if not free)
-      if (!isFree) {
+      // 4. Save Gifts
+      sessionStorage.setItem(`draft_gift_${slug}`, JSON.stringify({
+        title: gift.title,
+        message: gift.message,
+        shipping_address: gift.shipping_address,
+        bank_accounts: bankAccounts
+      }));
+
+      if (!isFree || isAqiqah) {
         await fetch(`/api/invitations/${weddingId}/gifts`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -600,6 +687,7 @@ export default function CreateWizardPage() {
   }
 
   const isFree = invitationData?.template_is_premium === 0;
+  const isAqiqah = slug?.includes("aqiqah") || invitationData?.template_slug?.includes("aqiqah") || invitationData?.category === "aqiqah";
 
   // Stepper Header Links
   let steps = [
@@ -611,7 +699,15 @@ export default function CreateWizardPage() {
     { num: 6, label: "Aktivasi" }
   ];
 
-  if (isFree) {
+  if (isAqiqah) {
+    steps = [
+      { num: 1, label: "Data Bayi" },
+      { num: 2, label: "Jadwal Acara" },
+      { num: 4, label: "Galeri Foto" },
+      { num: 5, label: "Amplop & Detail" },
+      { num: 6, label: "Aktivasi" }
+    ];
+  } else if (isFree) {
     steps = [
       { num: 1, label: "Mempelai" },
       { num: 2, label: "Acara" },
@@ -695,95 +791,101 @@ export default function CreateWizardPage() {
             </button>
           </div>
 
-          {/* STEP 1: BRIDE & GROOM */}
+          {/* STEP 1: BRIDE & GROOM / AQIQAH DATA */}
           {activeStep === 1 && (
             <form onSubmit={handleSaveStep1} className="form-section">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Groom (Mempelai Pria)</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                {isAqiqah ? "👶 Informasi Buah Hati & Orang Tua" : "Groom (Mempelai Pria)"}
+              </h2>
 
               <div className="form-group">
-                <label className="es-label">Nama Lengkap</label>
-                <input type="text" className="es-input" placeholder="Nama lengkap pria" value={groom.full_name} onChange={(e) => setGroom(prev => ({ ...prev, full_name: e.target.value }))} required />
+                <label className="es-label">{isAqiqah ? "Nama Lengkap Bayi" : "Nama Lengkap"}</label>
+                <input type="text" className="es-input" placeholder={isAqiqah ? "cth. Muhammad Rayyan Al-Farisi" : "Nama lengkap pria"} value={groom.full_name} onChange={(e) => setGroom(prev => ({ ...prev, full_name: e.target.value }))} required />
               </div>
               <div className="form-group">
-                <label className="es-label">Nama Panggilan</label>
-                <input type="text" className="es-input" placeholder="Nama panggilan pria" value={groom.nickname} onChange={(e) => setGroom(prev => ({ ...prev, nickname: e.target.value }))} required />
+                <label className="es-label">{isAqiqah ? "Nama Panggilan Bayi" : "Nama Panggilan"}</label>
+                <input type="text" className="es-input" placeholder={isAqiqah ? "cth. Rayyan" : "Nama panggilan pria"} value={groom.nickname} onChange={(e) => setGroom(prev => ({ ...prev, nickname: e.target.value }))} required />
               </div>
               <div className="form-group">
                 <label className="es-label">Nama Ayah</label>
-                <input type="text" className="es-input" placeholder="Nama ayah pria" value={groom.father_name} onChange={(e) => setGroom(prev => ({ ...prev, father_name: e.target.value }))} />
+                <input type="text" className="es-input" placeholder={isAqiqah ? "Nama lengkap ayah" : "Nama ayah pria"} value={groom.father_name} onChange={(e) => setGroom(prev => ({ ...prev, father_name: e.target.value }))} />
               </div>
               <div className="form-group">
                 <label className="es-label">Nama Ibu</label>
-                <input type="text" className="es-input" placeholder="Nama ibu pria" value={groom.mother_name} onChange={(e) => setGroom(prev => ({ ...prev, mother_name: e.target.value }))} />
+                <input type="text" className="es-input" placeholder={isAqiqah ? "Nama lengkap ibu" : "Nama ibu pria"} value={groom.mother_name} onChange={(e) => setGroom(prev => ({ ...prev, mother_name: e.target.value }))} />
               </div>
-              <div className="form-group">
-                <label className="es-label">Instagram Username</label>
-                <input type="text" className="es-input" placeholder="Username tanpa @" value={groom.instagram_username} onChange={(e) => setGroom(prev => ({ ...prev, instagram_username: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Foto Mempelai Pria</label>
-                <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isFree) {
-                        showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
-                      } else {
-                        setGroomPhotoType("upload");
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid " + (groomPhotoType === "upload" ? "var(--brand)" : "var(--border)"),
-                      background: groomPhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
-                      color: groomPhotoType === "upload" ? "#fff" : "var(--text)",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: isFree ? "not-allowed" : "pointer",
-                      opacity: isFree ? 0.6 : 1,
-                      transition: "all 0.2s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    {isFree ? (
-                      <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
-                    ) : (
-                      <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
-                    )}
-                    Unggah Foto Sendiri
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGroomPhotoType("avatar")}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid " + (groomPhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
-                      background: groomPhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
-                      color: groomPhotoType === "avatar" ? "#fff" : "var(--text)",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
-                    Pilih Avatar
-                  </button>
+              {!isAqiqah && (
+                <div className="form-group">
+                  <label className="es-label">Instagram Username</label>
+                  <input type="text" className="es-input" placeholder="Username tanpa @" value={groom.instagram_username} onChange={(e) => setGroom(prev => ({ ...prev, instagram_username: e.target.value }))} />
                 </div>
+              )}
+              <div className="form-group">
+                <label className="es-label">{isAqiqah ? "Foto Buah Hati (Opsional)" : "Foto Mempelai Pria"}</label>
+                {!isAqiqah && (
+                  <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isFree) {
+                          showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
+                        } else {
+                          setGroomPhotoType("upload");
+                        }
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        border: "1px solid " + (groomPhotoType === "upload" ? "var(--brand)" : "var(--border)"),
+                        background: groomPhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                        color: groomPhotoType === "upload" ? "#fff" : "var(--text)",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        cursor: isFree ? "not-allowed" : "pointer",
+                        opacity: isFree ? 0.6 : 1,
+                        transition: "all 0.2s ease",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      {isFree ? (
+                        <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
+                      ) : (
+                        <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                      )}
+                      Unggah Foto Sendiri
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGroomPhotoType("avatar")}
+                      style={{
+                        flex: 1,
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        border: "1px solid " + (groomPhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
+                        background: groomPhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                        color: groomPhotoType === "avatar" ? "#fff" : "var(--text)",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
+                      Pilih Avatar
+                    </button>
+                  </div>
+                )}
 
-                {groomPhotoType === "upload" ? (
-                  <input type="file" className="es-input" onChange={(e) => {
+                {(groomPhotoType === "upload" || isAqiqah) ? (
+                  <input type="file" className="es-input" accept="image/*" onChange={(e) => {
                     const file = e.target.files[0];
                     setGroomFile(file);
                     if (file) setGroomPreview(URL.createObjectURL(file));
@@ -820,138 +922,142 @@ export default function CreateWizardPage() {
                 {groomPreview && (
                   <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
                     <img src={groomPreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%" }} />
-                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>Pratinjau Foto Mempelai Pria</span>
+                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>{isAqiqah ? "Pratinjau Foto Buah Hati" : "Pratinjau Foto Mempelai Pria"}</span>
                   </div>
                 )}
               </div>
 
-              <div className="es-divider" />
+              {!isAqiqah && (
+                <>
+                  <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Bride (Mempelai Wanita)</h2>
-              <div className="form-group">
-                <label className="es-label">Nama Lengkap</label>
-                <input type="text" className="es-input" placeholder="Nama lengkap wanita" value={bride.full_name} onChange={(e) => setBride(prev => ({ ...prev, full_name: e.target.value }))} required />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Nama Panggilan</label>
-                <input type="text" className="es-input" placeholder="Nama panggilan wanita" value={bride.nickname} onChange={(e) => setBride(prev => ({ ...prev, nickname: e.target.value }))} required />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Nama Ayah</label>
-                <input type="text" className="es-input" placeholder="Nama ayah wanita" value={bride.father_name} onChange={(e) => setBride(prev => ({ ...prev, father_name: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Nama Ibu</label>
-                <input type="text" className="es-input" placeholder="Nama ibu wanita" value={bride.mother_name} onChange={(e) => setBride(prev => ({ ...prev, mother_name: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Instagram Username</label>
-                <input type="text" className="es-input" placeholder="Username tanpa @" value={bride.instagram_username} onChange={(e) => setBride(prev => ({ ...prev, instagram_username: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="es-label">Foto Mempelai Wanita</label>
-                <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isFree) {
-                        showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
-                      } else {
-                        setBridePhotoType("upload");
-                      }
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid " + (bridePhotoType === "upload" ? "var(--brand)" : "var(--border)"),
-                      background: bridePhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
-                      color: bridePhotoType === "upload" ? "#fff" : "var(--text)",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: isFree ? "not-allowed" : "pointer",
-                      opacity: isFree ? 0.6 : 1,
-                      transition: "all 0.2s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    {isFree ? (
-                      <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
-                    ) : (
-                      <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
-                    )}
-                    Unggah Foto Sendiri
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBridePhotoType("avatar")}
-                    style={{
-                      flex: 1,
-                      padding: "10px 14px",
-                      borderRadius: "10px",
-                      border: "1px solid " + (bridePhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
-                      background: bridePhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
-                      color: bridePhotoType === "avatar" ? "#fff" : "var(--text)",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px"
-                    }}
-                  >
-                    <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
-                    Pilih Avatar
-                  </button>
-                </div>
-
-                {bridePhotoType === "upload" ? (
-                  <input type="file" className="es-input" onChange={(e) => {
-                    const file = e.target.files[0];
-                    setBrideFile(file);
-                    if (file) setBridePreview(URL.createObjectURL(file));
-                  }} />
-                ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: "10px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
-                    {defaultAvatars.filter(av => av.gender === "bride").map(av => (
-                      <div
-                        key={av.id}
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Bride (Mempelai Wanita)</h2>
+                  <div className="form-group">
+                    <label className="es-label">Nama Lengkap</label>
+                    <input type="text" className="es-input" placeholder="Nama lengkap wanita" value={bride.full_name} onChange={(e) => setBride(prev => ({ ...prev, full_name: e.target.value }))} required={!isAqiqah} />
+                  </div>
+                  <div className="form-group">
+                    <label className="es-label">Nama Panggilan</label>
+                    <input type="text" className="es-input" placeholder="Nama panggilan wanita" value={bride.nickname} onChange={(e) => setBride(prev => ({ ...prev, nickname: e.target.value }))} required={!isAqiqah} />
+                  </div>
+                  <div className="form-group">
+                    <label className="es-label">Nama Ayah</label>
+                    <input type="text" className="es-input" placeholder="Nama ayah wanita" value={bride.father_name} onChange={(e) => setBride(prev => ({ ...prev, father_name: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="es-label">Nama Ibu</label>
+                    <input type="text" className="es-input" placeholder="Nama ibu wanita" value={bride.mother_name} onChange={(e) => setBride(prev => ({ ...prev, mother_name: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="es-label">Instagram Username</label>
+                    <input type="text" className="es-input" placeholder="Username tanpa @" value={bride.instagram_username} onChange={(e) => setBride(prev => ({ ...prev, instagram_username: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="es-label">Foto Mempelai Wanita</label>
+                    <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+                      <button
+                        type="button"
                         onClick={() => {
-                          setBrideFile(null);
-                          setBride(prev => ({ ...prev, photo_url: av.photo_url }));
-                          setBridePreview(`${av.photo_url}`);
+                          if (isFree) {
+                            showToast("Fitur unggah foto sendiri hanya tersedia di template Premium.");
+                          } else {
+                            setBridePhotoType("upload");
+                          }
                         }}
                         style={{
-                          cursor: "pointer",
-                          textAlign: "center",
-                          padding: "6px",
-                          borderRadius: "var(--radius-sm)",
-                          border: bride.photo_url === av.photo_url ? "2px solid var(--brand)" : "2px solid transparent",
-                          background: bride.photo_url === av.photo_url ? "rgba(181,101,42,0.15)" : "transparent",
-                          transition: "all 0.2s"
+                          flex: 1,
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          border: "1px solid " + (bridePhotoType === "upload" ? "var(--brand)" : "var(--border)"),
+                          background: bridePhotoType === "upload" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                          color: bridePhotoType === "upload" ? "#fff" : "var(--text)",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: isFree ? "not-allowed" : "pointer",
+                          opacity: isFree ? 0.6 : 1,
+                          transition: "all 0.2s ease",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px"
                         }}
                       >
-                        <img
-                          src={`${av.photo_url}`}
-                          alt={av.name}
-                          style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
-                        />
+                        {isFree ? (
+                          <i className="ti ti-lock" style={{ fontSize: "14px" }}></i>
+                        ) : (
+                          <i className="ti ti-upload" style={{ fontSize: "14px" }}></i>
+                        )}
+                        Unggah Foto Sendiri
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBridePhotoType("avatar")}
+                        style={{
+                          flex: 1,
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          border: "1px solid " + (bridePhotoType === "avatar" ? "var(--brand)" : "var(--border)"),
+                          background: bridePhotoType === "avatar" ? "var(--brand)" : "rgba(255,255,255,0.02)",
+                          color: bridePhotoType === "avatar" ? "#fff" : "var(--text)",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <i className="ti ti-user" style={{ fontSize: "14px" }}></i>
+                        Pilih Avatar
+                      </button>
+                    </div>
+
+                    {bridePhotoType === "upload" ? (
+                      <input type="file" className="es-input" onChange={(e) => {
+                        const file = e.target.files[0];
+                        setBrideFile(file);
+                        if (file) setBridePreview(URL.createObjectURL(file));
+                      }} />
+                    ) : (
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(70px, 1fr))", gap: "10px", background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
+                        {defaultAvatars.filter(av => av.gender === "bride").map(av => (
+                          <div
+                            key={av.id}
+                            onClick={() => {
+                              setBrideFile(null);
+                              setBride(prev => ({ ...prev, photo_url: av.photo_url }));
+                              setBridePreview(`${av.photo_url}`);
+                            }}
+                            style={{
+                              cursor: "pointer",
+                              textAlign: "center",
+                              padding: "6px",
+                              borderRadius: "var(--radius-sm)",
+                              border: bride.photo_url === av.photo_url ? "2px solid var(--brand)" : "2px solid transparent",
+                              background: bride.photo_url === av.photo_url ? "rgba(181,101,42,0.15)" : "transparent",
+                              transition: "all 0.2s"
+                            }}
+                          >
+                            <img
+                              src={`${av.photo_url}`}
+                              alt={av.name}
+                              style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "50%" }}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
+                    {bridePreview && (
+                      <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
+                        <img src={bridePreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%" }} />
+                        <span style={{ fontSize: "12px", color: "var(--text-light)" }}>Pratinjau Foto Mempelai Wanita</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {bridePreview && (
-                  <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "12px" }}>
-                    <img src={bridePreview} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "50%" }} />
-                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>Pratinjau Foto Mempelai Wanita</span>
-                  </div>
-                )}
-              </div>
+                </>
+              )}
 
               <div className="es-actions">
                 <button type="button" className="es-btn-back" onClick={() => navigate("/")}>Batal</button>
@@ -965,54 +1071,60 @@ export default function CreateWizardPage() {
           {/* STEP 2: EVENT DETAILS */}
           {activeStep === 2 && (
             <form onSubmit={handleSaveStep2} className="form-section">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🕌 Acara Akad Nikah</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                {isAqiqah ? "👶 Acara Tasyakuran & Aqiqah" : "🕌 Acara Akad Nikah"}
+              </h2>
               <div className="form-group">
-                <label className="es-label">Tanggal Akad</label>
+                <label className="es-label">{isAqiqah ? "Tanggal Acara Aqiqah" : "Tanggal Akad"}</label>
                 <input type="date" className="es-input" value={akad.event_date} onChange={(e) => setAddDate(e, setAkad)} required />
               </div>
               <div className="form-group">
-                <label className="es-label">Jam Akad</label>
+                <label className="es-label">{isAqiqah ? "Jam Acara Aqiqah" : "Jam Akad"}</label>
                 <input type="time" className="es-input" value={akad.start_time} onChange={(e) => setAkad(prev => ({ ...prev, start_time: e.target.value }))} required />
               </div>
               <div className="form-group">
-                <label className="es-label">Tempat Akad / Alamat</label>
-                <textarea className="es-input" placeholder="Nama Gedung / Rumah & Alamat lengkap" value={akad.event_address} onChange={(e) => setAkad(prev => ({ ...prev, event_address: e.target.value }))} required />
+                <label className="es-label">{isAqiqah ? "Alamat & Lokasi Acara Aqiqah" : "Tempat Akad / Alamat"}</label>
+                <textarea className="es-input" placeholder={isAqiqah ? "Alamat lengkap kediaman / lokasi tasyakuran" : "Nama Gedung / Rumah & Alamat lengkap"} value={akad.event_address} onChange={(e) => setAkad(prev => ({ ...prev, event_address: e.target.value }))} required />
               </div>
               <div className="form-group">
                 <label className="es-label">Google Maps Link</label>
                 <input type="url" className="es-input" placeholder="https://maps.google.com/..." value={akad.google_map_link} onChange={(e) => setAkad(prev => ({ ...prev, google_map_link: e.target.value }))} />
               </div>
 
-              <div className="es-divider" />
+              {!isAqiqah && (
+                <>
+                  <div className="es-divider" />
 
-              <div className="es-resepsi-header">
-                <h2 className="es-title" style={{ fontSize: "1.5rem" }}>🥂 Acara Resepsi</h2>
-                <label className="es-toggle-label" style={{ cursor: "pointer" }}>
-                  <input type="checkbox" className="es-toggle-input" checked={hasResepsi} onChange={(e) => setHasResepsi(e.target.checked)} />
-                  <span className="es-toggle-track"><span className="es-toggle-thumb" /></span>
-                  <span className="es-toggle-text">{hasResepsi ? "Ada resepsi" : "Tanpa resepsi"}</span>
-                </label>
-              </div>
+                  <div className="es-resepsi-header">
+                    <h2 className="es-title" style={{ fontSize: "1.5rem" }}>🥂 Acara Resepsi</h2>
+                    <label className="es-toggle-label" style={{ cursor: "pointer" }}>
+                      <input type="checkbox" className="es-toggle-input" checked={hasResepsi} onChange={(e) => setHasResepsi(e.target.checked)} />
+                      <span className="es-toggle-track"><span className="es-toggle-thumb" /></span>
+                      <span className="es-toggle-text">{hasResepsi ? "Ada resepsi" : "Tanpa resepsi"}</span>
+                    </label>
+                  </div>
 
-              {hasResepsi && (
-                <div className="es-resepsi-fields page-enter" style={{ marginTop: "1rem" }}>
-                  <div className="form-group">
-                    <label className="es-label">Tanggal Resepsi</label>
-                    <input type="date" className="es-input" value={resepsi.event_date} onChange={(e) => setAddDate(e, setResepsi)} required />
-                  </div>
-                  <div className="form-group">
-                    <label className="es-label">Jam Resepsi</label>
-                    <input type="time" className="es-input" value={resepsi.start_time} onChange={(e) => setResepsi(prev => ({ ...prev, start_time: e.target.value }))} required />
-                  </div>
-                  <div className="form-group">
-                    <label className="es-label">Tempat Resepsi / Alamat</label>
-                    <textarea className="es-input" placeholder="Nama Gedung / Alamat lengkap" value={resepsi.event_address} onChange={(e) => setResepsi(prev => ({ ...prev, event_address: e.target.value }))} required />
-                  </div>
-                  <div className="form-group">
-                    <label className="es-label">Google Maps Link</label>
-                    <input type="url" className="es-input" placeholder="https://maps.google.com/..." value={resepsi.google_map_link} onChange={(e) => setResepsi(prev => ({ ...prev, google_map_link: e.target.value }))} />
-                  </div>
-                </div>
+                  {hasResepsi && (
+                    <div className="es-resepsi-fields page-enter" style={{ marginTop: "1rem" }}>
+                      <div className="form-group">
+                        <label className="es-label">Tanggal Resepsi</label>
+                        <input type="date" className="es-input" value={resepsi.event_date} onChange={(e) => setAddDate(e, setResepsi)} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="es-label">Jam Resepsi</label>
+                        <input type="time" className="es-input" value={resepsi.start_time} onChange={(e) => setResepsi(prev => ({ ...prev, start_time: e.target.value }))} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="es-label">Tempat Resepsi / Alamat</label>
+                        <textarea className="es-input" placeholder="Nama Gedung / Alamat lengkap" value={resepsi.event_address} onChange={(e) => setResepsi(prev => ({ ...prev, event_address: e.target.value }))} required />
+                      </div>
+                      <div className="form-group">
+                        <label className="es-label">Google Maps Link</label>
+                        <input type="url" className="es-input" placeholder="https://maps.google.com/..." value={resepsi.google_map_link} onChange={(e) => setResepsi(prev => ({ ...prev, google_map_link: e.target.value }))} />
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="es-actions">
@@ -1132,7 +1244,7 @@ export default function CreateWizardPage() {
               )}
 
               <div className="es-actions">
-                <button type="button" className="es-btn-back" onClick={() => setActiveStep(3)}>← Kembali</button>
+                <button type="button" className="es-btn-back" onClick={() => setActiveStep(isAqiqah ? 2 : 3)}>← Kembali</button>
                 <button type="button" className="es-btn-next" onClick={() => { setActiveStep(5); setMaxUnlockedStep(prev => Math.max(prev, 5)); }}>Lanjutkan →</button>
               </div>
             </div>
@@ -1141,10 +1253,15 @@ export default function CreateWizardPage() {
           {/* STEP 5: OTHER SETTINGS */}
           {activeStep === 5 && (
             <form onSubmit={handleSaveStep5} className="form-section">
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>💬 Kutipan Sampul / Cover Quote</h2>
+              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>
+                {isAqiqah ? "📜 Kutipan Hadits Aqiqah" : "💬 Kutipan Sampul / Cover Quote"}
+              </h2>
               <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
               <div className="form-group">
-                {defaultCoverQuotesList.length > 0 && (
+                {(isAqiqah ? [
+                  { id: 'aq1', content: "“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”", source: "(HR. An-Nasa’i & Tirmidzi)" },
+                  { id: 'aq2', content: "“Anak laki-laki diaqiqahi dengan dua ekor domba yang setara, sedangkan anak perempuan diaqiqahi dengan satu ekor domba.”", source: "(HR. Abu Dawud & Tirmidzi)" }
+                ] : defaultCoverQuotesList).length > 0 && (
                   <div style={{ position: "relative", marginBottom: "10px" }}>
                     <button
                       type="button"
@@ -1160,7 +1277,7 @@ export default function CreateWizardPage() {
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                         {quote.content
                           ? `✓ ${quote.content.slice(0, 55)}${quote.content.length > 55 ? "..." : ""}`
-                          : "📋 Pilih dari template kutipan sampul..."}
+                          : isAqiqah ? "📋 Pilih dari template hadits aqiqah..." : "📋 Pilih dari template kutipan sampul..."}
                       </span>
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: coverQuoteDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
                         <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1173,7 +1290,10 @@ export default function CreateWizardPage() {
                         borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)",
                         maxHeight: "280px", overflowY: "auto"
                       }}>
-                        {defaultCoverQuotesList.map((q, idx) => {
+                        {(isAqiqah ? [
+                          { id: 'aq1', content: "“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”", source: "(HR. An-Nasa’i & Tirmidzi)" },
+                          { id: 'aq2', content: "“Anak laki-laki diaqiqahi dengan dua ekor domba yang setara, sedangkan anak perempuan diaqiqahi dengan satu ekor domba.”", source: "(HR. Abu Dawud & Tirmidzi)" }
+                        ] : defaultCoverQuotesList).map((q, idx) => {
                           const isSelected = quote.content === q.content;
                           return (
                             <div key={q.id}
@@ -1181,7 +1301,7 @@ export default function CreateWizardPage() {
                               style={{
                                 padding: "12px 14px", cursor: "pointer",
                                 background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
-                                borderBottom: idx < defaultCoverQuotesList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                borderBottom: "1px solid var(--border, #e5e4e7)",
                                 transition: "background 0.1s"
                               }}
                               onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
@@ -1199,83 +1319,108 @@ export default function CreateWizardPage() {
                     )}
                   </div>
                 )}
-                <label className="es-label">Isi Kutipan Sampul</label>
-                <textarea className="es-input" rows={2} placeholder="Kutipan ayat atau kata mutiara..." value={quote.content} onChange={(e) => setQuote(prev => ({ ...prev, content: e.target.value }))} />
+                <label className="es-label">{isAqiqah ? "Isi Hadits Aqiqah" : "Isi Kutipan Sampul"}</label>
+                <textarea 
+                  className="es-input" 
+                  rows={3} 
+                  placeholder={isAqiqah ? "“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”" : "Kutipan ayat atau kata mutiara..."} 
+                  value={quote.content} 
+                  onChange={(e) => setQuote(prev => ({ ...prev, content: e.target.value }))} 
+                />
               </div>
               <div className="form-group">
-                <label className="es-label">Sumber Kutipan Sampul</label>
-                <input type="text" className="es-input" placeholder="e.g. QS. Ar-Rum: 21" value={quote.source} onChange={(e) => setQuote(prev => ({ ...prev, source: e.target.value }))} />
+                <label className="es-label">{isAqiqah ? "Sumber Hadits" : "Sumber Kutipan Sampul"}</label>
+                <input 
+                  type="text" 
+                  className="es-input" 
+                  placeholder={isAqiqah ? "(HR. An-Nasa’i & Tirmidzi)" : "e.g. QS. Ar-Rum: 21"} 
+                  value={quote.source} 
+                  onChange={(e) => setQuote(prev => ({ ...prev, source: e.target.value }))} 
+                />
               </div>
 
-              <div className="es-divider" />
+              {!isAqiqah && (
+                <>
+                  <div className="es-divider" />
 
-              <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>💬 Kutipan Bawah / Footer Quote</h2>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
-              <div className="form-group">
-                {defaultQuotesList.length > 0 && (
-                  <div style={{ position: "relative", marginBottom: "10px" }}>
-                    <button
-                      type="button"
-                      onClick={() => { setQuoteDropdownOpen(o => !o); setBlessingDropdownOpen(false); setMusicDropdownOpen(false); setCoverQuoteDropdownOpen(false); }}
-                      style={{
-                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-                        padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
-                        background: "var(--surface)", border: "1.5px solid var(--border)",
-                        color: footerQuote.content ? "var(--dark)" : "var(--muted)",
-                        fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
-                      }}
-                    >
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
-                        {footerQuote.content
-                          ? `✓ ${footerQuote.content.slice(0, 55)}${footerQuote.content.length > 55 ? "..." : ""}`
-                          : "📋 Pilih dari template kutipan..."}
-                      </span>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: quoteDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
-                        <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                    {quoteDropdownOpen && (
-                      <div style={{
-                        position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
-                        background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
-                        borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)"
-                      }}>
-                        {defaultQuotesList.map((q, idx) => {
-                          const isSelected = footerQuote.content === q.content;
-                          return (
-                            <div key={q.id}
-                              onClick={() => { setFooterQuote(prev => ({ ...prev, content: q.content })); setQuoteDropdownOpen(false); }}
-                              style={{
-                                padding: "12px 14px", cursor: "pointer",
-                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
-                                borderBottom: idx < defaultQuotesList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
-                                transition: "background 0.1s"
-                              }}
-                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
-                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
-                            >
-                              <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)", lineHeight: 1.55 }}>
-                                "{q.content}"
-                              </div>
-                              {q.source && <div style={{ fontSize: "0.7rem", color: "var(--muted, #888)", marginTop: "3px" }}>— {q.source}</div>}
-                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", marginTop: "4px", fontWeight: 600 }}>✓ Terpilih</div>}
-                            </div>
-                          );
-                        })}
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>💬 Kutipan Bawah / Footer Quote</h2>
+                  <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
+                  <div className="form-group">
+                    {defaultQuotesList.length > 0 && (
+                      <div style={{ position: "relative", marginBottom: "10px" }}>
+                        <button
+                          type="button"
+                          onClick={() => { setQuoteDropdownOpen(o => !o); setBlessingDropdownOpen(false); setMusicDropdownOpen(false); setCoverQuoteDropdownOpen(false); }}
+                          style={{
+                            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                            padding: "10px 14px", borderRadius: "8px", cursor: "pointer",
+                            background: "var(--surface)", border: "1.5px solid var(--border)",
+                            color: footerQuote.content ? "var(--dark)" : "var(--muted)",
+                            fontSize: "0.85rem", fontWeight: 500, textAlign: "left", gap: "8px"
+                          }}
+                        >
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                            {footerQuote.content
+                              ? `✓ ${footerQuote.content.slice(0, 55)}${footerQuote.content.length > 55 ? "..." : ""}`
+                              : "📋 Pilih dari template kutipan..."}
+                          </span>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: quoteDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
+                            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                        {quoteDropdownOpen && (
+                          <div style={{
+                            position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 200,
+                            background: "#fff", border: "1.5px solid var(--border, #e5e4e7)",
+                            borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)"
+                          }}>
+                            {defaultQuotesList.map((q, idx) => {
+                              const isSelected = footerQuote.content === q.content;
+                              return (
+                                <div key={q.id}
+                                  onClick={() => { setFooterQuote(prev => ({ ...prev, content: q.content })); setQuoteDropdownOpen(false); }}
+                                  style={{
+                                    padding: "12px 14px", cursor: "pointer",
+                                    background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                    borderBottom: idx < defaultQuotesList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                    transition: "background 0.1s"
+                                  }}
+                                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                                  onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                                >
+                                  <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)", lineHeight: 1.55 }}>
+                                    "{q.content}"
+                                  </div>
+                                  {q.source && <div style={{ fontSize: "0.7rem", color: "var(--muted, #888)", marginTop: "3px" }}>— {q.source}</div>}
+                                  {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", marginTop: "4px", fontWeight: 600 }}>✓ Terpilih</div>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
+                    <label className="es-label">Atau tulis sendiri</label>
+                    <textarea 
+                      className="es-input" 
+                      rows={3} 
+                      placeholder="Cinta bukan tentang berapa lama kamu menunggu..." 
+                      value={footerQuote.content} 
+                      onChange={(e) => setFooterQuote(prev => ({ ...prev, content: e.target.value }))} 
+                    />
                   </div>
-                )}
-                <label className="es-label">Atau tulis sendiri</label>
-                <textarea className="es-input" rows={2} placeholder="Cinta bukan tentang berapa lama kamu menunggu..." value={footerQuote.content} onChange={(e) => setFooterQuote(prev => ({ ...prev, content: e.target.value }))} />
-              </div>
+                </>
+              )}
 
               <div className="es-divider" />
 
               <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>🙏 Ucapan & Doa Pembuka</h2>
               <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #aaa)", marginBottom: "0.8rem" }}>Pilih dari template atau tulis sendiri.</p>
               <div className="form-group">
-                {defaultBlessingsList.length > 0 && (
+                {(isAqiqah ? [
+                  { id: 'b1', content: "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :" },
+                  { id: 'b2', content: "Assalamu’alaikum Warahmatullahi Wabarakatuh.\nDengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada Tasyakuran Aqiqah putra/putri kami." }
+                ] : defaultBlessingsList).length > 0 && (
                   <div style={{ position: "relative", marginBottom: "10px" }}>
                     <button
                       type="button"
@@ -1291,7 +1436,7 @@ export default function CreateWizardPage() {
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
                         {blessing.content
                           ? `✓ ${blessing.content.slice(0, 55)}${blessing.content.length > 55 ? "..." : ""}`
-                          : "📋 Pilih dari template ucapan & doa..."}
+                          : isAqiqah ? "📋 Pilih dari template ucapan aqiqah..." : "📋 Pilih dari template ucapan & doa..."}
                       </span>
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: blessingDropdownOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>
                         <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1304,7 +1449,10 @@ export default function CreateWizardPage() {
                         borderRadius: "10px", overflow: "hidden", boxShadow: "0 8px 32px rgba(181,101,42,0.12)",
                         maxHeight: "280px", overflowY: "auto"
                       }}>
-                        {defaultBlessingsList.map((b, idx) => {
+                        {(isAqiqah ? [
+                          { id: 'b1', content: "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :" },
+                          { id: 'b2', content: "Assalamu’alaikum Warahmatullahi Wabarakatuh.\nDengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada Tasyakuran Aqiqah putra/putri kami." }
+                        ] : defaultBlessingsList).map((b, idx) => {
                           const isSelected = blessing.content === b.content;
                           return (
                             <div key={b.id}
@@ -1312,7 +1460,7 @@ export default function CreateWizardPage() {
                               style={{
                                 padding: "12px 14px", cursor: "pointer",
                                 background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
-                                borderBottom: idx < defaultBlessingsList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                borderBottom: "1px solid var(--border, #e5e4e7)",
                                 transition: "background 0.1s"
                               }}
                               onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
@@ -1330,7 +1478,15 @@ export default function CreateWizardPage() {
                   </div>
                 )}
                 <label className="es-label">Atau tulis sendiri</label>
-                <textarea className="es-input" rows={3} placeholder="Pesan ucapan doa untuk tamu..." value={blessing.content} onChange={(e) => setBlessing(prev => ({ ...prev, content: e.target.value }))} />
+                <textarea 
+                  className="es-input" 
+                  rows={3} 
+                  placeholder={isAqiqah 
+                    ? "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :" 
+                    : "Pesan ucapan doa untuk tamu..."} 
+                  value={blessing.content} 
+                  onChange={(e) => setBlessing(prev => ({ ...prev, content: e.target.value }))} 
+                />
               </div>
 
               <div className="es-divider" />
@@ -1452,30 +1608,62 @@ export default function CreateWizardPage() {
 
               <div className="es-divider" />
 
-              {!isFree && (
+              {(!isFree || isAqiqah) && (
                 <>
-                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>🎁 Hadiah Pernikahan & Rekening (Opsional)</h2>
+                  <h2 className="es-title" style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
+                    {isAqiqah ? "🎁 Hadiah & Rekening (Opsional)" : "🎁 Hadiah Pernikahan & Rekening (Opsional)"}
+                  </h2>
                   <div className="form-group">
                     <label className="es-label">Pesan Hadiah / Gift Message</label>
                     <select
                       className="es-input"
                       style={{ marginBottom: "8px", background: "rgba(255,255,255,0.02)", color: "var(--text)" }}
+                      value={gift.message}
                       onChange={(e) => {
                         if (e.target.value) {
                           setGift(prev => ({ ...prev, message: e.target.value }));
                         }
                       }}
-                      defaultValue=""
                     >
-                      <option value="" disabled>-- Pilih Contoh Template Pesan (Opsional) --</option>
-                      <option value="Terima kasih telah menambah semangat kegembiraan pernikahan kami dengan kehadiran dan hadiah indah Anda.">
-                        Template 1: Terima kasih telah menambah semangat kegembiraan pernikahan kami...
-                      </option>
-                      <option value="Doa Restu Anda merupakan karunia yang sangat berarti bagi kami.">
-                        Template 2: Doa Restu Anda merupakan karunia yang sangat berarti bagi kami.
-                      </option>
+                      <option value="">-- Pilih Contoh Template Pesan (Opsional) --</option>
+                      {isAqiqah ? (
+                        <>
+                          <option value="Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless.">
+                            Template 1: Doa Restu Anda merupakan karunia yang sangat berarti... (Cashless)
+                          </option>
+                          <option value="Bagi keluarga dan sahabat yang ingin memberikan kado / hadiah untuk buah hati kami, dapat disalurkan melalui rekening di bawah ini.">
+                            Template 2: Bagi keluarga dan sahabat yang ingin memberikan kado...
+                          </option>
+                          <option value="Kebahagiaan dan kehangatan doa restu Anda sangat berarti bagi buah hati kami. Jika ingin memberikan tanda kasih, dapat disalurkan melalui rekening berikut.">
+                            Template 3: Kebahagiaan dan kehangatan doa restu Anda...
+                          </option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless.">
+                            Template 1: Doa Restu Anda merupakan karunia yang sangat berarti... (Cashless)
+                          </option>
+                          <option value="Bagi keluarga dan sahabat yang ingin memberikan kado / hadiah untuk buah hati kami, dapat disalurkan melalui rekening di bawah ini.">
+                            Template 2: Bagi keluarga dan sahabat yang ingin memberikan kado...
+                          </option>
+                          <option value="Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika Anda ingin memberikan hadiah, dapat disalurkan melalui rekening di bawah ini.">
+                            Template 3: Doa Restu Anda merupakan karunia... (Rekening)
+                          </option>
+                          <option value="Terima kasih telah menambah semangat kegembiraan pernikahan kami dengan kehadiran dan hadiah indah Anda.">
+                            Template 4: Terima kasih telah menambah semangat kegembiraan pernikahan kami...
+                          </option>
+                        </>
+                      )}
                     </select>
-                    <textarea className="es-input" rows={3} placeholder="Atau ketik pesan custom..." value={gift.message} onChange={(e) => setGift(prev => ({ ...prev, message: e.target.value }))} />
+                    <textarea 
+                      className="es-input" 
+                      rows={3} 
+                      placeholder={isAqiqah 
+                        ? "Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless." 
+                        : "Atau ketik pesan custom..."} 
+                      value={gift.message} 
+                      onChange={(e) => setGift(prev => ({ ...prev, message: e.target.value }))} 
+                    />
                   </div>
 
                   <div className="form-group">

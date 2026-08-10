@@ -456,6 +456,18 @@ export default function HeartilyTemplate({ isPreview = false }) {
   const countdownTarget = akad ? getEventIsoString(akad) : null;
   const resepsiTarget = resepsi ? getEventIsoString(resepsi) : null;
 
+  const cachedGiftFallback = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`draft_gift_${slug}`) || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const giftObj = data.gifts?.[0] || {};
+  const displayGiftTitle = data.gift_title || giftObj.title || cachedGiftFallback?.title || "Kado Digital";
+  const displayGiftMessage = data.gift_message || giftObj.message || cachedGiftFallback?.message || "Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan kado digital, dapat mentransfer melalui rekening atau alamat di bawah ini:";
+
   // Normalize gifts from API or MOCK_DATA
   const normalizedGifts = [];
   const rawGifts = data.gifts || [];
@@ -713,11 +725,11 @@ export default function HeartilyTemplate({ isPreview = false }) {
               <FlowerCorner src={FLOWER_2} position="bl" />
               
               <div className="heartily-section-label">Hadiah</div>
-              <h2 className="heartily-section-title">Kado Digital</h2>
+              <h2 className="heartily-section-title">{displayGiftTitle}</h2>
               <div className="heartily-divider" />
               
               <p style={{ fontSize: '0.85rem', color: '#9a6070', maxWidth: '320px', margin: '0 auto 24px', lineHeight: '1.6' }}>
-                Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan kado digital, dapat mentransfer melalui rekening atau alamat di bawah ini:
+                {displayGiftMessage}
               </p>
               
               <div className="heartily-gifts-list">

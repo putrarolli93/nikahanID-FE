@@ -1,5 +1,6 @@
 // src/templates/aqiqah-blessing/AqiqahBlessingTemplate.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useSearchParams } from 'react-router-dom';
 import './AqiqahBlessingTemplate.css';
 
@@ -23,16 +24,177 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedImg, setSelectedImg] = useState(null);
+  const [apiData, setApiData] = useState(null);
+  const [invId, setInvId] = useState(null);
+  const [wishes, setWishes] = useState([]);
 
   const [rsvpName, setRsvpName] = useState('');
   const [rsvpAttend, setRsvpAttend] = useState('1');
   const [rsvpMsg, setRsvpMsg] = useState('');
-  const [wishes, setWishes] = useState([
-    { name: 'Keluarga Besar Al-Farisi', msg: 'Selamat atas aqiqah Ananda. Semoga tumbuh menjadi anak yang sholeh, berbakti kepada orang tua dan berguna bagi sesama.' },
-    { name: 'Ustadz Ahmad Fauzi', msg: 'Barakallahu laka fil mauhubi laka wa syakartal wahiba. Semoga berkah umur dan rezekinya.' }
-  ]);
 
   const audioRef = useRef(null);
+
+  // Fetch real invitation data by slug from backend API
+  useEffect(() => {
+    if (customData) return;
+    if (!slug || slug === 'demo') return;
+
+    fetch(`/api/invitations/${slug}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.data) {
+          const inv = res.data;
+          setInvId(inv.id);
+
+          const groom = inv.bride_groom?.find(p => p.type === 'groom') || inv.bride_groom?.[0] || {};
+          const bride = inv.bride_groom?.find(p => p.type === 'bride') || inv.bride_groom?.[1] || {};
+
+          const babyFullName = groom.full_name || inv.groom_name || inv.groomName || inv.title || 'Kahfi Khairan Alkautsar';
+          
+          let babyNickname = 'Kahfi';
+          if (groom.nickname && groom.nickname !== babyFullName) {
+            babyNickname = groom.nickname;
+          } else if (bride.nickname && bride.nickname !== babyFullName) {
+            babyNickname = bride.nickname;
+          } else if (inv.bride_name && inv.bride_name !== babyFullName) {
+            babyNickname = inv.bride_name;
+          } else {
+            babyNickname = babyFullName.trim().split(' ')[0];
+          }
+
+          const fatherName = groom.father_name || bride.father_name || inv.father_name || inv.fatherName || inv.groom_father_name || 'Putra';
+          const motherName = groom.mother_name || bride.mother_name || inv.mother_name || inv.motherName || inv.groom_mother_name || 'Uswa';
+
+          // SessionStorage backup fallbacks
+          const cachedAkadStr = sessionStorage.getItem(`draft_akad_${slug}`);
+          let cachedAkad = null;
+          if (cachedAkadStr) {
+            try { cachedAkad = JSON.parse(cachedAkadStr); } catch (e) {}
+          }
+
+          const cachedGiftStr = sessionStorage.getItem(`draft_gift_${slug}`);
+          let cachedGift = null;
+          if (cachedGiftStr) {
+            try { cachedGift = JSON.parse(cachedGiftStr); } catch (e) {}
+          }
+
+          // Strictly 1 schedule for Aqiqah
+          const rawSchedules = inv.schedules?.length > 0 ? inv.schedules.slice(0, 1) : [];
+          let formattedSchedules = rawSchedules.map(s => {
+            let eventName = s.event_name || 'Tasyakuran & Aqiqah';
+            if (eventName === 'Akad Nikah' || eventName === 'Akad' || eventName.includes('Akad')) {
+              eventName = 'Tasyakuran & Aqiqah';
+            }
+
+            const addr = s.event_address || s.address || s.location || inv.event_address || inv.address || inv.location || cachedAkad?.event_address || `Kediaman Bpk. ${fatherName}, Jakarta`;
+            const maps = s.google_map_link || s.google_maps_link || s.maps_url || inv.google_map_link || inv.google_maps_link || inv.maps_url || cachedAkad?.google_map_link || 'https://maps.google.com/?q=Jakarta';
+
+            return {
+              event_name: eventName,
+              event_date: s.event_date ? (s.event_date.includes('-') ? new Date(s.event_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : s.event_date) : (cachedAkad?.event_date || 'Minggu, 22 Februari 2026'),
+              start_time: s.start_time || cachedAkad?.start_time || '09:00',
+              end_time: s.end_time || '12:00 WIB',
+              event_address: addr,
+              google_map_link: maps,
+            };
+          });
+
+          if (formattedSchedules.length === 0) {
+            const addr = inv.event_address || inv.address || inv.location || cachedAkad?.event_address || `Kediaman Bpk. ${fatherName}, Jakarta`;
+            const maps = inv.google_map_link || inv.google_maps_link || inv.maps_url || cachedAkad?.google_map_link || 'https://maps.google.com/?q=Jakarta';
+            formattedSchedules = [{
+              event_name: 'Tasyakuran & Aqiqah',
+              event_date: cachedAkad?.event_date || 'Minggu, 22 Februari 2026',
+              start_time: cachedAkad?.start_time || '09:00',
+              end_time: '12:00 WIB',
+              event_address: addr,
+              google_map_link: maps,
+            }];
+          }
+
+          const savedFooterQuote = inv.blessings?.find(b => b.type === 'footer_quote');
+          const footerQuoteContent = savedFooterQuote?.content || `Kami Yang Berbahagia Keluarga Besar\nBpk. ${fatherName} & Ibu ${motherName}\nAtas kehadiran dan doa restunya kami ucapkan terima kasih`;
+
+          const rawComments = inv.comments || inv.wishes || inv.guestbook || inv.rsvps || [];
+          if (rawComments.length > 0) {
+            setWishes(rawComments.map(c => ({
+              name: c.guest_name || c.name || c.sender_name || 'Tamu',
+              msg: c.message || c.msg || c.content || c.comment || ''
+            })));
+          }
+
+          const galleryPhotos = inv.moments?.length > 0 ? inv.moments : DEFAULT_BABY_PHOTOS.map(url => ({ photo_url: url }));
+
+          // Parsing Gifts & Accounts
+          const giftObj = inv.gifts?.[0] || {};
+          const giftTitle = giftObj.title || cachedGift?.title || "Hadiah & Amplop Digital";
+          const giftMessage = giftObj.message || cachedGift?.message || "Bagi keluarga dan sahabat yang ingin memberikan kado / hadiah untuk buah hati kami, dapat disalurkan melalui rekening di bawah ini.";
+          const shippingAddress = giftObj.shipping_address || cachedGift?.shipping_address || "";
+
+          let bankList = [];
+          if (giftObj.bank_accounts && giftObj.bank_accounts.length > 0) {
+            bankList = giftObj.bank_accounts.map(b => ({
+              bank_name: b.bank_name,
+              account_number: b.account_number,
+              account_name: b.account_holder || b.account_name
+            }));
+          } else if (inv.gifts && inv.gifts.length > 0) {
+            bankList = inv.gifts.filter(g => g.bank_name).map(g => ({
+              bank_name: g.bank_name,
+              account_number: g.account_number,
+              account_name: g.account_holder || g.account_name
+            }));
+          }
+
+          if (bankList.length === 0 && cachedGift?.bank_accounts?.length > 0) {
+            bankList = cachedGift.bank_accounts.map(b => ({
+              bank_name: b.bank_name,
+              account_number: b.account_number,
+              account_name: b.account_holder || b.account_name
+            }));
+          }
+
+          if (bankList.length === 0) {
+            bankList = [
+              { bank_name: 'BCA', account_number: '7820491823', account_name: fatherName }
+            ];
+          }
+
+          const formatted = {
+            id: inv.id,
+            baby: {
+              full_name: babyFullName,
+              nickname: babyNickname,
+              father_name: fatherName,
+              mother_name: motherName,
+              birth_date: '15 Januari 2026',
+              weight: '3.2 kg',
+              height: '50 cm',
+              photo_url: groom.photo_url || DEFAULT_BABY_PHOTOS[0],
+            },
+            schedules: formattedSchedules,
+            hadith: inv.quotes?.[0] || {
+              content: '“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”',
+              source: '(HR. An-Nasa’i & Tirmidzi)'
+            },
+            blessing: inv.blessings?.find(b => b.type === 'prayer') || {
+              content: 'Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :'
+            },
+            footer_quote: {
+              content: footerQuoteContent
+            },
+            galleries: galleryPhotos,
+            gift_title: giftTitle,
+            gift_message: giftMessage,
+            shipping_address: shippingAddress,
+            gifts: bankList
+          };
+
+          setApiData(formatted);
+        }
+      })
+      .catch(err => console.error("Error fetching preview data:", err));
+  }, [slug, customData]);
 
   // Prevent background scroll when cover modal is open
   useEffect(() => {
@@ -40,21 +202,40 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
       document.body.style.overflow = 'hidden';
       window.scrollTo(0, 0);
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.body.style.overflowX = 'hidden';
       window.scrollTo(0, 0);
     }
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
+      document.body.style.overflowX = 'hidden';
     };
   }, [isOpen]);
 
+  const cachedAkadFallback = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`draft_akad_${slug}`) || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const cachedGiftFallback = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`draft_gift_${slug}`) || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
   // Template Data merging
-  const data = customData || {
+  const data = customData || apiData || {
+    id: 1,
     baby: {
-      full_name: 'Muhammad Rayyan Al-Farisi',
-      nickname: 'Rayyan',
-      father_name: 'Fajar Al-Farisi',
-      mother_name: 'Siti Sarah',
+      full_name: 'Kahfi Khairan Alkautsar',
+      nickname: 'Kahfi',
+      father_name: 'Putra',
+      mother_name: 'Uswa',
       birth_date: '15 Januari 2026',
       weight: '3.2 kg',
       height: '50 cm',
@@ -63,18 +244,33 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
     schedules: [
       {
         event_name: 'Tasyakuran & Aqiqah',
-        event_date: 'Minggu, 22 Februari 2026',
-        start_time: '09:00',
+        event_date: cachedAkadFallback?.event_date || 'Minggu, 22 Februari 2026',
+        start_time: cachedAkadFallback?.start_time || '09:00',
         end_time: '12:00 WIB',
-        event_address: 'Kediaman Bpk. Fajar Al-Farisi, Jl. Melati Raya No. 45, Jakarta Selatan',
-        google_map_link: 'https://maps.google.com/?q=Jakarta',
+        event_address: cachedAkadFallback?.event_address || 'Kediaman Bpk. Putra, Jakarta',
+        google_map_link: cachedAkadFallback?.google_map_link || 'https://maps.google.com/?q=Jakarta',
       }
     ],
+    hadith: {
+      content: '“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”',
+      source: '(HR. An-Nasa’i & Tirmidzi)'
+    },
+    blessing: {
+      content: 'Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :'
+    },
+    footer_quote: {
+      content: 'Kami Yang Berbahagia Keluarga Besar\nBpk. Putra & Ibu Uswa\nAtas kehadiran dan doa restunya kami ucapkan terima kasih'
+    },
     galleries: DEFAULT_BABY_PHOTOS.map(url => ({ photo_url: url })),
+    gift_title: cachedGiftFallback?.title || 'Hadiah & Amplop Digital',
+    gift_message: cachedGiftFallback?.message || 'Bagi keluarga dan sahabat yang ingin memberikan kado / hadiah untuk buah hati kami, dapat disalurkan melalui rekening di bawah ini.',
+    shipping_address: cachedGiftFallback?.shipping_address || 'Bekasi Utara',
     gifts: [
-      { bank_name: 'BCA', account_number: '7820491823', account_name: 'Fajar Al-Farisi' }
+      { bank_name: 'BCA', account_number: '7820491823', account_name: 'Putra' }
     ]
   };
+
+  const mainPhoto = data.baby?.photo_url || DEFAULT_BABY_PHOTOS[0];
 
   const handleOpenInvitation = () => {
     setIsOpen(true);
@@ -94,13 +290,31 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
     }
   };
 
-  const handleRsvpSubmit = (e) => {
+  const handleRsvpSubmit = async (e) => {
     e.preventDefault();
     if (!rsvpName.trim() || !rsvpMsg.trim()) return;
-    setWishes([
-      { name: rsvpName, msg: rsvpMsg },
-      ...wishes
-    ]);
+
+    const newWish = { name: rsvpName, msg: rsvpMsg };
+    setWishes(prev => [newWish, ...prev]);
+
+    const targetId = invId || data.id;
+    if (targetId) {
+      try {
+        await fetch(`/api/invitations/${targetId}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guest_name: rsvpName,
+            will_attend: rsvpAttend === '1' ? 1 : (rsvpAttend === '0' ? 0 : null),
+            message: rsvpMsg,
+            jumlah_tamu: 1
+          })
+        });
+      } catch (err) {
+        console.error("Error posting RSVP comment:", err);
+      }
+    }
+
     setRsvpName('');
     setRsvpMsg('');
     alert('Terima kasih! Doa dan ucapan kamu telah terkirim.');
@@ -135,10 +349,10 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
         <div className="aq-cover-subtitle">UNDANGAN TASYAKURAN AQIQAH</div>
 
         <div className="aq-cover-photo-wrapper">
-          <img src={data.baby?.photo_url || DEFAULT_BABY_PHOTOS[0]} alt="Foto Bayi" className="aq-cover-photo" />
+          <img src={mainPhoto} alt="Foto Bayi" className="aq-cover-photo" />
         </div>
 
-        <h1 className="aq-cover-title">{data.baby?.nickname || 'Rayyan'}</h1>
+        <h1 className="aq-cover-title">{data.baby?.nickname || 'Kahfi'}</h1>
         <p className="aq-cover-sub">
           Kepada Yth. <strong>{toGuest}</strong><br />
           Kami mengundang Anda untuk hadir dalam Tasyakuran Aqiqah putra kami.
@@ -169,9 +383,8 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
 
         <div className="aq-bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
         
-        <p style={{ fontSize: '13.5px', color: 'var(--aq-muted)', lineHeight: '1.6', marginBottom: '1.25rem', position: 'relative', zIndex: 3 }}>
-          Assalamu’alaikum Warahmatullahi Wabarakatuh.<br />
-          Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan Tasyakuran Aqiqah putra kami:
+        <p style={{ fontSize: '13.5px', color: 'var(--aq-muted)', lineHeight: '1.6', marginBottom: '1.25rem', position: 'relative', zIndex: 3, whiteSpace: 'pre-line' }}>
+          {data.blessing?.content || "Dengan memohon rahmat dan ridho Allah Subhanahu Wa Ta’ala, insyaaAllah kami akan menyelenggarakan acara Tasyakuran Aqiqah anak kami :"}
         </p>
 
         <div className="aq-baby-card">
@@ -183,7 +396,7 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
           />
 
           <div className="aq-baby-img-box">
-            <img src={data.baby?.photo_url || DEFAULT_BABY_PHOTOS[0]} alt={data.baby?.full_name} className="aq-baby-img" />
+            <img src={mainPhoto} alt={data.baby?.full_name} className="aq-baby-img" />
           </div>
 
           <h2 className="aq-baby-name">{data.baby?.full_name}</h2>
@@ -194,16 +407,11 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
             <strong>Bpk. {data.baby?.father_name} &amp; Ibu {data.baby?.mother_name}</strong>
           </p>
 
-          <div className="aq-baby-stats">
-            <span className="aq-stat-pill">📅 {data.baby?.birth_date}</span>
-            <span className="aq-stat-pill">⚖️ {data.baby?.weight}</span>
-            <span className="aq-stat-pill">📏 {data.baby?.height}</span>
-          </div>
         </div>
 
         <div className="aq-hadith-box">
-          “Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”<br />
-          <strong style={{ fontSize: '12px', marginTop: '6px', display: 'block' }}>(HR. An-Nasa’i &amp; Tirmidzi)</strong>
+          {data.hadith?.content || "“Setiap anak tergadai (tergadaikan) dengan aqiqahnya. Disembelihkan (hewan) untuknya pada hari ketujuh, dicukur rambutnya, dan diberi nama.”"}<br />
+          <strong style={{ fontSize: '12px', marginTop: '6px', display: 'block' }}>{data.hadith?.source || "(HR. An-Nasa’i & Tirmidzi)"}</strong>
         </div>
 
         {/* Subtle Bottom Right: sheep_bottom.png */}
@@ -219,7 +427,7 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
         <h2 className="aq-section-title">Waktu &amp; Lokasi Acara</h2>
         <p className="aq-section-sub">Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.</p>
 
-        {data.schedules?.map((sch, i) => (
+        {data.schedules?.slice(0, 1).map((sch, i) => (
           <div className="aq-event-card" key={i}>
             <div className="aq-event-icon">
               <i className="ti ti-calendar-event" />
@@ -333,29 +541,46 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
           </button>
         </form>
 
-        <div className="aq-wishes-list">
-          {wishes.map((w, idx) => (
-            <div className="aq-wish-item" key={idx}>
-              <div className="aq-wish-name">👶 {w.name}</div>
-              <div className="aq-wish-msg">"{w.msg}"</div>
-            </div>
-          ))}
-        </div>
+        {wishes.length > 0 ? (
+          <div className="aq-wishes-list">
+            {wishes.map((w, idx) => (
+              <div className="aq-wish-item" key={idx}>
+                <div className="aq-wish-name">👶 {w.name}</div>
+                <div className="aq-wish-msg">"{w.msg}"</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', fontSize: '13px', color: '#999', marginTop: '1.5rem', fontStyle: 'italic' }}>
+            Belum ada ucapan. Jadilah yang pertama memberikan doa ucapan!
+          </p>
+        )}
       </section>
 
       {/* ── SECTION 5: HADIAH / AMPLOP DIGITAL ── */}
-      {data.gifts && data.gifts.length > 0 && (
+      {(data.gifts?.length > 0 || data.gift_message || data.shipping_address) && (
         <section className="aq-section" style={{ background: 'var(--aq-bg)' }}>
-          <h2 className="aq-section-title">Hadiah &amp; Amplop Digital</h2>
-          <p className="aq-section-sub">Bagi yang ingin memberikan kado / kado bayi</p>
+          <h2 className="aq-section-title">{data.gift_title || "Hadiah & Amplop Digital"}</h2>
+          {data.gift_message && (
+            <p className="aq-section-sub" style={{ maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: 1.6, fontSize: '13.5px', color: 'var(--aq-muted)' }}>
+              {data.gift_message}
+            </p>
+          )}
 
-          {data.gifts.map((g, i) => (
-            <div key={i} style={{ background: '#ffffff', borderRadius: '18px', padding: '1.25rem', border: '1.5px solid var(--aq-border)', textAlign: 'center', position: 'relative' }}>
+          {data.gifts?.map((g, i) => g.bank_name ? (
+            <div key={i} style={{ background: '#ffffff', borderRadius: '18px', padding: '1.25rem', border: '1.5px solid var(--aq-border)', textAlign: 'center', position: 'relative', marginBottom: '12px' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--aq-primary)', textTransform: 'uppercase', marginBottom: '4px' }}>{g.bank_name}</div>
               <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--aq-dark)', letterSpacing: '1px', margin: '4px 0' }}>{g.account_number}</div>
-              <div style={{ fontSize: '13px', color: '#666' }}>a.n {g.account_name}</div>
+              <div style={{ fontSize: '13px', color: '#666' }}>a.n {g.account_name || g.account_holder}</div>
             </div>
-          ))}
+          ) : null)}
+
+          {data.shipping_address && (
+            <div style={{ background: '#ffffff', borderRadius: '18px', padding: '1.25rem', border: '1.5px solid var(--aq-border)', textAlign: 'center', marginTop: '16px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--aq-primary)', textTransform: 'uppercase', marginBottom: '6px' }}>📦 Alamat Pengiriman Kado Fisik</div>
+              <div style={{ fontSize: '13.5px', color: 'var(--aq-dark)', lineHeight: 1.5, fontWeight: 600 }}>{data.shipping_address}</div>
+            </div>
+          )}
 
           {/* Subtle Bottom Right: sheep_bottom.png */}
           <img 
@@ -368,15 +593,22 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
 
       {/* ── FOOTER ── */}
       <footer className="aq-footer">
-        <p>Wassalamu’alaikum Warahmatullahi Wabarakatuh</p>
+        {data.footer_quote?.content ? (
+          <p style={{ whiteSpace: 'pre-line', fontWeight: 600, marginBottom: '1rem', color: 'var(--aq-dark)', lineHeight: 1.6 }}>
+            {data.footer_quote.content}
+          </p>
+        ) : (
+          <p>Wassalamu’alaikum Warahmatullahi Wabarakatuh</p>
+        )}
         <p style={{ marginTop: '1rem', fontSize: '12px', color: '#aaa' }}>© 2026 Datangya.site · Undangan Digital Aqiqah</p>
       </footer>
 
       {/* ── MUSIC FAB TOGGLE ── */}
-      {isOpen && (
+      {isOpen && createPortal(
         <button className="aq-music-fab" onClick={toggleMusic} title="Toggle Musik">
           {isPlaying ? '🎵' : '🔇'}
-        </button>
+        </button>,
+        document.body
       )}
     </div>
   );

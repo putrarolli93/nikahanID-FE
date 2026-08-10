@@ -169,96 +169,112 @@ export default function DashboardPage() {
     }
   };
 
+  const getInvitationTitle = (inv) => {
+    const isAqiqahInv = inv.category === 'aqiqah' || inv.template_slug?.includes('aqiqah') || inv.slug?.includes('aqiqah');
+    if (isAqiqahInv) {
+      if (!inv.title || inv.title.includes('The Wedding of')) {
+        const cleanName = inv.groom_name || inv.title?.replace('The Wedding of ', '').split('&')[0]?.trim() || 'Kahfi Khairan Alkautsar';
+        return `Tasyakuran Aqiqah ${cleanName}`;
+      }
+      return inv.title;
+    }
+    return inv.title || inv.slug;
+  };
+
   return (
     <div className="dashboard-page">
-      <SEO title="Dashboard Saya" noindex={true} />
+      <SEO title="Dashboard Saya - nikahanID" />
+      
       <div className="dashboard-header">
-        <div className="dashboard-header-content">
-          <div className="dashboard-title-wrapper">
-            <h2>Dashboard Anda</h2>
-            <p>Kelola undangan pernikahan Anda atau hasilkan uang dengan program Affiliate.</p>
-          </div>
-          <button className="btn-solid btn-create-new" onClick={() => navigate('/templates')}>
-            <span>+</span> Buat Undangan Baru
-          </button>
+        <div className="user-welcome">
+          <h2>Selamat datang, {user?.name || 'Pengguna'} 👋</h2>
+          <p>Kelola semua undangan dan profil akun kamu di sini</p>
         </div>
-        
-        {/* TABS */}
-        <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', borderBottom: '2px solid #e2e8f0', width: '100%' }}>
-          <button 
-            style={{ 
-              padding: '1rem 0.5rem', 
-              background: 'transparent', 
-              border: 'none', 
-              borderBottom: activeTab === 'invitations' ? '3px solid #3b82f6' : '3px solid transparent',
-              fontWeight: activeTab === 'invitations' ? '800' : '600', 
-              color: activeTab === 'invitations' ? '#3b82f6' : '#64748b', 
-              fontSize: '1.05rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              marginBottom: '-2px'
-            }}
-            onClick={() => setActiveTab('invitations')}
-          >
-            📋 Undangan Saya
-          </button>
-          <button 
-            style={{ 
-              padding: '1rem 0.5rem', 
-              background: 'transparent', 
-              border: 'none', 
-              borderBottom: activeTab === 'affiliate' ? '3px solid #3b82f6' : '3px solid transparent',
-              fontWeight: activeTab === 'affiliate' ? '800' : '600', 
-              color: activeTab === 'affiliate' ? '#3b82f6' : '#64748b', 
-              fontSize: '1.05rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              marginBottom: '-2px'
-            }}
-            onClick={() => setActiveTab('affiliate')}
-          >
-            💰 Affiliate / Reseller
-          </button>
-          <button 
-            style={{ 
-              padding: '1rem 0.5rem', 
-              background: 'transparent', 
-              border: 'none', 
-              borderBottom: activeTab === 'settings' ? '3px solid #3b82f6' : '3px solid transparent',
-              fontWeight: activeTab === 'settings' ? '800' : '600', 
-              color: activeTab === 'settings' ? '#3b82f6' : '#64748b', 
-              fontSize: '1.05rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              marginBottom: '-2px'
-            }}
-            onClick={() => setActiveTab('settings')}
-          >
-            ⚙️ Pengaturan Akun
-          </button>
-        </div>
+        <button className="btn-solid btn-create-new" onClick={() => navigate('/templates')}>
+          <span>+</span> Buat Undangan Baru
+        </button>
+      </div>
+      
+      {/* TABS */}
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '2rem', borderBottom: '2px solid #e2e8f0', width: '100%' }}>
+        <button 
+          style={{ 
+            padding: '1rem 0.5rem', 
+            background: 'transparent', 
+            border: 'none', 
+            borderBottom: activeTab === 'invitations' ? '3px solid #3b82f6' : '3px solid transparent',
+            fontWeight: activeTab === 'invitations' ? '800' : '600', 
+            color: activeTab === 'invitations' ? '#3b82f6' : '#64748b', 
+            fontSize: '1.05rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+          onClick={() => setActiveTab('invitations')}
+        >
+          📋 Undangan Saya
+        </button>
+        <button 
+          style={{ 
+            padding: '1rem 0.5rem', 
+            background: 'transparent', 
+            border: 'none', 
+            borderBottom: activeTab === 'affiliate' ? '3px solid #3b82f6' : '3px solid transparent',
+            fontWeight: activeTab === 'affiliate' ? '800' : '600', 
+            color: activeTab === 'affiliate' ? '#3b82f6' : '#64748b', 
+            fontSize: '1.05rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+          onClick={() => setActiveTab('affiliate')}
+        >
+          💰 Affiliate / Reseller
+        </button>
+        <button 
+          style={{ 
+            padding: '1rem 0.5rem', 
+            background: 'transparent', 
+            border: 'none', 
+            borderBottom: activeTab === 'settings' ? '3px solid #3b82f6' : '3px solid transparent',
+            fontWeight: activeTab === 'settings' ? '800' : '600', 
+            color: activeTab === 'settings' ? '#3b82f6' : '#64748b', 
+            fontSize: '1.05rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            marginBottom: '-2px'
+          }}
+          onClick={() => setActiveTab('settings')}
+        >
+          ⚙️ Pengaturan Akun
+        </button>
       </div>
 
       <div className="dashboard-content">
-        {activeTab === 'invitations' && (
-          loadingInv ? (
-            <div className="dashboard-loading">
-              <div className="loader-spinner"></div>
-              <p>Memuat undangan...</p>
-            </div>
-          ) : invitations.length === 0 ? (
-            <div className="dashboard-empty">
-              <div className="empty-icon">📝</div>
-              <h3>Belum Ada Undangan</h3>
-              <p>Anda belum memiliki undangan. Yuk, mulai buat undangan pertama Anda sekarang!</p>
-              <button className="btn-solid" onClick={() => navigate('/templates')}>Pilih Template</button>
-            </div>
-          ) : (
-            <div className="dashboard-grid">
-              {invitations.map(inv => (
-                <div key={inv.id} className="dashboard-card">
-                  <div className="card-header">
-                    <h3 className="card-title">{inv.title || inv.slug}</h3>
+      {activeTab === 'invitations' && (
+        loadingInv ? (
+          <div className="dashboard-loading">
+            <div className="loader-spinner"></div>
+            <p>Memuat undangan...</p>
+          </div>
+        ) : invitations.length === 0 ? (
+          <div className="dashboard-empty">
+            <div className="empty-icon">📝</div>
+            <h3>Belum Ada Undangan</h3>
+            <p>Anda belum memiliki undangan. Yuk, mulai buat undangan pertama Anda sekarang!</p>
+            <button className="btn-solid" onClick={() => navigate('/templates')}>Pilih Template</button>
+          </div>
+        ) : (
+          <div className="dashboard-grid">
+            {invitations.map((inv) => (
+              <div key={inv.id} className="dashboard-card">
+                <div className="card-header" style={{ alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 9px', borderRadius: '6px', background: (inv.category === 'aqiqah' || inv.template_slug?.includes('aqiqah') || inv.slug?.includes('aqiqah')) ? 'rgba(59, 130, 246, 0.12)' : 'rgba(236, 72, 153, 0.12)', color: (inv.category === 'aqiqah' || inv.template_slug?.includes('aqiqah') || inv.slug?.includes('aqiqah')) ? '#2563eb' : '#db2777', display: 'inline-block', marginBottom: '6px' }}>
+                      {(inv.category === 'aqiqah' || inv.template_slug?.includes('aqiqah') || inv.slug?.includes('aqiqah')) ? '👶 Aqiqah' : '💒 Pernikahan'}
+                    </span>
+                    <h3 className="card-title" style={{ margin: 0 }}>{getInvitationTitle(inv)}</h3>
+                  </div>
                     <span className={`card-status status-${inv.status === 'active' ? 'active' : 'draft'}`}>
                       {inv.status}
                     </span>
@@ -379,19 +395,19 @@ export default function DashboardPage() {
                       </button>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
+              </div>
+            ))}
+          </div>
+        )
+      )}
 
-        {activeTab === 'affiliate' && (
-          loadingReseller ? (
-             <div className="dashboard-loading">
-              <div className="loader-spinner"></div>
-              <p>Memuat data affiliate...</p>
-            </div>
-          ) : (
+      {activeTab === 'affiliate' && (
+        loadingReseller ? (
+           <div className="dashboard-loading">
+            <div className="loader-spinner"></div>
+            <p>Memuat data affiliate...</p>
+          </div>
+        ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '800px', margin: '0 auto' }}>
               
               {/* Info Keuntungan Program Affiliate */}

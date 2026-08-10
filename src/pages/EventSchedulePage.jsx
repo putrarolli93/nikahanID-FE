@@ -7,9 +7,13 @@ export default function EventSchedulePage() {
   const navigate = useNavigate();
   const { user, token } = useAuth();
 
+  const isAqiqah = templateSlug?.includes("aqiqah");
+
   const [form, setForm] = useState({
-    groomName: "",
-    brideName: "",
+    groomName: "", // For Aqiqah: Nama Lengkap Bayi
+    brideName: "", // For Aqiqah: Nama Panggilan Bayi
+    fatherName: "", // For Aqiqah: Nama Ayah
+    motherName: "", // For Aqiqah: Nama Ibu
     slug: "",
     akadDate: "",
     akadTime: "",
@@ -18,6 +22,9 @@ export default function EventSchedulePage() {
     resepsiTime: "",
   });
 
+  const [babyFile, setBabyFile] = useState(null);
+  const [babyPreview, setBabyPreview] = useState(null);
+
   const [errors, setErrors] = useState({});
   const [apiLoading, setApiLoading] = useState(false);
   const [slugStatus, setSlugStatus] = useState("idle"); // idle, checking, available, unavailable
@@ -25,7 +32,8 @@ export default function EventSchedulePage() {
 
   // Load pending data if exists
   useEffect(() => {
-    const pendingData = sessionStorage.getItem("pending_wedding_create");
+    const pendingKey = isAqiqah ? "pending_aqiqah_create" : "pending_wedding_create";
+    const pendingData = sessionStorage.getItem(pendingKey);
     if (pendingData) {
       try {
         const parsed = JSON.parse(pendingData);
@@ -36,7 +44,7 @@ export default function EventSchedulePage() {
         console.error("Error parsing pending data", err);
       }
     }
-  }, [templateSlug]);
+  }, [templateSlug, isAqiqah]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -49,19 +57,31 @@ export default function EventSchedulePage() {
           : {}),
       };
       
-      // Auto-generate slug if groom or bride name changes
-      if (name === "groomName" || name === "brideName") {
-        const groom = name === "groomName" ? value : prev.groomName;
-        const bride = name === "brideName" ? value : prev.brideName;
-        if (groom || bride) {
-          const slugify = (text) => text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
-          let baseSlug = '';
-          if (groom && bride) baseSlug = `${slugify(groom)}-dan-${slugify(bride)}`;
-          else if (groom) baseSlug = slugify(groom);
-          else if (bride) baseSlug = slugify(bride);
-          newForm.slug = baseSlug;
-        } else {
-          newForm.slug = "";
+      const slugify = (text) => text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-');
+
+      if (isAqiqah) {
+        if (name === "groomName" || name === "brideName") {
+          const babyName = name === "groomName" ? value : (prev.brideName || prev.groomName);
+          if (babyName) {
+            newForm.slug = `aqiqah-${slugify(babyName)}`;
+          } else {
+            newForm.slug = "";
+          }
+        }
+      } else {
+        // Wedding auto-slug
+        if (name === "groomName" || name === "brideName") {
+          const groom = name === "groomName" ? value : prev.groomName;
+          const bride = name === "brideName" ? value : prev.brideName;
+          if (groom || bride) {
+            let baseSlug = '';
+            if (groom && bride) baseSlug = `${slugify(groom)}-dan-${slugify(bride)}`;
+            else if (groom) baseSlug = slugify(groom);
+            else if (bride) baseSlug = slugify(bride);
+            newForm.slug = baseSlug;
+          } else {
+            newForm.slug = "";
+          }
         }
       }
 
@@ -105,16 +125,25 @@ export default function EventSchedulePage() {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.groomName.trim()) newErrors.groomName = "Nama mempelai pria wajib diisi.";
-    if (!form.brideName.trim()) newErrors.brideName = "Nama mempelai wanita wajib diisi.";
-    if (!form.slug.trim()) newErrors.slug = "Link undangan wajib diisi.";
-    if (slugStatus === "checking") newErrors.slug = "Sedang mengecek ketersediaan link...";
-    if (slugStatus === "unavailable") newErrors.slug = "Link undangan sudah digunakan, silakan ganti.";
-    if (!form.akadDate) newErrors.akadDate = "Tanggal akad wajib diisi.";
-    if (!form.akadTime) newErrors.akadTime = "Jam akad wajib diisi.";
-    if (form.hasResepsi) {
-      if (!form.resepsiDate) newErrors.resepsiDate = "Tanggal resepsi wajib diisi jika diaktifkan.";
-      if (!form.resepsiTime) newErrors.resepsiTime = "Jam resepsi wajib diisi jika diaktifkan.";
+    if (isAqiqah) {
+      if (!form.groomName.trim()) newErrors.groomName = "Nama lengkap bayi wajib diisi.";
+      if (!form.slug.trim()) newErrors.slug = "Link undangan wajib diisi.";
+      if (slugStatus === "checking") newErrors.slug = "Sedang mengecek ketersediaan link...";
+      if (slugStatus === "unavailable") newErrors.slug = "Link undangan sudah digunakan, silakan ganti.";
+      if (!form.akadDate) newErrors.akadDate = "Tanggal acara aqiqah wajib diisi.";
+      if (!form.akadTime) newErrors.akadTime = "Jam acara wajib diisi.";
+    } else {
+      if (!form.groomName.trim()) newErrors.groomName = "Nama mempelai pria wajib diisi.";
+      if (!form.brideName.trim()) newErrors.brideName = "Nama mempelai wanita wajib diisi.";
+      if (!form.slug.trim()) newErrors.slug = "Link undangan wajib diisi.";
+      if (slugStatus === "checking") newErrors.slug = "Sedang mengecek ketersediaan link...";
+      if (slugStatus === "unavailable") newErrors.slug = "Link undangan sudah digunakan, silakan ganti.";
+      if (!form.akadDate) newErrors.akadDate = "Tanggal akad wajib diisi.";
+      if (!form.akadTime) newErrors.akadTime = "Jam akad wajib diisi.";
+      if (form.hasResepsi) {
+        if (!form.resepsiDate) newErrors.resepsiDate = "Tanggal resepsi wajib diisi jika diaktifkan.";
+        if (!form.resepsiTime) newErrors.resepsiTime = "Jam resepsi wajib diisi jika diaktifkan.";
+      }
     }
     return newErrors;
   };
@@ -126,8 +155,8 @@ export default function EventSchedulePage() {
       return;
     }
 
-    // Save pending form state
-    sessionStorage.setItem("pending_wedding_create", JSON.stringify({ templateSlug, form }));
+    const pendingKey = isAqiqah ? "pending_aqiqah_create" : "pending_wedding_create";
+    sessionStorage.setItem(pendingKey, JSON.stringify({ templateSlug, form }));
 
     if (!user) {
       // User is not logged in, redirect to login page first
@@ -146,6 +175,7 @@ export default function EventSchedulePage() {
         },
         body: JSON.stringify({
           templateSlug,
+          category: isAqiqah ? "aqiqah" : "wedding",
           ...form
         })
       });
@@ -154,8 +184,7 @@ export default function EventSchedulePage() {
       setApiLoading(false);
 
       if (response.ok && result.success) {
-        // Clear pending session data on success
-        sessionStorage.removeItem("pending_wedding_create");
+        sessionStorage.removeItem(pendingKey);
         navigate(`/create-wizard/${result.data.slug}`);
       } else {
         alert(result.message || "Gagal membuat draf undangan");
@@ -209,30 +238,33 @@ export default function EventSchedulePage() {
         <div className="es-card">
           {/* Header */}
           <div className="es-header">
-            <div className="es-header-icon">💍</div>
-            <h1 className="es-title">Jadwal Acara</h1>
+            <div className="es-header-icon">{isAqiqah ? "👶" : "💍"}</div>
+            <h1 className="es-title">{isAqiqah ? "Detail Tasyakuran Aqiqah" : "Jadwal Acara Nikah"}</h1>
             <p className="es-subtitle">
-              Masukkan detail nama dan jadwal acara pernikahanmu.
+              {isAqiqah 
+                ? "Masukkan detail nama bayi dan jadwal acara tasyakuran aqiqah." 
+                : "Masukkan detail nama dan jadwal acara pernikahanmu."}
             </p>
           </div>
 
-          {/* ── NAMA MEMPELAI ── */}
+          {/* ── NAMA / DETAIL PERTAMA ── */}
           <div className="es-section">
             <div className="es-section-label">
-              <span className="es-section-icon">👰</span>
-              Nama Mempelai
+              <span className="es-section-icon">{isAqiqah ? "👶" : "👰"}</span>
+              {isAqiqah ? "Informasi Buah Hati" : "Nama Mempelai"}
             </div>
+
             <div className="es-form-row">
               <div className="es-form-group">
                 <label className="es-label" htmlFor="groomName">
-                  Mempelai Pria
+                  {isAqiqah ? "Nama Lengkap Bayi" : "Mempelai Pria"}
                 </label>
                 <input
                   id="groomName"
                   name="groomName"
                   type="text"
                   className={`es-input${errors.groomName ? " es-input-error" : ""}`}
-                  placeholder="Nama lengkap / panggilan"
+                  placeholder={isAqiqah ? "cth. Muhammad Rayyan Al-Farisi" : "Nama lengkap / panggilan"}
                   value={form.groomName}
                   onChange={handleChange}
                   disabled={apiLoading}
@@ -242,20 +274,22 @@ export default function EventSchedulePage() {
                 )}
               </div>
 
-              <div className="es-and-sep">
-                <span>&amp;</span>
-              </div>
+              {!isAqiqah && (
+                <div className="es-and-sep">
+                  <span>&amp;</span>
+                </div>
+              )}
 
               <div className="es-form-group">
                 <label className="es-label" htmlFor="brideName">
-                  Mempelai Wanita
+                  {isAqiqah ? "Nama Panggilan Bayi" : "Mempelai Wanita"}
                 </label>
                 <input
                   id="brideName"
                   name="brideName"
                   type="text"
                   className={`es-input${errors.brideName ? " es-input-error" : ""}`}
-                  placeholder="Nama lengkap / panggilan"
+                  placeholder={isAqiqah ? "cth. Rayyan" : "Nama lengkap / panggilan"}
                   value={form.brideName}
                   onChange={handleChange}
                   disabled={apiLoading}
@@ -265,6 +299,72 @@ export default function EventSchedulePage() {
                 )}
               </div>
             </div>
+
+            {/* Nama Orang Tua & Foto untuk Aqiqah */}
+            {isAqiqah && (
+              <>
+                <div className="es-form-row" style={{ marginTop: '1rem' }}>
+                  <div className="es-form-group">
+                    <label className="es-label" htmlFor="fatherName">
+                      Nama Ayah
+                    </label>
+                    <input
+                      id="fatherName"
+                      name="fatherName"
+                      type="text"
+                      className="es-input"
+                      placeholder="cth. Fajar Al-Farisi"
+                      value={form.fatherName}
+                      onChange={handleChange}
+                      disabled={apiLoading}
+                    />
+                  </div>
+
+                  <div className="es-form-group">
+                    <label className="es-label" htmlFor="motherName">
+                      Nama Ibu
+                    </label>
+                    <input
+                      id="motherName"
+                      name="motherName"
+                      type="text"
+                      className="es-input"
+                      placeholder="cth. Siti Sarah"
+                      value={form.motherName}
+                      onChange={handleChange}
+                      disabled={apiLoading}
+                    />
+                  </div>
+                </div>
+
+                <div className="es-form-group" style={{ marginTop: '1rem' }}>
+                  <label className="es-label">Foto Buah Hati (Opsional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="es-input"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setBabyFile(file);
+                        setBabyPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    disabled={apiLoading}
+                  />
+                  {babyPreview ? (
+                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img src={babyPreview} alt="Preview Bayi" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brand)' }} />
+                      <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 'bold' }}>✅ Foto buah hati terpilih</span>
+                    </div>
+                  ) : (
+                    <p style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.4rem' }}>
+                      Jika tidak diunggah, foto avatar bayi default akan otomatis digunakan.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Custom URL Input */}
             <div className="es-form-row" style={{ marginTop: '1.5rem' }}>
@@ -279,7 +379,7 @@ export default function EventSchedulePage() {
                     name="slug"
                     type="text"
                     className="es-slug-input"
-                    placeholder="nama-kamu-dan-pasangan"
+                    placeholder={isAqiqah ? "aqiqah-rayyan" : "nama-kamu-dan-pasangan"}
                     value={form.slug}
                     onChange={handleChange}
                     disabled={apiLoading}
@@ -302,18 +402,18 @@ export default function EventSchedulePage() {
 
           <div className="es-divider" />
 
-          {/* ── AKAD ── */}
+          {/* ── JADWAL ACARA ── */}
           <div className="es-section">
             <div className="es-section-label">
-              <span className="es-section-icon">🕌</span>
-              Acara Akad Nikah
+              <span className="es-section-icon">{isAqiqah ? "🕌" : "🕌"}</span>
+              {isAqiqah ? "Acara Tasyakuran & Aqiqah" : "Acara Akad Nikah"}
               <span className="es-badge-required">Wajib</span>
             </div>
 
             <div className="es-datetime-row">
               <div className="es-form-group es-flex-2">
                 <label className="es-label" htmlFor="akadDate">
-                  Tanggal Akad
+                  {isAqiqah ? "Tanggal Acara Aqiqah" : "Tanggal Akad"}
                 </label>
                 <input
                   id="akadDate"
@@ -352,79 +452,81 @@ export default function EventSchedulePage() {
             </div>
           </div>
 
-          <div className="es-divider" />
+          {!isAqiqah && <div className="es-divider" />}
 
-          {/* ── RESEPSI (OPTIONAL) ── */}
-          <div className="es-section">
-            <div className="es-resepsi-header">
-              <div className="es-section-label">
-                <span className="es-section-icon">🥂</span>
-                Acara Resepsi
+          {/* ── RESEPSI (WEDDING ONLY) ── */}
+          {!isAqiqah && (
+            <div className="es-section">
+              <div className="es-resepsi-header">
+                <div className="es-section-label">
+                  <span className="es-section-icon">🥂</span>
+                  Acara Resepsi
+                </div>
+                <label className="es-toggle-label" htmlFor="hasResepsi">
+                  <input
+                    id="hasResepsi"
+                    name="hasResepsi"
+                    type="checkbox"
+                    className="es-toggle-input"
+                    checked={form.hasResepsi}
+                    onChange={handleChange}
+                    disabled={apiLoading}
+                  />
+                  <span className="es-toggle-track">
+                    <span className="es-toggle-thumb" />
+                  </span>
+                  <span className="es-toggle-text">
+                    {form.hasResepsi ? "Ada resepsi" : "Tidak ada resepsi"}
+                  </span>
+                </label>
               </div>
-              <label className="es-toggle-label" htmlFor="hasResepsi">
-                <input
-                  id="hasResepsi"
-                  name="hasResepsi"
-                  type="checkbox"
-                  className="es-toggle-input"
-                  checked={form.hasResepsi}
-                  onChange={handleChange}
-                  disabled={apiLoading}
-                />
-                <span className="es-toggle-track">
-                  <span className="es-toggle-thumb" />
-                </span>
-                <span className="es-toggle-text">
-                  {form.hasResepsi ? "Ada resepsi" : "Tidak ada resepsi"}
-                </span>
-              </label>
-            </div>
 
-            {form.hasResepsi && (
-              <div className="es-resepsi-fields page-enter">
-                <div className="es-datetime-row">
-                  <div className="es-form-group es-flex-2">
-                    <label className="es-label" htmlFor="resepsiDate">
-                      Tanggal Resepsi
-                    </label>
-                    <input
-                      id="resepsiDate"
-                      name="resepsiDate"
-                      type="date"
-                      className={`es-input${errors.resepsiDate ? " es-input-error" : ""}`}
-                      value={form.resepsiDate}
-                      onChange={handleChange}
-                      disabled={apiLoading}
-                    />
-                    {form.resepsiDate && (
-                      <span className="es-date-preview">{formatDate(form.resepsiDate)}</span>
-                    )}
-                    {errors.resepsiDate && (
-                      <span className="es-error">{errors.resepsiDate}</span>
-                    )}
-                  </div>
+              {form.hasResepsi && (
+                <div className="es-resepsi-fields page-enter">
+                  <div className="es-datetime-row">
+                    <div className="es-form-group es-flex-2">
+                      <label className="es-label" htmlFor="resepsiDate">
+                        Tanggal Resepsi
+                      </label>
+                      <input
+                        id="resepsiDate"
+                        name="resepsiDate"
+                        type="date"
+                        className={`es-input${errors.resepsiDate ? " es-input-error" : ""}`}
+                        value={form.resepsiDate}
+                        onChange={handleChange}
+                        disabled={apiLoading}
+                      />
+                      {form.resepsiDate && (
+                        <span className="es-date-preview">{formatDate(form.resepsiDate)}</span>
+                      )}
+                      {errors.resepsiDate && (
+                        <span className="es-error">{errors.resepsiDate}</span>
+                      )}
+                    </div>
 
-                  <div className="es-form-group es-flex-1">
-                    <label className="es-label" htmlFor="resepsiTime">
-                      Jam Mulai
-                    </label>
-                    <input
-                      id="resepsiTime"
-                      name="resepsiTime"
-                      type="time"
-                      className={`es-input${errors.resepsiTime ? " es-input-error" : ""}`}
-                      value={form.resepsiTime}
-                      onChange={handleChange}
-                      disabled={apiLoading}
-                    />
-                    {errors.resepsiTime && (
-                      <span className="es-error">{errors.resepsiTime}</span>
-                    )}
+                    <div className="es-form-group es-flex-1">
+                      <label className="es-label" htmlFor="resepsiTime">
+                        Jam Mulai
+                      </label>
+                      <input
+                        id="resepsiTime"
+                        name="resepsiTime"
+                        type="time"
+                        className={`es-input${errors.resepsiTime ? " es-input-error" : ""}`}
+                        value={form.resepsiTime}
+                        onChange={handleChange}
+                        disabled={apiLoading}
+                      />
+                      {errors.resepsiTime && (
+                        <span className="es-error">{errors.resepsiTime}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* ── ACTIONS ── */}
           <div className="es-actions">

@@ -21,11 +21,15 @@
   margin: 0 auto;
   background-color: var(--aq-bg);
   min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   font-family: var(--aq-font-sans);
   color: var(--aq-dark);
   position: relative;
   overflow-x: hidden;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 /* ── ANIMATED CLOUDS ── */
@@ -101,7 +105,7 @@
 }
 
 /* Interspersed sheep_1.png */
-.aq-lamb-card-1 { top: -38px; left: 12px; width: 72px; }
+.aq-lamb-card-1 { top: -20px; left: 12px; width: 72px; }
 
 /* Bottom Alternating sheep_bottom.png */
 .aq-sheep-bottom {
@@ -139,7 +143,7 @@
   justify-content: center;
   padding: 2.25rem 1.25rem 1.5rem;
   text-align: center;
-  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease, visibility 0.8s ease;
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
 }
@@ -147,6 +151,7 @@
   transform: translate(-50%, -100%);
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
 }
 
 /* Subtitle lowered comfortably */
@@ -342,31 +347,41 @@
 .aq-wish-name { font-weight: 700; font-size: 13.5px; color: var(--aq-dark); margin-bottom: 4px; }
 .aq-wish-msg { font-size: 13px; color: #555; line-height: 1.5; }
 
-/* ── MUSIC TOGGLE FAB (FIXED HIGH Z-INDEX & ALWAYS VISIBLE) ── */
+/* ── MUSIC TOGGLE FAB (UNIVERSAL POSITIONING MATCHING ALL DEVICE SIZES) ── */
 .aq-music-fab {
   position: fixed !important;
-  bottom: 28px !important;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
   right: 20px !important;
-  width: 50px !important;
-  height: 50px !important;
+  width: 48px !important;
+  height: 48px !important;
   border-radius: 50% !important;
   background: linear-gradient(135deg, #e76f51, #f4a261) !important;
   color: #ffffff !important;
-  border: 2.5px solid #ffffff !important;
+  border: 2px solid #ffffff !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 22px !important;
+  font-size: 20px !important;
   cursor: pointer !important;
-  z-index: 9999999 !important;
-  box-shadow: 0 8px 25px rgba(231, 111, 81, 0.5) !important;
-  animation: pulseMusic 2s infinite alternate;
+  z-index: 99999999 !important;
+  box-shadow: 0 8px 25px rgba(231, 111, 81, 0.45) !important;
+  animation: pulseMusic 2.5s infinite alternate;
+  pointer-events: auto !important;
 }
+
+/* On screens wider than the 480px centered invitation card, pin to right edge of the card */
+@media (min-width: 481px) {
+  .aq-music-fab {
+    right: calc(50vw - 240px + 20px) !important;
+  }
+}
+
 @keyframes pulseMusic { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
 
 /* ── FOOTER ── */
 .aq-footer {
-  padding: 3rem 1.5rem 6rem;
+  margin-top: auto;
+  padding: 3.5rem 1.5rem calc(6.5rem + env(safe-area-inset-bottom, 0px));
   text-align: center;
   background: #ffffff;
   border-top: 1.5px solid var(--aq-border);
@@ -374,4 +389,7 @@
   color: var(--aq-muted);
   position: relative;
   z-index: 2;
+  box-sizing: border-box;
+  width: 100%;
+  word-break: break-word;
 }

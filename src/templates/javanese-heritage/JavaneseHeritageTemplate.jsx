@@ -482,6 +482,18 @@ export default function JavaneseHeritageTemplate({ isPreview = false }) {
   const countdownTarget = akad ? getEventIsoString(akad) : null;
   const resepsiTarget = resepsi ? getEventIsoString(resepsi) : null;
 
+  const cachedGiftFallback = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`draft_gift_${slug}`) || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const giftObj = data.gifts?.[0] || {};
+  const displayGiftTitle = data.gift_title || giftObj.title || cachedGiftFallback?.title || "Kado Digital";
+  const displayGiftMessage = data.gift_message || giftObj.message || cachedGiftFallback?.message || "Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan hadiah, dapat mengirimkan melalui rekening atau alamat di bawah ini:";
+
   const normalizedGifts = [];
   const rawGifts = data.gifts || [];
   rawGifts.forEach(gift => {
@@ -772,14 +784,14 @@ export default function JavaneseHeritageTemplate({ isPreview = false }) {
           )}
 
           {/* ── GIFTS ── */}
-          {normalizedGifts.length > 0 && (
+          {(normalizedGifts.length > 0 || displayGiftMessage) && (
             <section className="javanese-section section-gifts javanese-reveal">
               <div className="javanese-section-label">Kirim Kado</div>
-              <h2 className="javanese-section-title">Kado Digital</h2>
+              <h2 className="javanese-section-title">{displayGiftTitle}</h2>
               <div className="javanese-divider" />
 
               <p className="javanese-gifts-intro">
-                Bagi Bapak/Ibu/Saudara/i yang ingin mengirimkan hadiah, dapat mengirimkan melalui rekening atau alamat di bawah ini:
+                {displayGiftMessage}
               </p>
 
               <div className="javanese-gifts-list">
