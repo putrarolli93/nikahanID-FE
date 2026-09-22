@@ -19,7 +19,8 @@ const DEFAULT_MUSIC = 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1
 export default function AqiqahBlessingTemplate({ data: customData, isPreview = false }) {
   const { slug } = useParams();
   const [searchParams] = useSearchParams();
-  const toGuest = searchParams.get('to') || 'Bapak/Ibu/Saudara/i';
+  const guestParam = searchParams.get('to');
+  const toGuest = guestParam ? `${guestParam} Bapak/Ibu/Saudara/i` : 'Bapak/Ibu/Saudara/i';
 
   const [isOpen, setIsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -187,7 +188,8 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
             gift_title: giftTitle,
             gift_message: giftMessage,
             shipping_address: shippingAddress,
-            gifts: bankList
+            gifts: bankList,
+            music: inv.music
           };
 
           setApiData(formatted);
@@ -223,6 +225,14 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
   const cachedGiftFallback = (() => {
     try {
       return JSON.parse(sessionStorage.getItem(`draft_gift_${slug}`) || '{}');
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const cachedMusicFallback = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem(`draft_music_${slug}`) || '{}');
     } catch (e) {
       return {};
     }
@@ -267,10 +277,14 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
     shipping_address: cachedGiftFallback?.shipping_address || 'Bekasi Utara',
     gifts: [
       { bank_name: 'BCA', account_number: '7820491823', account_name: 'Putra' }
-    ]
+    ],
+    music: cachedMusicFallback?.url ? cachedMusicFallback : { url: DEFAULT_MUSIC }
   };
 
   const mainPhoto = data.baby?.photo_url || DEFAULT_BABY_PHOTOS[0];
+
+  const rawMusicUrl = data.music?.url || cachedMusicFallback?.url || DEFAULT_MUSIC;
+  const musicUrl = rawMusicUrl.startsWith('http') || rawMusicUrl.startsWith('/') ? rawMusicUrl : `/${rawMusicUrl}`;
 
   const handleOpenInvitation = () => {
     setIsOpen(true);
@@ -322,7 +336,7 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
 
   return (
     <div className="aqiqah-container">
-      <audio ref={audioRef} src={DEFAULT_MUSIC} loop />
+      <audio ref={audioRef} src={musicUrl} loop />
 
       {/* ── COVER MODAL (Opening Page) ── */}
       <div className={`aq-cover-modal ${isOpen ? 'closed' : ''}`}>
@@ -348,13 +362,20 @@ export default function AqiqahBlessingTemplate({ data: customData, isPreview = f
         {/* Clean, Elegant Title (No box, no border) */}
         <div className="aq-cover-subtitle">UNDANGAN TASYAKURAN AQIQAH</div>
 
+        <h1 className="aq-cover-title">{data?.baby?.full_name || data?.baby?.nickname || 'Kahfi'}</h1>
+
         <div className="aq-cover-photo-wrapper">
           <img src={mainPhoto} alt="Foto Bayi" className="aq-cover-photo" />
         </div>
 
-        <h1 className="aq-cover-title">{data.baby?.nickname || 'Kahfi'}</h1>
         <p className="aq-cover-sub">
-          Kepada Yth. <strong>{toGuest}</strong><br />
+          Kepada Yth. Bapak/Ibu/Saudara/i{guestParam ? ':' : ''}<br />
+          {guestParam && (
+            <>
+              <strong style={{ fontSize: '1.05rem', color: 'var(--aq-dark)' }}>{guestParam}</strong>
+              <br />
+            </>
+          )}
           Kami mengundang Anda untuk hadir dalam Tasyakuran Aqiqah putra kami.
         </p>
 

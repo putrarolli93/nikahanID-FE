@@ -12,8 +12,6 @@ export default function EventSchedulePage() {
   const [form, setForm] = useState({
     groomName: "", // For Aqiqah: Nama Lengkap Bayi
     brideName: "", // For Aqiqah: Nama Panggilan Bayi
-    fatherName: "", // For Aqiqah: Nama Ayah
-    motherName: "", // For Aqiqah: Nama Ibu
     slug: "",
     akadDate: "",
     akadTime: "",
@@ -21,9 +19,6 @@ export default function EventSchedulePage() {
     resepsiDate: "",
     resepsiTime: "",
   });
-
-  const [babyFile, setBabyFile] = useState(null);
-  const [babyPreview, setBabyPreview] = useState(null);
 
   const [errors, setErrors] = useState({});
   const [apiLoading, setApiLoading] = useState(false);
@@ -300,71 +295,7 @@ export default function EventSchedulePage() {
               </div>
             </div>
 
-            {/* Nama Orang Tua & Foto untuk Aqiqah */}
-            {isAqiqah && (
-              <>
-                <div className="es-form-row" style={{ marginTop: '1rem' }}>
-                  <div className="es-form-group">
-                    <label className="es-label" htmlFor="fatherName">
-                      Nama Ayah
-                    </label>
-                    <input
-                      id="fatherName"
-                      name="fatherName"
-                      type="text"
-                      className="es-input"
-                      placeholder="cth. Fajar Al-Farisi"
-                      value={form.fatherName}
-                      onChange={handleChange}
-                      disabled={apiLoading}
-                    />
-                  </div>
 
-                  <div className="es-form-group">
-                    <label className="es-label" htmlFor="motherName">
-                      Nama Ibu
-                    </label>
-                    <input
-                      id="motherName"
-                      name="motherName"
-                      type="text"
-                      className="es-input"
-                      placeholder="cth. Siti Sarah"
-                      value={form.motherName}
-                      onChange={handleChange}
-                      disabled={apiLoading}
-                    />
-                  </div>
-                </div>
-
-                <div className="es-form-group" style={{ marginTop: '1rem' }}>
-                  <label className="es-label">Foto Buah Hati (Opsional)</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="es-input"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setBabyFile(file);
-                        setBabyPreview(URL.createObjectURL(file));
-                      }
-                    }}
-                    disabled={apiLoading}
-                  />
-                  {babyPreview ? (
-                    <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <img src={babyPreview} alt="Preview Bayi" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--brand)' }} />
-                      <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 'bold' }}>✅ Foto buah hati terpilih</span>
-                    </div>
-                  ) : (
-                    <p style={{ color: '#64748b', fontSize: '0.82rem', marginTop: '0.4rem' }}>
-                      Jika tidak diunggah, foto avatar bayi default akan otomatis digunakan.
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
 
             {/* Custom URL Input */}
             <div className="es-form-row" style={{ marginTop: '1.5rem' }}>

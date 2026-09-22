@@ -161,11 +161,29 @@ export default function CreateWizardPage() {
     const BASE = `/api/invitations`;
     const load = (path, setter) =>
       fetch(`${BASE}/${path}`).then(r => r.json()).then(res => { if (res.success) setter(res.data); }).catch(() => {});
-    load('default-music', setDefaultMusicList);
     load('default-blessings', setDefaultBlessingsList);
     load('default-quotes', setDefaultQuotesList);
     load('default-cover-quotes', setDefaultCoverQuotesList);
   }, []);
+
+  const isAqiqah = slug?.includes("aqiqah") || invitationData?.template_slug?.includes("aqiqah") || invitationData?.category === "aqiqah";
+  const isKhitan = slug?.includes("khitan") || invitationData?.template_slug?.includes("khitan") || invitationData?.category === "khitan";
+  const invitationCategory = isAqiqah ? "aqiqah" : isKhitan ? "khitan" : (invitationData?.category || "wedding");
+
+  useEffect(() => {
+    const fetchMusic = async () => {
+      try {
+        const res = await fetch(`/api/invitations/default-music?category=${invitationCategory}`);
+        const data = await res.json();
+        if (data.success) {
+          setDefaultMusicList(data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load category music", err);
+      }
+    };
+    fetchMusic();
+  }, [invitationCategory]);
 
   // Load draft invitation data from backend
   useEffect(() => {
@@ -687,7 +705,6 @@ export default function CreateWizardPage() {
   }
 
   const isFree = invitationData?.template_is_premium === 0;
-  const isAqiqah = slug?.includes("aqiqah") || invitationData?.template_slug?.includes("aqiqah") || invitationData?.category === "aqiqah";
 
   // Stepper Header Links
   let steps = [
@@ -1499,7 +1516,6 @@ export default function CreateWizardPage() {
               </p>
 
               <div className="form-group">
-                {defaultMusicList.length > 0 && (
                   <div style={{ position: "relative", marginBottom: "10px" }}>
                     <button
                       type="button"
@@ -1534,7 +1550,7 @@ export default function CreateWizardPage() {
                           style={{
                             padding: "12px 14px", cursor: "pointer",
                             background: !music.url ? "rgba(181,101,42,0.08)" : "transparent",
-                            borderBottom: "1px solid var(--border, #e5e4e7)",
+                            borderBottom: defaultMusicList.length > 0 ? "1px solid var(--border, #e5e4e7)" : "none",
                             transition: "background 0.1s",
                             display: "flex",
                             alignItems: "center",
@@ -1554,43 +1570,48 @@ export default function CreateWizardPage() {
                           {!music.url && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", fontWeight: 600 }}>✓ Terpilih</div>}
                         </div>
 
-                        {/* List Lagu */}
-                        {defaultMusicList.map((song, idx) => {
-                          const songUrl = `${song.url}`;
-                          const isSelected = music.url === songUrl;
-                          return (
-                            <div key={song.id}
-                              onClick={() => { setMusic({ title: song.title, artist: song.artist || "", url: songUrl, autoplay: true }); setMusicDropdownOpen(false); }}
-                              style={{
-                                padding: "12px 14px", cursor: "pointer",
-                                background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
-                                borderBottom: idx < defaultMusicList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
-                                transition: "background 0.1s",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between"
-                              }}
-                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
-                              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
-                            >
-                              <div>
-                                <div style={{ fontSize: "0.82rem", fontWeight: 600, color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)" }}>
-                                  🎵 {song.title}
-                                </div>
-                                {song.artist && (
-                                  <div style={{ fontSize: "0.72rem", color: "var(--muted, #888)", marginTop: "2px" }}>
-                                    {song.artist}
+                        {/* List Lagu Default */}
+                        {defaultMusicList.length > 0 ? (
+                          defaultMusicList.map((song, idx) => {
+                            const songUrl = `${song.url}`;
+                            const isSelected = music.url === songUrl;
+                            return (
+                              <div key={song.id}
+                                onClick={() => { setMusic({ title: song.title, artist: song.artist || "", url: songUrl, autoplay: true }); setMusicDropdownOpen(false); }}
+                                style={{
+                                  padding: "12px 14px", cursor: "pointer",
+                                  background: isSelected ? "rgba(181,101,42,0.08)" : "transparent",
+                                  borderBottom: idx < defaultMusicList.length - 1 ? "1px solid var(--border, #e5e4e7)" : "none",
+                                  transition: "background 0.1s",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between"
+                                }}
+                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(181,101,42,0.04)"; }}
+                                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                              >
+                                <div>
+                                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: isSelected ? "var(--brand, #b5652a)" : "var(--dark, #1a1208)" }}>
+                                    🎵 {song.title}
                                   </div>
-                                )}
+                                  {song.artist && (
+                                    <div style={{ fontSize: "0.72rem", color: "var(--muted, #888)", marginTop: "2px" }}>
+                                      {song.artist}
+                                    </div>
+                                  )}
+                                </div>
+                                {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", fontWeight: 600 }}>✓ Terpilih</div>}
                               </div>
-                              {isSelected && <div style={{ fontSize: "0.68rem", color: "var(--brand, #b5652a)", fontWeight: 600 }}>✓ Terpilih</div>}
-                            </div>
-                          );
-                        })}
+                            );
+                          })
+                        ) : (
+                          <div style={{ padding: "12px 14px", fontSize: "0.78rem", color: "var(--muted, #888)", fontStyle: "italic", textAlign: "center" }}>
+                            Belum ada pilihan musik default untuk {isAqiqah ? "Aqiqah" : isKhitan ? "Khitan" : "kategori ini"}.
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
 
 
 
